@@ -1,0 +1,384 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap');
+body{
+  background-color: whitesmoke;
+  height:100vh
+  font-family: 'Poppins', sans-serif;
+  
+}
+
+  .carousel-inner > .item > img,
+  .carousel-inner > .item > a > img {
+    width: 70%;
+    margin: auto;
+  }
+h2{
+color:white;
+}
+
+.dropdown-menu{
+	background-color: 	rgb(0, 0, 0);
+}
+.alrtmsg{
+	color: red;
+}
+
+.dropdown-item{
+	color: white;
+}
+.dropdown{
+	margin-right:100px;
+}
+/* navbar design */
+.navbar {
+    position: fixed;
+    top:0;
+    display: flex;
+    padding: .4rem 1rem;
+    background-color:#fff;  
+    -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+    width: 100%;
+    box-shadow: 0px 1px 10px #999;
+    z-index:1
+  }
+  
+.btnsbt{
+	  margin-top: 30px;
+}
+  .navbar-nav {
+    display: -ms-flexbox;
+    display: -webkit-box;
+    display: flex;
+    margin-top: -6vh;
+    /* margin-right: 8%; */
+    -ms-flex-direction: row;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+            flex-direction: row;
+    list-style: none;
+  }
+  
+  /* .nav-item {
+    margin-bottom: -100px;
+    padding-left: 2vw;
+  } */
+  #loginBtn{
+    margin-top: 40px;
+    }
+  .nav-link {
+    display: block;
+    color: #10847e;;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .container{
+/*   margin-left: 400px; */
+  }
+  
+    .containernew{
+/*   margin-left: 250px; */
+  }
+.containersubs{
+	margin-right:250px;
+	
+}
+  .welcomeimages{
+  margin-top: 200px;
+  
+  }
+  .centerwelcomeimage{
+margin-top:300px;
+  }
+  .nav-link:hover {
+    color:lightgray;
+  }
+  
+  .nav-link:active {
+    color: lightgray;
+  }
+  
+ /*  logo line in navbar*/
+  .navbar-brand {
+    display: inline-block;
+    padding-top: .3125rem;
+    padding-bottom: .3125rem;
+    margin-right: 1rem;
+    font-size: 1.25rem;
+    line-height: inherit;
+    white-space: nowrap;
+    color: #10847e;
+    padding-left: 2rem;
+font-family: 'Poppins', sans-serif;
+text-decoration: none;
+  }
+  
+  .navbar-brand:hover {
+    color: lightgray;
+  }
+  
+  .navbar-brand:active {
+    color: lightgray;
+  }
+  /* The sidebar menu */
+.sidebar {
+  height: 100%; /* 100% Full-height */
+  width: 0; /* 0 width - change this with JavaScript */
+  position: fixed; /* Stay in place */
+  /* z-index: 1; Stay on top */
+  top: 0;
+  right: 0;
+  background-color: rgb(64, 128, 128); /* Black*/
+  overflow-x: hidden; /* Disable horizontal scroll */
+  margin-top: 50px; /* Place content 60px from the top */
+  transition: 0.5s; /* 0.5 second transition effect to slide in the sidebar */
+  z-index: 9;
+}
+
+/* The sidebar links */
+.sidebar a {
+  padding: 8px 8px 8px 32px;
+  text-decoration: none;
+  font-size: 25px;
+  color: white;
+  display: block;
+  transition: 0.3s;
+  
+}
+
+/* When you mouse over the navigation links, change their color */
+.sidebar a:hover {
+  color: #f1f1f1;
+}
+
+/* Position and style the close button (top right corner) */
+.sidebar .closebtn {
+  position: absolute;
+  top: 6%;
+  right: 10px;
+  font-size: 36px;
+  margin-left: 50px;
+}
+
+/* The button used to open the sidebar */
+.openbtn {
+  font-size: 20px;
+  cursor: pointer;
+  /* background-color: #111; */
+  color: whitesmoke;
+  background-color: rgb(64, 128, 128);
+  /* padding: 10px 15px; */
+  border: none;
+  position: fixed;
+  margin-left: -5%;
+  outline: none;
+  /* margin-top: 38%; */
+  /* margin-bottom: -40%; */
+}
+
+.openbtn:hover {
+  background-color: #444;
+}
+
+/* Style page content - use this if you want to push the page content to the right when you open the side navigation */
+#main {
+  transition: margin-right .5s; 
+  padding: 20px;
+}
+
+/* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
+@media screen and (max-height:1200px) {
+  .sidebar {padding-top: 15px;}
+  .sidebar a {font-size: 18px;}
+}
+
+.typ h1 p
+{
+font-family: 'Poppins', sans-serif;
+color:#fff
+
+	
+}
+.typewrite{
+font-family: cursive;
+  color: green;
+}
+  .modal {
+    display: none;
+    position: fixed; 
+/*     z-index: 999;  */
+    /* left: 0;
+    top: 0; */
+    width: 100%; 
+    height: 100%;
+    background-color: rgba(0,0,0,0.4); 
+    padding-top: 60px;
+  }
+  
+  
+/*   login info popup */
+  .modal-content {
+    padding:10px 20px;
+    background-color:	#fff;
+    margin: 5% auto ;
+    width: 30%; 
+    height:400px
+  }
+  
+  .modal-content h2{
+  color:#10847e;
+  }
+  
+  
+  .search-by{
+  display:flex;
+  justify-content: space-evenly;
+  align-items: center
+  }
+  
+  .search-by input[type=text]{
+  
+  
+  width: 50%;
+      outline: none;
+          height:40px;
+      
+  
+  
+  }
+
+  
+  input[type=text], input[type=password],input[type=number],input[type=date],select {
+    background: none;
+    border: 1px solid #b0aba0;
+    outline:none;
+    color: #474544;
+    letter-spacing: 1px;
+    outline: none;
+    width: 100%;
+    height:40px;
+    padding-left:10px;
+    border-radius:3px
+  }
+  input:focus ~ .floating-label,
+input:not(:focus):valid ~ .floating-label{
+  margin-top: -3%;
+  margin-left: -75.8%;
+  font-size: 11px;
+  opacity: 1;
+}
+.floating-label {
+  position: absolute;
+  pointer-events: none;
+  margin-left: -76%;
+  transition: .4s ease all;
+}
+  label{
+    font-weight: 300;
+    padding-top: 1%;
+  }
+  .center{
+    align-self: center;
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    
+  }
+  .right{
+    margin-left: 27%;
+  }
+  h1{
+    font-weight: 300;
+    padding-top: 1%;
+  }
+  
+  #loginSubmit {
+    background-color: #10847e;
+    color: #fff;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    width: 100%;
+    outline: none; 
+    margin: 30px 0;
+    border: none;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 1rem;
+    font-weight: bold;
+    font-family: 'Poppins', sans-serif;
+        border-radius:3px
+    
+    
+
+  }
+  
+  #loginSubmit:hover {
+    background-color: #474544;
+    color: #fefefe;
+  }
+  .closeModal {
+    position: absolute;
+    right: 15px;
+    top: 0;
+    color: #000;
+    font-size: 25px;
+    font-weight: bold;
+  }
+  
+  .closeModal:hover,
+  .closeModal:focus {
+    color: grey;
+    cursor: pointer;
+  }
+  
+  .animate {
+    animation: animatezoom 0.6s
+  }
+  
+
+  @keyframes animatezoom {
+    from {transform: scale(0)} 
+    to {transform: scale(1)}
+  }
+  h4{
+    padding-left: 2%;
+  }
+  .col-6{
+  margin-top: 50px;
+  }
+  .sbt{
+  margin-top: 50px;
+  }
+  .footImg{
+    position: fixed;
+    width: 100%;
+    bottom: 0px;
+    z-index: -1;
+  }
+  form label{
+    color: black;
+    
+
+  }
+
+
+/* @media (max-width: 1199.98px){
+  .modal-content{
+    width: 38%;
+  }
+}
+@media (max-width: 991.98px){
+  .modal-content{
+    width: 45%;
+  }
+}
+@media (max-width: 767.98px){
+  .modal-content{
+    width: 60%;
+  }
+}
+@media (max-width: 575.98px){
+  .modal-content{
+    width: 80%;
+  }
+} */
