@@ -1,0 +1,138 @@
+version: '3.8'
+
+services:
+  auth-microservice:
+    build: 
+      context: ./backend/auth-microservice
+      dockerfile: Dockerfile
+    ports:
+      - "8084:8084"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    volumes:
+      - ./data/auth:/app/data
+    networks:
+      - pharmacy-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  drugs-microservice:
+    build: 
+      context: ./backend/drugs-microservice
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    volumes:
+      - ./data/drugs:/app/data
+    networks:
+      - pharmacy-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  subscription-microservice:
+    build: 
+      context: ./backend/subscription-microservice
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SERVICES_DRUGS_URL=http://drugs-microservice:8081
+    volumes:
+      - ./data/subscription:/app/data
+    depends_on:
+      - drugs-microservice
+    networks:
+      - pharmacy-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  refill-microservice:
+    build: 
+      context: ./backend/refill-microservice
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SERVICES_SUBSCRIPTION_URL=http://subscription-microservice:8082
+      - SERVICES_DRUGS_URL=http://drugs-microservice:8081
+    volumes:
+      - ./data/refill:/app/data
+    depends_on:
+      - subscription-microservice
+      - drugs-microservice
+    networks:
+      - pharmacy-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  swagger-aggregator:
+    build: 
+      context: ./backend/swagger-aggregator
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8085"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SERVICES_AUTH_URL=http://auth-microservice:8084
+      - SERVICES_DRUGS_URL=http://drugs-microservice:8081
+      - SERVICES_SUBSCRIPTION_URL=http://subscription-microservice:8082
+      - SERVICES_REFILL_URL=http://refill-microservice:8083
+    depends_on:
+      - auth-microservice
+      - drugs-microservice
+      - subscription-microservice
+      - refill-microservice
+    networks:
+      - pharmacy-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8085/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  member-portal:
+    build: 
+      context: ./frontend/member-portal
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_BASE_URL=http://localhost
+    depends_on:
+      - auth-microservice
+      - drugs-microservice
+      - subscription-microservice
+      - refill-microservice
+    networks:
+      - pharmacy-network
+
+networks:
+  pharmacy-network:
+    driver: bridge
+
+volumes:
+  auth-data:
+  drugs-data:
+  subscription-data:
+  refill-data:
