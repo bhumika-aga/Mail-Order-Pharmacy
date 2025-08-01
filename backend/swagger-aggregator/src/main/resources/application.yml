@@ -1,0 +1,40 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: swagger-aggregator
+  thymeleaf:
+    mode: HTML
+
+services:
+  auth:
+    url: http://localhost:8084
+  drugs:
+    url: http://localhost:8081
+  subscription:
+    url: http://localhost:8082
+  refill:
+    url: http://localhost:8083
+
+logging:
+  level:
+    com.pharmacy.swagger: DEBUG
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    config-url: /v3/api-docs/swagger-config
+    urls:
+      - name: Auth Service
+        url: http://localhost:8084/v3/api-docs
+      - name: Drugs Service
+        url: http://localhost:8081/v3/api-docs
+      - name: Subscription Service
+        url: http://localhost:8082/v3/api-docs
+      - name: Refill Service
+        url: http://localhost:8083/v3/api-docs
+      - name: Aggregated
+        url: /v3/api-docs/aggregated
