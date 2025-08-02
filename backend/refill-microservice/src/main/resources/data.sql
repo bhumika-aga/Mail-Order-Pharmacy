@@ -8,7 +8,7 @@ INSERT INTO refill_orders (refill_order_id, member_id, order_date, member_locati
 ('REF006', 'MEM001', '2024-02-10 16:00:00', 'NYC', 'PENDING', 'ADHOC', NULL, NULL, NULL);
 
 -- Insert refill order line items
-INSERT INTO refill_order_line_items (drug_code, drug_name, quantity, prescription_id, unit_price, total_price, refill_order_refill_order_id) VALUES
+INSERT INTO refill_order_line_items (drug_code, drug_name, quantity, prescription_id, unit_price, total_price, refill_order_id) VALUES
 ('D001', 'Lisinopril 10mg', 30, 'PRES001', 25.50, 765.00, 'REF001'),
 ('D002', 'Metformin 500mg', 90, 'PRES002', 15.75, 1417.50, 'REF002'),
 ('D003', 'Amlodipine 5mg', 30, 'PRES003', 22.00, 660.00, 'REF003'),
