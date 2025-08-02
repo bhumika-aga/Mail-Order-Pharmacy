@@ -29,15 +29,15 @@ const Dashboard: React.FC = () => {
       subscriptionService.getMySubscriptions().then((res) => res.data),
   });
 
-  const { data: refillStatus } = useQuery({
-    queryKey: ["refillStatus"],
-    queryFn: () => refillService.getRefillStatus().then((res) => res.data),
+  const { data: refillOrders } = useQuery({
+    queryKey: ["refillOrders"],
+    queryFn: () => refillService.getAllRefillOrders().then((res) => res.data),
   });
 
   const activeSubscriptions =
-    subscriptions?.filter((s) => s.subscriptionStatus === "ACTIVE") || [];
+    Array.isArray(subscriptions) ? subscriptions.filter((s) => s.subscriptionStatus === "ACTIVE") : [];
   const pendingRefills =
-    refillStatus?.filter((r) => r.paymentStatus === "PENDING") || [];
+    Array.isArray(refillOrders) ? refillOrders.filter((r) => r.orderStatus === "PENDING") : [];
 
   const dashboardCards = [
     {

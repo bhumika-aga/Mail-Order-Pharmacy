@@ -7,9 +7,12 @@ import {
   Paper,
   TextField,
   Typography,
+  Link,
+  Divider,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { Link as RouterLink, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 
 interface LoginFormData {
@@ -21,6 +24,8 @@ const LoginForm: React.FC = () => {
   const { login } = useAuth();
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string>("");
+  const location = useLocation();
 
   const {
     register,
@@ -28,9 +33,16 @@ const LoginForm: React.FC = () => {
     formState: { errors },
   } = useForm<LoginFormData>();
 
+  useEffect(() => {
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message);
+    }
+  }, [location.state]);
+
   const onSubmit = async (data: LoginFormData) => {
     setLoading(true);
     setError("");
+    setSuccessMessage("");
 
     try {
       await login(data.username, data.password);
@@ -64,6 +76,12 @@ const LoginForm: React.FC = () => {
           >
             Member Portal Login
           </Typography>
+
+          {successMessage && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              {successMessage}
+            </Alert>
+          )}
 
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
@@ -109,7 +127,18 @@ const LoginForm: React.FC = () => {
             >
               {loading ? <CircularProgress size={24} /> : "Sign In"}
             </Button>
+
+            <Box textAlign="center" sx={{ mb: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                Don't have an account?{" "}
+                <Link component={RouterLink} to="/signup">
+                  Create one here
+                </Link>
+              </Typography>
+            </Box>
           </Box>
+
+          <Divider sx={{ my: 2 }} />
 
           <Box
             sx={{ mt: 2, p: 2, backgroundColor: "#f5f5f5", borderRadius: 1 }}

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Signup</title>
+</head>
+<body>
+    <h1>Test Signup API</h1>
+    <button onclick="testSignup()">Test Signup</button>
+    <button onclick="testCheckUsername()">Test Check Username</button>
+    <div id="result"></div>
+
+    <script>
+        async function testSignup() {
+            const data = {
+                username: "testuser" + Date.now(),
+                email: "test" + Date.now() + "@example.com",
+                password: "password123",
+                memberId: "TEST" + Date.now()
+            };
+            
+            try {
+                console.log('Testing signup with data:', data);
+                const response = await fetch('http://localhost:8084/api/auth/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                console.log('Response status:', response.status);
+                const result = await response.json();
+                console.log('Response:', result);
+                document.getElementById('result').innerHTML = `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').innerHTML = `<pre>Error: ${error.message}</pre>`;
+            }
+        }
+
+        async function testCheckUsername() {
+            try {
+                console.log('Testing check username');
+                const response = await fetch('http://localhost:8084/api/auth/check-username/testuser123');
+                
+                console.log('Response status:', response.status);
+                const result = await response.json();
+                console.log('Response:', result);
+                document.getElementById('result').innerHTML = `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').innerHTML = `<pre>Error: ${error.message}</pre>`;
+            }
+        }
+    </script>
+</body>
+</html>

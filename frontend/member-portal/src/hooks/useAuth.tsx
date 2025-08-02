@@ -45,10 +45,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const authData = response.data;
 
       const userData: User = {
-        id: authData.memberId,
+        id: 0, // Placeholder ID since auth response doesn't include user ID
         username: authData.username,
         email: "",
         memberId: authData.memberId,
+        fullName: "",
+        createdAt: "",
+        updatedAt: ""
       };
 
       setUser(userData);
@@ -69,10 +72,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem("token", authData.token);
 
       const userData: User = {
-        id: authData.memberId,
+        id: 0, // Placeholder ID since auth response doesn't include user ID
         username: authData.username,
         email: "",
         memberId: authData.memberId,
+        fullName: "",
+        createdAt: "",
+        updatedAt: ""
       };
 
       setUser(userData);

@@ -8,6 +8,9 @@ const LoadingSpinner: React.FC = () => {
       justifyContent="center"
       alignItems="center"
       minHeight="200px"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading content"
     >
       <CircularProgress />
     </Box>

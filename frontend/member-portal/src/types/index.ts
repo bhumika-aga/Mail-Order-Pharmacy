@@ -1,8 +1,11 @@
 export interface User {
-  id: string;
+  id: number;
   username: string;
   email: string;
   memberId: string;
+  fullName: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface AuthResponse {
@@ -11,6 +14,18 @@ export interface AuthResponse {
   username: string;
   memberId: string;
   expirationTime: number;
+}
+
+export interface SignupRequest {
+  username: string;
+  email: string;
+  password: string;
+  fullName: string;
+  memberId?: string; // Optional since it's auto-generated
+}
+
+export interface MessageResponse {
+  message: string;
 }
 
 export interface Drug {
@@ -88,16 +103,54 @@ export interface RefillOrderLineItem {
   quantity: number;
 }
 
+export interface RefillLineItemResponse {
+  lineItemId: number;
+  drugCode: string;
+  drugName: string;
+  quantity: number;
+  prescriptionId: string;
+  unitPrice: number;
+  totalPrice: number;
+}
+
 export interface RefillStatusResponse {
   refillOrderId: string;
-  subscriptionId: string;
-  refillDate: string;
+  memberId: string;
+  orderDate: string;
+  memberLocation: string;
+  orderStatus: 'PENDING' | 'CONFIRMED' | 'IN_PROGRESS' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+  orderType: 'SCHEDULED' | 'ADHOC';
+  subscriptionId: string | null;
+  deliveryDate: string | null;
+  trackingNumber: string | null;
+  lineItems: RefillLineItemResponse[];
+  totalAmount: number;
+}
+
+export interface AdhocRefillPrescriptionRequest {
+  prescriptionId: string;
+  drugCode: string;
   quantity: number;
-  paymentStatus: string;
-  lineItems: RefillOrderLineItem[];
 }
 
 export interface AdhocRefillRequest {
+  memberId: string;
+  memberLocation: string;
+  prescriptions: AdhocRefillPrescriptionRequest[];
+}
+
+export interface RefillDuePrescription {
+  prescriptionId: string;
+  drugId: string;
+  dosagePerDay: string;
+  prescriptionCourse: number;
+}
+
+export interface RefillDueResponse {
   subscriptionId: string;
-  quantity: number;
+  memberId: string;
+  memberLocation: string;
+  dueDate: string;
+  refillFrequency: string;
+  prescriptions: RefillDuePrescription[];
 }

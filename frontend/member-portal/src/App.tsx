@@ -18,6 +18,8 @@ import Dashboard from "./pages/Dashboard";
 const DrugsPage = React.lazy(() => import("./pages/DrugsPage"));
 const SubscriptionsPage = React.lazy(() => import("./pages/SubscriptionsPage"));
 const RefillsPage = React.lazy(() => import("./pages/RefillsPage"));
+const SignupPage = React.lazy(() => import("./pages/SignupPage"));
+const UserManagementPage = React.lazy(() => import("./pages/UserManagementPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -69,6 +71,14 @@ const AppRoutes: React.FC = () => {
         element={isAuthenticated ? <Navigate to="/dashboard" /> : <LoginForm />}
       />
       <Route
+        path="/signup"
+        element={isAuthenticated ? <Navigate to="/dashboard" /> : (
+          <React.Suspense fallback={<LoadingSpinner />}>
+            <SignupPage />
+          </React.Suspense>
+        )}
+      />
+      <Route
         path="/dashboard"
         element={
           <ProtectedRoute>
@@ -102,6 +112,16 @@ const AppRoutes: React.FC = () => {
           <ProtectedRoute>
             <React.Suspense fallback={<LoadingSpinner />}>
               <RefillsPage />
+            </React.Suspense>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/users"
+        element={
+          <ProtectedRoute>
+            <React.Suspense fallback={<LoadingSpinner />}>
+              <UserManagementPage />
             </React.Suspense>
           </ProtectedRoute>
         }

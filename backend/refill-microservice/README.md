@@ -20,28 +20,28 @@ All endpoints require a valid JWT token in the Authorization header: `Bearer <to
 ### Main Endpoints
 
 1. **GET /api/refill/viewRefillStatus**
-   - Get the latest refill status for the authenticated member
-   - Returns: RefillStatusResponse with order details and line items
+    - Get the latest refill status for the authenticated member
+    - Returns: RefillStatusResponse with order details and line items
 
 2. **GET /api/refill/getRefillDuesAsOfDate**
-   - Get subscriptions due for refill as of a specific date
-   - Query Parameter: `dueDate` (YYYY-MM-DD format)
-   - Returns: List of RefillDueResponse
+    - Get subscriptions due for refill as of a specific date
+    - Query Parameter: `dueDate` (YYYY-MM-DD format)
+    - Returns: List of RefillDueResponse
 
 3. **POST /api/refill/requestAdhocRefill**
-   - Create a new adhoc refill order
-   - Body: AdhocRefillRequest with member details and prescriptions
-   - Returns: AdhocRefillResponse with order confirmation
+    - Create a new adhoc refill order
+    - Body: AdhocRefillRequest with member details and prescriptions
+    - Returns: AdhocRefillResponse with order confirmation
 
 4. **GET /api/refill/orders**
-   - Get all refill orders for the authenticated member
-   - Returns: List of RefillStatusResponse
+    - Get all refill orders for the authenticated member
+    - Returns: List of RefillStatusResponse
 
 5. **PUT /api/refill/orders/{refillOrderId}/status**
-   - Update refill order status (Admin operation)
-   - Path Parameter: `refillOrderId`
-   - Query Parameter: `status` (OrderStatus enum)
-   - Returns: Updated RefillStatusResponse
+    - Update refill order status (Admin operation)
+    - Path Parameter: `refillOrderId`
+    - Query Parameter: `status` (OrderStatus enum)
+    - Returns: Updated RefillStatusResponse
 
 ## Configuration
 
@@ -67,13 +67,13 @@ The service runs on port **8083** and uses:
    ```
 
 3. **Access Swagger UI:**
-   - URL: <http://localhost:8083/swagger-ui.html>
+    - URL: <http://localhost:8083/swagger-ui.html>
 
 4. **Access H2 Console:**
-   - URL: <http://localhost:8083/h2-console>
-   - JDBC URL: jdbc:h2:file:./data/refill-pharmacy
-   - Username: sa
-   - Password: password
+    - URL: <http://localhost:8083/h2-console>
+    - JDBC URL: jdbc:h2:file:./data/refill-pharmacy
+    - Username: sa
+    - Password: password
 
 ## Data Model
 

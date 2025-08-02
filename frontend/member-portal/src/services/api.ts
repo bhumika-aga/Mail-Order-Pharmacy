@@ -7,14 +7,22 @@ import {
   MemberPrescription,
   MemberSubscription,
   RefillStatusResponse,
-  SubscriptionRequest
+  RefillDueResponse,
+  SubscriptionRequest,
+  SignupRequest,
+  MessageResponse,
+  User
 } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost';
 
+console.log('API_BASE_URL:', API_BASE_URL);
+
 const authApi = axios.create({
   baseURL: `${API_BASE_URL}:8084/api/auth`,
 });
+
+console.log('Auth API baseURL:', authApi.defaults.baseURL);
 
 const drugsApi = axios.create({
   baseURL: `${API_BASE_URL}:8081/api/drugs`,
@@ -28,14 +36,14 @@ const refillApi = axios.create({
   baseURL: `${API_BASE_URL}:8083/api/refill`,
 });
 
-const setAuthToken = (token: string) => {
+export const setAuthToken = (token: string) => {
   const bearerToken = `Bearer ${token}`;
   drugsApi.defaults.headers.common['Authorization'] = bearerToken;
   subscriptionApi.defaults.headers.common['Authorization'] = bearerToken;
   refillApi.defaults.headers.common['Authorization'] = bearerToken;
 };
 
-const clearAuthToken = () => {
+export const clearAuthToken = () => {
   delete drugsApi.defaults.headers.common['Authorization'];
   delete subscriptionApi.defaults.headers.common['Authorization'];
   delete refillApi.defaults.headers.common['Authorization'];
@@ -49,6 +57,33 @@ export const authService = {
     authApi.post('/validate', {}, {
       headers: { Authorization: `Bearer ${token}` }
     }),
+
+  register: (signupData: SignupRequest): Promise<AxiosResponse<MessageResponse>> => {
+    console.log('Registering user with data:', signupData);
+    console.log('Using URL:', `${authApi.defaults.baseURL}/signup`);
+    return authApi.post('/signup', signupData);
+  },
+
+  getAllUsers: (): Promise<AxiosResponse<User[]>> =>
+    authApi.get('/users'),
+
+  getUserById: (id: number): Promise<AxiosResponse<User>> =>
+    authApi.get(`/users/${id}`),
+
+  updateUser: (id: number, userData: SignupRequest): Promise<AxiosResponse<User>> =>
+    authApi.put(`/users/${id}`, userData),
+
+  deleteUser: (id: number): Promise<AxiosResponse<MessageResponse>> =>
+    authApi.delete(`/users/${id}`),
+
+  checkUsernameAvailability: (username: string): Promise<AxiosResponse<MessageResponse>> =>
+    authApi.get(`/check-username/${username}`),
+
+  checkEmailAvailability: (email: string): Promise<AxiosResponse<MessageResponse>> =>
+    authApi.get(`/check-email/${email}`),
+
+  checkMemberIdAvailability: (memberId: string): Promise<AxiosResponse<MessageResponse>> =>
+    authApi.get(`/check-memberid/${memberId}`),
 };
 
 export const drugService = {
@@ -89,10 +124,13 @@ export const subscriptionService = {
 };
 
 export const refillService = {
-  getRefillStatus: (): Promise<AxiosResponse<RefillStatusResponse[]>> =>
+  getRefillStatus: (): Promise<AxiosResponse<RefillStatusResponse>> =>
     refillApi.get('/viewRefillStatus'),
 
-  getRefillDues: (date: string): Promise<AxiosResponse<any[]>> =>
+  getAllRefillOrders: (): Promise<AxiosResponse<RefillStatusResponse[]>> =>
+    refillApi.get('/orders'),
+
+  getRefillDues: (date: string): Promise<AxiosResponse<RefillDueResponse[]>> =>
     refillApi.get(`/getRefillDuesAsOfDate?date=${date}`),
 
   requestAdhocRefill: (request: AdhocRefillRequest): Promise<AxiosResponse<any>> =>
@@ -102,4 +140,3 @@ export const refillService = {
     refillApi.get('/orders'),
 };
 
-export { clearAuthToken, setAuthToken };
