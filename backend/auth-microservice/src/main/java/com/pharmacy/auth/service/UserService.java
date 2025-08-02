@@ -90,7 +90,7 @@ public class UserService {
     @Transactional
     public User updateUser(Long id, String username, String email, String memberId, String fullName) {
         User user = userRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+                        .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
         
         // Check if new username already exists (if changed)
         if (!user.getUsername().equals(username) && userRepository.existsByUsername(username)) {

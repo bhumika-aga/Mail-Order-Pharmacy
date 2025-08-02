@@ -105,9 +105,9 @@ public class SubscriptionService {
             MemberSubscription.SubscriptionStatus.ACTIVE);
         
         return activeSubscriptions.stream()
-            .filter(subscription -> isRefillDue(subscription, dueDate))
-            .map(this::mapToRefillDueResponse)
-            .collect(Collectors.toList());
+                   .filter(subscription -> isRefillDue(subscription, dueDate))
+                   .map(this::mapToRefillDueResponse)
+                   .collect(Collectors.toList());
     }
     
     private boolean isRefillDue(MemberSubscription subscription, LocalDate dueDate) {
@@ -116,11 +116,11 @@ public class SubscriptionService {
         
         switch (frequency) {
             case WEEKLY:
-                return subscriptionDate.plusWeeks(1).isBefore(dueDate) || 
-                       subscriptionDate.plusWeeks(1).isEqual(dueDate);
+                return subscriptionDate.plusWeeks(1).isBefore(dueDate) ||
+                           subscriptionDate.plusWeeks(1).isEqual(dueDate);
             case MONTHLY:
-                return subscriptionDate.plusMonths(1).isBefore(dueDate) || 
-                       subscriptionDate.plusMonths(1).isEqual(dueDate);
+                return subscriptionDate.plusMonths(1).isBefore(dueDate) ||
+                           subscriptionDate.plusMonths(1).isEqual(dueDate);
             default:
                 return false;
         }

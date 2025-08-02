@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Test Signup</title>
 </head>
+
 <body>
     <h1>Test Signup API</h1>
     <button onclick="testSignup()">Test Signup</button>
@@ -17,7 +19,7 @@
                 password: "password123",
                 memberId: "TEST" + Date.now()
             };
-            
+
             try {
                 console.log('Testing signup with data:', data);
                 const response = await fetch('http://localhost:8084/api/auth/signup', {
@@ -27,7 +29,7 @@
                     },
                     body: JSON.stringify(data)
                 });
-                
+
                 console.log('Response status:', response.status);
                 const result = await response.json();
                 console.log('Response:', result);
@@ -42,7 +44,7 @@
             try {
                 console.log('Testing check username');
                 const response = await fetch('http://localhost:8084/api/auth/check-username/testuser123');
-                
+
                 console.log('Response status:', response.status);
                 const result = await response.json();
                 console.log('Response:', result);
@@ -54,4 +56,5 @@
         }
     </script>
 </body>
+
 </html>

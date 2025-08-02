@@ -223,12 +223,14 @@ cd backend/auth-microservice
 ## 🧪 Testing Framework
 
 ### Test Setup
+
 - **Jest**: Modern JavaScript testing framework with TypeScript support
 - **React Testing Library**: Component testing utilities
 - **Coverage Reports**: HTML and LCOV coverage reports
 - **Mocking**: Comprehensive API and component mocking
 
 ### Test Categories
+
 - **Type Definitions**: Interface and type validation tests
 - **API Services**: HTTP client and service layer tests
 - **React Hooks**: Custom hook behavior and state management tests
@@ -236,6 +238,7 @@ cd backend/auth-microservice
 - **Integration**: End-to-end user flow tests
 
 ### Test Commands
+
 ```bash
 # Run all tests
 npm test

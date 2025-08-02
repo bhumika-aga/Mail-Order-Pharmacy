@@ -2,8 +2,8 @@ package com.pharmacy.auth.controller;
 
 import com.pharmacy.auth.dto.JwtResponse;
 import com.pharmacy.auth.dto.LoginRequest;
-import com.pharmacy.auth.dto.SignupRequest;
 import com.pharmacy.auth.dto.MessageResponse;
+import com.pharmacy.auth.dto.SignupRequest;
 import com.pharmacy.auth.entity.User;
 import com.pharmacy.auth.security.JwtUtils;
 import com.pharmacy.auth.service.UserDetailsImpl;
@@ -18,6 +18,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -103,8 +104,8 @@ public class AuthController {
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
         try {
             return userService.getUserById(id)
-                .map(user -> ResponseEntity.ok(user))
-                .orElse(ResponseEntity.notFound().build());
+                       .map(ResponseEntity::ok)
+                       .orElse(ResponseEntity.notFound().build());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new MessageResponse("Error: " + e.getMessage()));
         }
