@@ -20,7 +20,8 @@ spring:
       path: /h2-console
 
 jwt:
-  secret: pharmacySecretKeyForJWTTokenGeneration
+  secret: pharmacySecretKeyForJWTTokenGenerationWithSufficientLengthForHS512Algorithm2024
+  expiration: 900000
 
 logging:
   level:
