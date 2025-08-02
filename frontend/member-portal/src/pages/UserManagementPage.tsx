@@ -1,39 +1,34 @@
+import { Delete, Edit, PersonAdd, Visibility } from "@mui/icons-material";
 import {
-  Delete,
-  Edit,
-  Visibility,
-  PersonAdd,
-} from "@mui/icons-material";
-import {
+  Alert,
   Box,
   Button,
   Card,
   CardContent,
+  Chip,
   Container,
   Dialog,
   DialogActions,
   DialogContent,
+  DialogContentText,
   DialogTitle,
   Grid,
   IconButton,
+  Paper,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Typography,
-  Paper,
-  Chip,
-  Alert,
   TextField,
-  DialogContentText,
+  Typography,
 } from "@mui/material";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useState } from "react";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 import { authService } from "../services/api";
-import { User, SignupRequest } from "../types";
+import { SignupRequest, User } from "../types";
 
 const UserManagementPage: React.FC = () => {
   const [viewDialog, setViewDialog] = useState(false);
@@ -145,7 +140,12 @@ const UserManagementPage: React.FC = () => {
 
   return (
     <Container maxWidth="lg">
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={3}
+      >
         <Typography variant="h4" component="h1">
           User Management
         </Typography>
@@ -179,7 +179,11 @@ const UserManagementPage: React.FC = () => {
                     <TableCell>{user.username}</TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
-                      <Chip label={user.memberId} color="primary" size="small" />
+                      <Chip
+                        label={user.memberId}
+                        color="primary"
+                        size="small"
+                      />
                     </TableCell>
                     <TableCell>
                       {new Date(user.createdAt).toLocaleDateString()}
@@ -216,28 +220,47 @@ const UserManagementPage: React.FC = () => {
       </Card>
 
       {/* View User Dialog */}
-      <Dialog open={viewDialog} onClose={() => setViewDialog(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={viewDialog}
+        onClose={() => setViewDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>User Details</DialogTitle>
         <DialogContent>
           {selectedUser && (
             <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid item xs={12}>
-                <Typography><strong>ID:</strong> {selectedUser.id}</Typography>
+                <Typography>
+                  <strong>ID:</strong> {selectedUser.id}
+                </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography><strong>Username:</strong> {selectedUser.username}</Typography>
+                <Typography>
+                  <strong>Username:</strong> {selectedUser.username}
+                </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography><strong>Email:</strong> {selectedUser.email}</Typography>
+                <Typography>
+                  <strong>Email:</strong> {selectedUser.email}
+                </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography><strong>Member ID:</strong> {selectedUser.memberId}</Typography>
+                <Typography>
+                  <strong>Member ID:</strong> {selectedUser.memberId}
+                </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography><strong>Created:</strong> {new Date(selectedUser.createdAt).toLocaleString()}</Typography>
+                <Typography>
+                  <strong>Created:</strong>{" "}
+                  {new Date(selectedUser.createdAt).toLocaleString()}
+                </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography><strong>Updated:</strong> {new Date(selectedUser.updatedAt).toLocaleString()}</Typography>
+                <Typography>
+                  <strong>Updated:</strong>{" "}
+                  {new Date(selectedUser.updatedAt).toLocaleString()}
+                </Typography>
               </Grid>
             </Grid>
           )}
@@ -248,7 +271,12 @@ const UserManagementPage: React.FC = () => {
       </Dialog>
 
       {/* Edit User Dialog */}
-      <Dialog open={editDialog} onClose={() => setEditDialog(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={editDialog}
+        onClose={() => setEditDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>Edit User</DialogTitle>
         <DialogContent>
           <>
@@ -258,44 +286,52 @@ const UserManagementPage: React.FC = () => {
               </Alert>
             )}
             <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Username"
-                value={editForm.username}
-                onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
-                required
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Email"
-                type="email"
-                value={editForm.email}
-                onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                required
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Full Name"
-                value={editForm.fullName}
-                onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
-                required
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="New Password (optional)"
-                type="password"
-                value={editForm.password}
-                onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
-                helperText="Leave blank to keep current password"
-              />
-            </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Username"
+                  value={editForm.username}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, username: e.target.value })
+                  }
+                  required
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Email"
+                  type="email"
+                  value={editForm.email}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, email: e.target.value })
+                  }
+                  required
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Full Name"
+                  value={editForm.fullName}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, fullName: e.target.value })
+                  }
+                  required
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="New Password (optional)"
+                  type="password"
+                  value={editForm.password}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, password: e.target.value })
+                  }
+                  helperText="Leave blank to keep current password"
+                />
+              </Grid>
             </Grid>
           </>
         </DialogContent>
@@ -312,7 +348,12 @@ const UserManagementPage: React.FC = () => {
       </Dialog>
 
       {/* Add User Dialog */}
-      <Dialog open={addDialog} onClose={() => setAddDialog(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={addDialog}
+        onClose={() => setAddDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>Add New User</DialogTitle>
         <DialogContent>
           <>
@@ -322,44 +363,52 @@ const UserManagementPage: React.FC = () => {
               </Alert>
             )}
             <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Username"
-                value={editForm.username}
-                onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
-                required
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Email"
-                type="email"
-                value={editForm.email}
-                onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                required
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Full Name"
-                value={editForm.fullName}
-                onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
-                required
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Password"
-                type="password"
-                value={editForm.password}
-                onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
-                required
-              />
-            </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Username"
+                  value={editForm.username}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, username: e.target.value })
+                  }
+                  required
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Email"
+                  type="email"
+                  value={editForm.email}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, email: e.target.value })
+                  }
+                  required
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Full Name"
+                  value={editForm.fullName}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, fullName: e.target.value })
+                  }
+                  required
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Password"
+                  type="password"
+                  value={editForm.password}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, password: e.target.value })
+                  }
+                  required
+                />
+              </Grid>
             </Grid>
           </>
         </DialogContent>
@@ -380,7 +429,8 @@ const UserManagementPage: React.FC = () => {
         <DialogTitle>Confirm Delete</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete user "{selectedUser?.username}"? This action cannot be undone.
+            Are you sure you want to delete user "{selectedUser?.username}"?
+            This action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

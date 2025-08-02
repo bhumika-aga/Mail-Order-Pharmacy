@@ -6,8 +6,8 @@ jest.mock('../api');
 import {
   authService,
   drugService,
-  subscriptionService,
   refillService,
+  subscriptionService,
 } from '../api';
 
 describe('API Services', () => {
@@ -67,8 +67,8 @@ describe('API Services', () => {
     });
 
     it('should update user', async () => {
-      const updateData: SignupRequest = { 
-        username: 'updateduser', 
+      const updateData: SignupRequest = {
+        username: 'updateduser',
         email: 'updated@example.com',
         password: 'newpassword',
         fullName: 'Updated User'

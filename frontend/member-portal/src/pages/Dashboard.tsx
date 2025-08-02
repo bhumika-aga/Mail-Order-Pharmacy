@@ -34,10 +34,12 @@ const Dashboard: React.FC = () => {
     queryFn: () => refillService.getAllRefillOrders().then((res) => res.data),
   });
 
-  const activeSubscriptions =
-    Array.isArray(subscriptions) ? subscriptions.filter((s) => s.subscriptionStatus === "ACTIVE") : [];
-  const pendingRefills =
-    Array.isArray(refillOrders) ? refillOrders.filter((r) => r.orderStatus === "PENDING") : [];
+  const activeSubscriptions = Array.isArray(subscriptions)
+    ? subscriptions.filter((s) => s.subscriptionStatus === "ACTIVE")
+    : [];
+  const pendingRefills = Array.isArray(refillOrders)
+    ? refillOrders.filter((r) => r.orderStatus === "PENDING")
+    : [];
 
   const dashboardCards = [
     {

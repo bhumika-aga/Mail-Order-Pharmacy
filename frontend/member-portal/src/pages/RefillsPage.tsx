@@ -26,9 +26,9 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useState } from "react";
 import LoadingSpinner from "../components/common/LoadingSpinner";
@@ -54,7 +54,8 @@ const RefillsPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [adhocDialog, setAdhocDialog] = useState(false);
   const [detailsDialog, setDetailsDialog] = useState(false);
-  const [selectedRefill, setSelectedRefill] = useState<RefillStatusResponse | null>(null);
+  const [selectedRefill, setSelectedRefill] =
+    useState<RefillStatusResponse | null>(null);
   const [adhocForm, setAdhocForm] = useState<AdhocRefillRequest>({
     memberId: "",
     memberLocation: "",
@@ -82,16 +83,23 @@ const RefillsPage: React.FC = () => {
   });
 
   // Get refill dues for selected date
-  const { data: refillDues, isLoading: loadingDues, error: duesError } = useQuery({
+  const {
+    data: refillDues,
+    isLoading: loadingDues,
+    error: duesError,
+  } = useQuery({
     queryKey: ["refillDues", selectedDate?.toISOString().split("T")[0]],
-    queryFn: () => 
-      refillService.getRefillDues(selectedDate.toISOString().split("T")[0]).then((res) => res.data),
+    queryFn: () =>
+      refillService
+        .getRefillDues(selectedDate.toISOString().split("T")[0])
+        .then((res) => res.data),
     enabled: !!selectedDate,
     retry: 2,
   });
 
   const adhocRefillMutation = useMutation({
-    mutationFn: (request: AdhocRefillRequest) => refillService.requestAdhocRefill(request),
+    mutationFn: (request: AdhocRefillRequest) =>
+      refillService.requestAdhocRefill(request),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["refillOrders"] });
       queryClient.invalidateQueries({ queryKey: ["refillStatus"] });
@@ -138,7 +146,11 @@ const RefillsPage: React.FC = () => {
     setAdhocForm({ ...adhocForm, prescriptions: newRequests });
   };
 
-  const updatePrescriptionRequest = (index: number, field: string, value: any) => {
+  const updatePrescriptionRequest = (
+    index: number,
+    field: string,
+    value: any
+  ) => {
     const newRequests = [...adhocForm.prescriptions];
     newRequests[index] = { ...newRequests[index], [field]: value };
     setAdhocForm({ ...adhocForm, prescriptions: newRequests });
@@ -185,7 +197,12 @@ const RefillsPage: React.FC = () => {
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Container maxWidth="lg">
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          mb={3}
+        >
           <Typography variant="h4" component="h1">
             Refill Management
           </Typography>
@@ -199,7 +216,10 @@ const RefillsPage: React.FC = () => {
         </Box>
 
         {/* Tabs */}
-        <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
+        <Tabs
+          value={tabValue}
+          onChange={(_, newValue) => setTabValue(newValue)}
+        >
           <Tab label="Latest Status" />
           <Tab label="All Refills" />
           <Tab label="Due Refills" />
@@ -234,29 +254,39 @@ const RefillsPage: React.FC = () => {
                     <Grid container spacing={2}>
                       <Grid item xs={12} sm={6}>
                         <Typography color="text.secondary" gutterBottom>
-                          <strong>Order Date:</strong> {new Date(refillStatus.orderDate).toLocaleDateString()}
+                          <strong>Order Date:</strong>{" "}
+                          {new Date(
+                            refillStatus.orderDate
+                          ).toLocaleDateString()}
                         </Typography>
                         <Typography color="text.secondary" gutterBottom>
-                          <strong>Member Location:</strong> {refillStatus.memberLocation}
+                          <strong>Member Location:</strong>{" "}
+                          {refillStatus.memberLocation}
                         </Typography>
                         {refillStatus.subscriptionId && (
                           <Typography color="text.secondary" gutterBottom>
-                            <strong>Subscription ID:</strong> {refillStatus.subscriptionId}
+                            <strong>Subscription ID:</strong>{" "}
+                            {refillStatus.subscriptionId}
                           </Typography>
                         )}
                       </Grid>
                       <Grid item xs={12} sm={6}>
                         <Typography color="text.secondary" gutterBottom>
-                          <strong>Total Amount:</strong> ${refillStatus.totalAmount?.toFixed(2) || 'N/A'}
+                          <strong>Total Amount:</strong> $
+                          {refillStatus.totalAmount?.toFixed(2) || "N/A"}
                         </Typography>
                         {refillStatus.deliveryDate && (
                           <Typography color="text.secondary" gutterBottom>
-                            <strong>Delivery Date:</strong> {new Date(refillStatus.deliveryDate).toLocaleDateString()}
+                            <strong>Delivery Date:</strong>{" "}
+                            {new Date(
+                              refillStatus.deliveryDate
+                            ).toLocaleDateString()}
                           </Typography>
                         )}
                         {refillStatus.trackingNumber && (
                           <Typography color="text.secondary" gutterBottom>
-                            <strong>Tracking:</strong> {refillStatus.trackingNumber}
+                            <strong>Tracking:</strong>{" "}
+                            {refillStatus.trackingNumber}
                           </Typography>
                         )}
                       </Grid>
@@ -292,7 +322,12 @@ const RefillsPage: React.FC = () => {
                   <Grid item xs={12} md={6} lg={4} key={refill.refillOrderId}>
                     <Card>
                       <CardContent>
-                        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                        <Box
+                          display="flex"
+                          justifyContent="space-between"
+                          alignItems="center"
+                          mb={2}
+                        >
                           <Typography variant="h6">
                             #{refill.refillOrderId}
                           </Typography>
@@ -311,16 +346,19 @@ const RefillsPage: React.FC = () => {
                           </Box>
                         </Box>
                         <Typography color="text.secondary" gutterBottom>
-                          <strong>Date:</strong> {new Date(refill.orderDate).toLocaleDateString()}
+                          <strong>Date:</strong>{" "}
+                          {new Date(refill.orderDate).toLocaleDateString()}
                         </Typography>
                         <Typography color="text.secondary" gutterBottom>
                           <strong>Location:</strong> {refill.memberLocation}
                         </Typography>
                         <Typography color="text.secondary" gutterBottom>
-                          <strong>Amount:</strong> ${refill.totalAmount?.toFixed(2) || 'N/A'}
+                          <strong>Amount:</strong> $
+                          {refill.totalAmount?.toFixed(2) || "N/A"}
                         </Typography>
                         <Typography color="text.secondary" gutterBottom>
-                          <strong>Items:</strong> {refill.lineItems?.length || 0}
+                          <strong>Items:</strong>{" "}
+                          {refill.lineItems?.length || 0}
                         </Typography>
                         <Box mt={2}>
                           <IconButton
@@ -337,7 +375,11 @@ const RefillsPage: React.FC = () => {
                 ))
               ) : (
                 <Grid item xs={12}>
-                  <Typography variant="body1" color="text.secondary" textAlign="center">
+                  <Typography
+                    variant="body1"
+                    color="text.secondary"
+                    textAlign="center"
+                  >
                     No refill orders found.
                   </Typography>
                 </Grid>
@@ -361,7 +403,10 @@ const RefillsPage: React.FC = () => {
           ) : duesError ? (
             <Box textAlign="center" py={4}>
               <Typography variant="body1" color="error">
-                Error loading refill dues: {duesError instanceof Error ? duesError.message : 'Unknown error'}
+                Error loading refill dues:{" "}
+                {duesError instanceof Error
+                  ? duesError.message
+                  : "Unknown error"}
               </Typography>
               <Typography variant="body2" color="text.secondary" mt={1}>
                 Please try selecting a different date or refresh the page.
@@ -371,14 +416,18 @@ const RefillsPage: React.FC = () => {
             <Grid container spacing={3}>
               {Array.isArray(refillDues) && refillDues.length > 0 ? (
                 refillDues.map((due, index) => (
-                  <Grid item xs={12} md={6} lg={4} key={`${due.subscriptionId}-${index}`}>
+                  <Grid
+                    item
+                    xs={12}
+                    md={6}
+                    lg={4}
+                    key={`${due.subscriptionId}-${index}`}
+                  >
                     <Card>
                       <CardContent>
                         <Box display="flex" alignItems="center" gap={1} mb={2}>
                           <CalendarToday color="warning" />
-                          <Typography variant="h6">
-                            Due Refill
-                          </Typography>
+                          <Typography variant="h6">Due Refill</Typography>
                           <Chip
                             label={due.refillFrequency}
                             color="info"
@@ -395,21 +444,31 @@ const RefillsPage: React.FC = () => {
                           <strong>Location:</strong> {due.memberLocation}
                         </Typography>
                         <Typography color="text.secondary" gutterBottom>
-                          <strong>Due Date:</strong> {new Date(due.dueDate).toLocaleDateString()}
+                          <strong>Due Date:</strong>{" "}
+                          {new Date(due.dueDate).toLocaleDateString()}
                         </Typography>
-                        
+
                         {due.prescriptions && due.prescriptions.length > 0 && (
                           <Box mt={2}>
                             <Typography variant="subtitle2" gutterBottom>
                               Prescriptions:
                             </Typography>
                             {due.prescriptions.map((prescription) => (
-                              <Box key={prescription.prescriptionId} sx={{ mb: 1, p: 1, bgcolor: "grey.50", borderRadius: 1 }}>
+                              <Box
+                                key={prescription.prescriptionId}
+                                sx={{
+                                  mb: 1,
+                                  p: 1,
+                                  bgcolor: "grey.50",
+                                  borderRadius: 1,
+                                }}
+                              >
                                 <Typography variant="body2">
                                   <strong>Drug:</strong> {prescription.drugId}
                                 </Typography>
                                 <Typography variant="body2">
-                                  <strong>Dosage:</strong> {prescription.dosagePerDay}
+                                  <strong>Dosage:</strong>{" "}
+                                  {prescription.dosagePerDay}
                                 </Typography>
                               </Box>
                             ))}
@@ -421,7 +480,11 @@ const RefillsPage: React.FC = () => {
                 ))
               ) : (
                 <Grid item xs={12}>
-                  <Typography variant="body1" color="text.secondary" textAlign="center">
+                  <Typography
+                    variant="body1"
+                    color="text.secondary"
+                    textAlign="center"
+                  >
                     No refills due for {selectedDate.toLocaleDateString()}.
                   </Typography>
                 </Grid>
@@ -431,7 +494,12 @@ const RefillsPage: React.FC = () => {
         </TabPanel>
 
         {/* Adhoc Refill Dialog */}
-        <Dialog open={adhocDialog} onClose={() => setAdhocDialog(false)} maxWidth="md" fullWidth>
+        <Dialog
+          open={adhocDialog}
+          onClose={() => setAdhocDialog(false)}
+          maxWidth="md"
+          fullWidth
+        >
           <DialogTitle>Request Adhoc Refill</DialogTitle>
           <DialogContent>
             <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -440,7 +508,9 @@ const RefillsPage: React.FC = () => {
                   fullWidth
                   label="Member ID"
                   value={adhocForm.memberId}
-                  onChange={(e) => setAdhocForm({ ...adhocForm, memberId: e.target.value })}
+                  onChange={(e) =>
+                    setAdhocForm({ ...adhocForm, memberId: e.target.value })
+                  }
                   placeholder="e.g., MEM001"
                 />
               </Grid>
@@ -449,24 +519,44 @@ const RefillsPage: React.FC = () => {
                   fullWidth
                   label="Member Location"
                   value={adhocForm.memberLocation}
-                  onChange={(e) => setAdhocForm({ ...adhocForm, memberLocation: e.target.value })}
+                  onChange={(e) =>
+                    setAdhocForm({
+                      ...adhocForm,
+                      memberLocation: e.target.value,
+                    })
+                  }
                   placeholder="e.g., NYC, LAX, CHI"
                 />
               </Grid>
-              
+
               <Grid item xs={12}>
                 <Typography variant="h6" gutterBottom>
                   Prescription Requests
                 </Typography>
                 {adhocForm.prescriptions.map((request, index) => (
-                  <Box key={index} sx={{ mb: 2, p: 2, border: 1, borderColor: "grey.300", borderRadius: 1 }}>
+                  <Box
+                    key={index}
+                    sx={{
+                      mb: 2,
+                      p: 2,
+                      border: 1,
+                      borderColor: "grey.300",
+                      borderRadius: 1,
+                    }}
+                  >
                     <Grid container spacing={2}>
                       <Grid item xs={12} sm={4}>
                         <TextField
                           fullWidth
                           label="Prescription ID"
                           value={request.prescriptionId}
-                          onChange={(e) => updatePrescriptionRequest(index, "prescriptionId", e.target.value)}
+                          onChange={(e) =>
+                            updatePrescriptionRequest(
+                              index,
+                              "prescriptionId",
+                              e.target.value
+                            )
+                          }
                           placeholder="e.g., PRES001"
                         />
                       </Grid>
@@ -475,7 +565,13 @@ const RefillsPage: React.FC = () => {
                           fullWidth
                           label="Drug Code"
                           value={request.drugCode}
-                          onChange={(e) => updatePrescriptionRequest(index, "drugCode", e.target.value)}
+                          onChange={(e) =>
+                            updatePrescriptionRequest(
+                              index,
+                              "drugCode",
+                              e.target.value
+                            )
+                          }
                           placeholder="e.g., D001"
                         />
                       </Grid>
@@ -485,7 +581,13 @@ const RefillsPage: React.FC = () => {
                           label="Quantity"
                           type="number"
                           value={request.quantity}
-                          onChange={(e) => updatePrescriptionRequest(index, "quantity", parseInt(e.target.value))}
+                          onChange={(e) =>
+                            updatePrescriptionRequest(
+                              index,
+                              "quantity",
+                              parseInt(e.target.value)
+                            )
+                          }
                           inputProps={{ min: 1 }}
                         />
                       </Grid>
@@ -521,13 +623,20 @@ const RefillsPage: React.FC = () => {
               variant="contained"
               disabled={adhocRefillMutation.isPending}
             >
-              {adhocRefillMutation.isPending ? "Requesting..." : "Request Refill"}
+              {adhocRefillMutation.isPending
+                ? "Requesting..."
+                : "Request Refill"}
             </Button>
           </DialogActions>
         </Dialog>
 
         {/* Refill Details Dialog */}
-        <Dialog open={detailsDialog} onClose={() => setDetailsDialog(false)} maxWidth="sm" fullWidth>
+        <Dialog
+          open={detailsDialog}
+          onClose={() => setDetailsDialog(false)}
+          maxWidth="sm"
+          fullWidth
+        >
           <DialogTitle>Refill Details</DialogTitle>
           <DialogContent>
             {selectedRefill && (
@@ -538,43 +647,94 @@ const RefillsPage: React.FC = () => {
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
                     {selectedRefill.subscriptionId && (
-                      <Typography><strong>Subscription ID:</strong> {selectedRefill.subscriptionId}</Typography>
+                      <Typography>
+                        <strong>Subscription ID:</strong>{" "}
+                        {selectedRefill.subscriptionId}
+                      </Typography>
                     )}
-                    <Typography><strong>Order Date:</strong> {new Date(selectedRefill.orderDate).toLocaleDateString()}</Typography>
-                    <Typography><strong>Member:</strong> {selectedRefill.memberId}</Typography>
-                    <Typography><strong>Location:</strong> {selectedRefill.memberLocation}</Typography>
+                    <Typography>
+                      <strong>Order Date:</strong>{" "}
+                      {new Date(selectedRefill.orderDate).toLocaleDateString()}
+                    </Typography>
+                    <Typography>
+                      <strong>Member:</strong> {selectedRefill.memberId}
+                    </Typography>
+                    <Typography>
+                      <strong>Location:</strong> {selectedRefill.memberLocation}
+                    </Typography>
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <Typography><strong>Order Type:</strong> {selectedRefill.orderType}</Typography>
-                    <Typography><strong>Total Amount:</strong> ${selectedRefill.totalAmount?.toFixed(2) || 'N/A'}</Typography>
+                    <Typography>
+                      <strong>Order Type:</strong> {selectedRefill.orderType}
+                    </Typography>
+                    <Typography>
+                      <strong>Total Amount:</strong> $
+                      {selectedRefill.totalAmount?.toFixed(2) || "N/A"}
+                    </Typography>
                     <Box display="flex" alignItems="center" gap={1}>
                       {getStatusIcon(selectedRefill.orderStatus)}
-                      <Typography><strong>Status:</strong> {selectedRefill.orderStatus}</Typography>
+                      <Typography>
+                        <strong>Status:</strong> {selectedRefill.orderStatus}
+                      </Typography>
                     </Box>
                     {selectedRefill.deliveryDate && (
-                      <Typography><strong>Delivery:</strong> {new Date(selectedRefill.deliveryDate).toLocaleDateString()}</Typography>
+                      <Typography>
+                        <strong>Delivery:</strong>{" "}
+                        {new Date(
+                          selectedRefill.deliveryDate
+                        ).toLocaleDateString()}
+                      </Typography>
                     )}
                     {selectedRefill.trackingNumber && (
-                      <Typography><strong>Tracking:</strong> {selectedRefill.trackingNumber}</Typography>
+                      <Typography>
+                        <strong>Tracking:</strong>{" "}
+                        {selectedRefill.trackingNumber}
+                      </Typography>
                     )}
                   </Grid>
                 </Grid>
-                
-                {selectedRefill.lineItems && selectedRefill.lineItems.length > 0 ? (
+
+                {selectedRefill.lineItems &&
+                selectedRefill.lineItems.length > 0 ? (
                   <Box mt={3}>
-                    <Typography variant="h6" gutterBottom>Prescription Line Items</Typography>
+                    <Typography variant="h6" gutterBottom>
+                      Prescription Line Items
+                    </Typography>
                     {selectedRefill.lineItems.map((item, index) => (
-                      <Box key={`${item.lineItemId}-${index}`} sx={{ mb: 2, p: 2, bgcolor: "grey.50", borderRadius: 1 }}>
+                      <Box
+                        key={`${item.lineItemId}-${index}`}
+                        sx={{
+                          mb: 2,
+                          p: 2,
+                          bgcolor: "grey.50",
+                          borderRadius: 1,
+                        }}
+                      >
                         <Grid container spacing={1}>
                           <Grid item xs={12} sm={6}>
-                            <Typography variant="body2"><strong>Drug:</strong> {item.drugName}</Typography>
-                            <Typography variant="body2"><strong>Drug Code:</strong> {item.drugCode}</Typography>
-                            <Typography variant="body2"><strong>Prescription:</strong> {item.prescriptionId}</Typography>
+                            <Typography variant="body2">
+                              <strong>Drug:</strong> {item.drugName}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Drug Code:</strong> {item.drugCode}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Prescription:</strong>{" "}
+                              {item.prescriptionId}
+                            </Typography>
                           </Grid>
                           <Grid item xs={12} sm={6}>
-                            <Typography variant="body2"><strong>Quantity:</strong> {item.quantity}</Typography>
-                            <Typography variant="body2"><strong>Unit Price:</strong> ${item.unitPrice?.toFixed(2) || 'N/A'}</Typography>
-                            <Typography variant="body2"><strong>Total Price:</strong> ${item.totalPrice?.toFixed(2) || 'N/A'}</Typography>
+                            <Typography variant="body2">
+                              <strong>Quantity:</strong> {item.quantity}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Unit Price:</strong> $
+                              {item.unitPrice?.toFixed(2) || "N/A"}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Total Price:</strong> $
+                              {item.totalPrice?.toFixed(2) || "N/A"}
+                            </Typography>
                           </Grid>
                         </Grid>
                       </Box>

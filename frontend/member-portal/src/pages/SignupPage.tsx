@@ -1,23 +1,23 @@
 import {
-  Visibility,
-  VisibilityOff,
-  PersonAdd,
   CheckCircle,
   Error,
+  PersonAdd,
+  Visibility,
+  VisibilityOff,
 } from "@mui/icons-material";
 import {
+  Alert,
   Box,
   Button,
   Card,
   CardContent,
   Container,
+  Grid,
   IconButton,
   InputAdornment,
+  Link,
   TextField,
   Typography,
-  Alert,
-  Link,
-  Grid,
 } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
 import React, { useState } from "react";
@@ -43,8 +43,11 @@ const SignupPage: React.FC = () => {
   const signupMutation = useMutation({
     mutationFn: (data: SignupRequest) => authService.register(data),
     onSuccess: () => {
-      navigate("/login", { 
-        state: { message: "Registration successful! Please log in with your credentials." }
+      navigate("/login", {
+        state: {
+          message:
+            "Registration successful! Please log in with your credentials.",
+        },
       });
     },
     onError: (error) => {
@@ -70,39 +73,39 @@ const SignupPage: React.FC = () => {
 
       const isAvailable = response.data.message.includes("available");
       let message = response.data.message;
-      
+
       // Show "Email is valid" for successful email validation
       if (field === "email" && isAvailable) {
         message = "Email is valid";
       }
-      
-      setFieldValidation(prev => ({
+
+      setFieldValidation((prev) => ({
         ...prev,
         [field]: {
           isValid: isAvailable,
-          message: message
-        }
+          message: message,
+        },
       }));
     } catch (error) {
       console.error(`Error checking ${field} availability:`, error);
-      setFieldValidation(prev => ({
+      setFieldValidation((prev) => ({
         ...prev,
         [field]: {
           isValid: false,
-          message: "Error checking availability"
-        }
+          message: "Error checking availability",
+        },
       }));
     }
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
     // Clear validation message when user starts typing
     if (fieldValidation[field as keyof typeof fieldValidation]) {
-      setFieldValidation(prev => ({
+      setFieldValidation((prev) => ({
         ...prev,
-        [field]: { isValid: true, message: "" }
+        [field]: { isValid: true, message: "" },
       }));
     }
   };
@@ -115,14 +118,21 @@ const SignupPage: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Basic validation
-    if (!formData.username || !formData.email || !formData.password || !formData.fullName) {
+    if (
+      !formData.username ||
+      !formData.email ||
+      !formData.password ||
+      !formData.fullName
+    ) {
       return;
     }
 
     // Check if any field validation failed
-    const hasValidationErrors = Object.values(fieldValidation).some(field => !field.isValid);
+    const hasValidationErrors = Object.values(fieldValidation).some(
+      (field) => !field.isValid
+    );
     if (hasValidationErrors) {
       return;
     }
@@ -133,7 +143,7 @@ const SignupPage: React.FC = () => {
   const getFieldStatus = (field: keyof typeof fieldValidation) => {
     const validation = fieldValidation[field];
     if (!validation.message) return null;
-    
+
     return validation.isValid ? (
       <Box display="flex" alignItems="center" gap={0.5} mt={0.5}>
         <CheckCircle color="success" fontSize="small" />
@@ -164,12 +174,23 @@ const SignupPage: React.FC = () => {
         <Card sx={{ width: "100%", maxWidth: 500 }}>
           <CardContent sx={{ p: 4 }}>
             <>
-              <Box display="flex" flexDirection="column" alignItems="center" mb={3}>
-                <PersonAdd sx={{ fontSize: 48, color: "primary.main", mb: 2 }} />
+              <Box
+                display="flex"
+                flexDirection="column"
+                alignItems="center"
+                mb={3}
+              >
+                <PersonAdd
+                  sx={{ fontSize: 48, color: "primary.main", mb: 2 }}
+                />
                 <Typography variant="h4" component="h1" gutterBottom>
                   Create Account
                 </Typography>
-                <Typography variant="body2" color="text.secondary" textAlign="center">
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  textAlign="center"
+                >
                   Join the Mail-Order Pharmacy system
                 </Typography>
               </Box>
@@ -181,94 +202,114 @@ const SignupPage: React.FC = () => {
               )}
 
               <Box component="form" onSubmit={handleSubmit}>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Username"
-                    value={formData.username}
-                    onChange={(e) => handleInputChange("username", e.target.value)}
-                    onBlur={(e) => handleBlur("username", e.target.value)}
-                    required
-                    error={!fieldValidation.username.isValid && !!fieldValidation.username.message}
-                    helperText="3-20 characters"
-                    inputProps={{ minLength: 3, maxLength: 20 }}
-                  />
-                  {getFieldStatus("username")}
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Username"
+                      value={formData.username}
+                      onChange={(e) =>
+                        handleInputChange("username", e.target.value)
+                      }
+                      onBlur={(e) => handleBlur("username", e.target.value)}
+                      required
+                      error={
+                        !fieldValidation.username.isValid &&
+                        !!fieldValidation.username.message
+                      }
+                      helperText="3-20 characters"
+                      inputProps={{ minLength: 3, maxLength: 20 }}
+                    />
+                    {getFieldStatus("username")}
+                  </Grid>
+
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Full Name"
+                      value={formData.fullName}
+                      onChange={(e) =>
+                        handleInputChange("fullName", e.target.value)
+                      }
+                      required
+                      helperText="2-100 characters"
+                      inputProps={{ minLength: 2, maxLength: 100 }}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) =>
+                        handleInputChange("email", e.target.value)
+                      }
+                      onBlur={(e) => handleBlur("email", e.target.value)}
+                      required
+                      error={
+                        !fieldValidation.email.isValid &&
+                        !!fieldValidation.email.message
+                      }
+                      helperText="Valid email address"
+                    />
+                    {getFieldStatus("email")}
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Password"
+                      type={showPassword ? "text" : "password"}
+                      value={formData.password}
+                      onChange={(e) =>
+                        handleInputChange("password", e.target.value)
+                      }
+                      required
+                      helperText="Minimum 6 characters"
+                      inputProps={{ minLength: 6, maxLength: 40 }}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={() => setShowPassword(!showPassword)}
+                              edge="end"
+                            >
+                              {showPassword ? (
+                                <VisibilityOff />
+                              ) : (
+                                <Visibility />
+                              )}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Grid>
                 </Grid>
 
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Full Name"
-                    value={formData.fullName}
-                    onChange={(e) => handleInputChange("fullName", e.target.value)}
-                    required
-                    helperText="2-100 characters"
-                    inputProps={{ minLength: 2, maxLength: 100 }}
-                  />
-                </Grid>
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  size="large"
+                  disabled={signupMutation.isPending}
+                  sx={{ mt: 3, mb: 2 }}
+                >
+                  {signupMutation.isPending
+                    ? "Creating Account..."
+                    : "Create Account"}
+                </Button>
 
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    onBlur={(e) => handleBlur("email", e.target.value)}
-                    required
-                    error={!fieldValidation.email.isValid && !!fieldValidation.email.message}
-                    helperText="Valid email address"
-                  />
-                  {getFieldStatus("email")}
-                </Grid>
-
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Password"
-                    type={showPassword ? "text" : "password"}
-                    value={formData.password}
-                    onChange={(e) => handleInputChange("password", e.target.value)}
-                    required
-                    helperText="Minimum 6 characters"
-                    inputProps={{ minLength: 6, maxLength: 40 }}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            onClick={() => setShowPassword(!showPassword)}
-                            edge="end"
-                          >
-                            {showPassword ? <VisibilityOff /> : <Visibility />}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </Grid>
-              </Grid>
-
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                size="large"
-                disabled={signupMutation.isPending}
-                sx={{ mt: 3, mb: 2 }}
-              >
-                {signupMutation.isPending ? "Creating Account..." : "Create Account"}
-              </Button>
-
-              <Box textAlign="center">
-                <Typography variant="body2" color="text.secondary">
-                  Already have an account?{" "}
-                  <Link component={RouterLink} to="/login">
-                    Sign in here
-                  </Link>
-                </Typography>
-              </Box>
+                <Box textAlign="center">
+                  <Typography variant="body2" color="text.secondary">
+                    Already have an account?{" "}
+                    <Link component={RouterLink} to="/login">
+                      Sign in here
+                    </Link>
+                  </Typography>
+                </Box>
               </Box>
             </>
           </CardContent>

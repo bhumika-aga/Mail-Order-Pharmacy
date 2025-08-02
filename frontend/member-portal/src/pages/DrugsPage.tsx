@@ -1,9 +1,4 @@
-import {
-  CheckCircle,
-  Info,
-  Search,
-  Warning,
-} from "@mui/icons-material";
+import { CheckCircle, Info, Search, Warning } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -124,8 +119,13 @@ const DrugsPage: React.FC = () => {
             ),
           }}
         />
-        <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: "block" }}>
-          Enter drug ID (e.g., D001) or drug name to search. Leave empty to see all drugs.
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ mt: 1, display: "block" }}
+        >
+          Enter drug ID (e.g., D001) or drug name to search. Leave empty to see
+          all drugs.
         </Typography>
       </Box>
 
@@ -139,7 +139,12 @@ const DrugsPage: React.FC = () => {
             <Grid item xs={12} md={6} lg={4} key={drug.drugId}>
               <Card>
                 <CardContent>
-                  <Box display="flex" justifyContent="space-between" alignItems="start" mb={2}>
+                  <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="start"
+                    mb={2}
+                  >
                     <Typography variant="h6" component="h2">
                       {drug.drugName}
                     </Typography>
@@ -147,13 +152,17 @@ const DrugsPage: React.FC = () => {
                       {isExpired(drug.expiryDate) ? (
                         <Chip label="Expired" color="error" size="small" />
                       ) : isExpiringSoon(drug.expiryDate) ? (
-                        <Chip label="Expiring Soon" color="warning" size="small" />
+                        <Chip
+                          label="Expiring Soon"
+                          color="warning"
+                          size="small"
+                        />
                       ) : (
                         <Chip label="Available" color="success" size="small" />
                       )}
                     </Box>
                   </Box>
-                  
+
                   <Typography color="text.secondary" gutterBottom>
                     <strong>ID:</strong> {drug.drugId}
                   </Typography>
@@ -167,9 +176,10 @@ const DrugsPage: React.FC = () => {
                     <strong>Units per Package:</strong> {drug.unitsPerPackage}
                   </Typography>
                   <Typography color="text.secondary" gutterBottom>
-                    <strong>Expiry:</strong> {new Date(drug.expiryDate).toLocaleDateString()}
+                    <strong>Expiry:</strong>{" "}
+                    {new Date(drug.expiryDate).toLocaleDateString()}
                   </Typography>
-                  
+
                   <Box mt={2}>
                     <Button
                       variant="outlined"
@@ -187,18 +197,26 @@ const DrugsPage: React.FC = () => {
           ))
         ) : !isLoading ? (
           <Grid item xs={12}>
-            <Typography variant="body1" color="text.secondary" textAlign="center">
-              {searchTerm 
+            <Typography
+              variant="body1"
+              color="text.secondary"
+              textAlign="center"
+            >
+              {searchTerm
                 ? `No drugs found matching "${searchTerm}"`
-                : "No drugs available."
-              }
+                : "No drugs available."}
             </Typography>
           </Grid>
         ) : null}
       </Grid>
 
       {/* Drug Details Dialog */}
-      <Dialog open={detailsDialog} onClose={() => setDetailsDialog(false)} maxWidth="md" fullWidth>
+      <Dialog
+        open={detailsDialog}
+        onClose={() => setDetailsDialog(false)}
+        maxWidth="md"
+        fullWidth
+      >
         <DialogTitle>Drug Details</DialogTitle>
         <DialogContent>
           {selectedDrug && (
@@ -208,32 +226,46 @@ const DrugsPage: React.FC = () => {
                   <Typography variant="h6" gutterBottom>
                     {selectedDrug.drugName}
                   </Typography>
-                  <Typography><strong>Drug ID:</strong> {selectedDrug.drugId}</Typography>
-                  <Typography><strong>Manufacturer:</strong> {selectedDrug.manufacturer}</Typography>
-                  <Typography><strong>Cost per Package:</strong> ${selectedDrug.costPerPackage}</Typography>
-                  <Typography><strong>Units per Package:</strong> {selectedDrug.unitsPerPackage}</Typography>
+                  <Typography>
+                    <strong>Drug ID:</strong> {selectedDrug.drugId}
+                  </Typography>
+                  <Typography>
+                    <strong>Manufacturer:</strong> {selectedDrug.manufacturer}
+                  </Typography>
+                  <Typography>
+                    <strong>Cost per Package:</strong> $
+                    {selectedDrug.costPerPackage}
+                  </Typography>
+                  <Typography>
+                    <strong>Units per Package:</strong>{" "}
+                    {selectedDrug.unitsPerPackage}
+                  </Typography>
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <Typography><strong>Manufactured Date:</strong> {new Date(selectedDrug.manufacturedDate).toLocaleDateString()}</Typography>
-                  <Typography><strong>Expiry Date:</strong> {new Date(selectedDrug.expiryDate).toLocaleDateString()}</Typography>
+                  <Typography>
+                    <strong>Manufactured Date:</strong>{" "}
+                    {new Date(
+                      selectedDrug.manufacturedDate
+                    ).toLocaleDateString()}
+                  </Typography>
+                  <Typography>
+                    <strong>Expiry Date:</strong>{" "}
+                    {new Date(selectedDrug.expiryDate).toLocaleDateString()}
+                  </Typography>
                   <Box mt={1}>
                     {isExpired(selectedDrug.expiryDate) ? (
-                      <Chip 
-                        icon={<Warning />} 
-                        label="Expired" 
-                        color="error" 
-                      />
+                      <Chip icon={<Warning />} label="Expired" color="error" />
                     ) : isExpiringSoon(selectedDrug.expiryDate) ? (
-                      <Chip 
-                        icon={<Warning />} 
-                        label="Expiring Soon" 
-                        color="warning" 
+                      <Chip
+                        icon={<Warning />}
+                        label="Expiring Soon"
+                        color="warning"
                       />
                     ) : (
-                      <Chip 
-                        icon={<CheckCircle />} 
-                        label="Available" 
-                        color="success" 
+                      <Chip
+                        icon={<CheckCircle />}
+                        label="Available"
+                        color="success"
                       />
                     )}
                   </Box>
@@ -242,12 +274,15 @@ const DrugsPage: React.FC = () => {
                   <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
                     Medical Composition
                   </Typography>
-                  <Typography variant="body2" sx={{ 
-                    backgroundColor: "grey.100", 
-                    padding: 2, 
-                    borderRadius: 1,
-                    fontFamily: "monospace"
-                  }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      backgroundColor: "grey.100",
+                      padding: 2,
+                      borderRadius: 1,
+                      fontFamily: "monospace",
+                    }}
+                  >
                     {selectedDrug.medicalComposition}
                   </Typography>
                 </Grid>

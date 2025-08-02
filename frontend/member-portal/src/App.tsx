@@ -19,7 +19,9 @@ const DrugsPage = React.lazy(() => import("./pages/DrugsPage"));
 const SubscriptionsPage = React.lazy(() => import("./pages/SubscriptionsPage"));
 const RefillsPage = React.lazy(() => import("./pages/RefillsPage"));
 const SignupPage = React.lazy(() => import("./pages/SignupPage"));
-const UserManagementPage = React.lazy(() => import("./pages/UserManagementPage"));
+const UserManagementPage = React.lazy(
+  () => import("./pages/UserManagementPage")
+);
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -72,11 +74,15 @@ const AppRoutes: React.FC = () => {
       />
       <Route
         path="/signup"
-        element={isAuthenticated ? <Navigate to="/dashboard" /> : (
-          <React.Suspense fallback={<LoadingSpinner />}>
-            <SignupPage />
-          </React.Suspense>
-        )}
+        element={
+          isAuthenticated ? (
+            <Navigate to="/dashboard" />
+          ) : (
+            <React.Suspense fallback={<LoadingSpinner />}>
+              <SignupPage />
+            </React.Suspense>
+          )
+        }
       />
       <Route
         path="/dashboard"
@@ -137,7 +143,9 @@ const App: React.FC = () => {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <AuthProvider>
-          <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <Router
+            future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+          >
             <AppRoutes />
           </Router>
         </AuthProvider>

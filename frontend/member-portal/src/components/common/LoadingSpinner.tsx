@@ -3,7 +3,7 @@ import React from "react";
 
 interface LoadingSpinnerProps {
   size?: number;
-  color?: CircularProgressProps['color'];
+  color?: CircularProgressProps["color"];
 }
 
 const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ size, color }) => {

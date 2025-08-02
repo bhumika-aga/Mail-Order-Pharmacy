@@ -51,7 +51,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         memberId: authData.memberId,
         fullName: "",
         createdAt: "",
-        updatedAt: ""
+        updatedAt: "",
       };
 
       setUser(userData);
@@ -78,7 +78,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         memberId: authData.memberId,
         fullName: "",
         createdAt: "",
-        updatedAt: ""
+        updatedAt: "",
       };
 
       setUser(userData);
