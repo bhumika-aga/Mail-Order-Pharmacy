@@ -277,9 +277,12 @@ docker-compose -f docker-compose.cloud.yml up -d
 2. **Render Account**: Create account at [render.com](https://render.com)
 3. **PostgreSQL Database**: Set up on Render (Free tier available)
 
-### Option 1: Automated Deployment with render.yaml
+### Option 1: Automated Deployment with render-simple.yaml
 
-**Step 1: Connect Repository**
+**Note**: Due to Render.yaml compatibility issues with static sites, use the backend-only automated deployment:
+
+Step 1: Connect Repository
+
 ```bash
 # Push to GitHub
 git add .
@@ -287,15 +290,18 @@ git commit -m "Add Render deployment configuration"
 git push origin main
 ```
 
-**Step 2: Deploy via Render Dashboard**
+Step 2: Deploy Backend Services via Blueprint
+
 1. Login to [Render Dashboard](https://dashboard.render.com)
 2. Click "New" → "Blueprint"
 3. Connect your GitHub repository
-4. Render will automatically detect `render.yaml` and deploy all services
+4. Use `render-simple.yaml` for backend services deployment
+5. Deploy frontend manually as described in Option 2
 
 ### Option 2: Manual Service Deployment
 
 #### Step 1: Create PostgreSQL Database
+
 1. Go to Render Dashboard → "New" → "PostgreSQL"
 2. Name: `pharmacy-db`
 3. Plan: Free
@@ -305,17 +311,21 @@ git push origin main
 #### Step 2: Deploy Backend Microservices
 
 **Auth Microservice:**
+
 1. New → Web Service
 2. Connect GitHub repo
 3. Configuration:
-   ```
+
+   ``` txt
    Name: auth-microservice
-   Environment: Java
-   Build Command: cd backend/auth-microservice && chmod +x ./mvnw && ./mvnw clean package -DskipTests
-   Start Command: java -Dserver.port=$PORT -jar backend/auth-microservice/target/auth-microservice-1.0.0.jar
+   Runtime: Docker
+   Dockerfile Path: ./Dockerfile.auth
+   Plan: Free
    ```
+
 4. Environment Variables:
-   ```
+
+   ``` txt
    SPRING_PROFILES_ACTIVE=prod
    JWT_SECRET=pharmacySecretKeyForJWTTokenGenerationOnRender2024
    JWT_EXPIRATION=900000
@@ -323,30 +333,40 @@ git push origin main
    ```
 
 **Drugs Microservice:**
+
 1. New → Web Service
 2. Configuration:
-   ```
+
+   ``` txt
    Name: drugs-microservice
-   Build Command: cd backend/drugs-microservice && chmod +x ./mvnw && ./mvnw clean package -DskipTests
-   Start Command: java -Dserver.port=$PORT -jar backend/drugs-microservice/target/drugs-microservice-1.0.0.jar
+   Runtime: Docker
+   Dockerfile Path: ./Dockerfile.drugs
+   Plan: Free
    ```
+
 3. Environment Variables:
-   ```
+
+   ``` txt
    SPRING_PROFILES_ACTIVE=prod
    DATABASE_URL=[Your PostgreSQL Internal Database URL]
    AUTH_SERVICE_URL=https://auth-microservice.onrender.com
    ```
 
 **Subscription Microservice:**
+
 1. New → Web Service
 2. Configuration:
-   ```
+
+   ``` txt
    Name: subscription-microservice
-   Build Command: cd backend/subscription-microservice && chmod +x ./mvnw && ./mvnw clean package -DskipTests
-   Start Command: java -Dserver.port=$PORT -jar backend/subscription-microservice/target/subscription-microservice-1.0.0.jar
+   Runtime: Docker
+   Dockerfile Path: ./Dockerfile.subscription
+   Plan: Free
    ```
+
 3. Environment Variables:
-   ```
+
+   ``` txt
    SPRING_PROFILES_ACTIVE=prod
    DATABASE_URL=[Your PostgreSQL Internal Database URL]
    AUTH_SERVICE_URL=https://auth-microservice.onrender.com
@@ -354,15 +374,20 @@ git push origin main
    ```
 
 **Refill Microservice:**
+
 1. New → Web Service
 2. Configuration:
-   ```
+
+   ``` txt
    Name: refill-microservice
-   Build Command: cd backend/refill-microservice && chmod +x ./mvnw && ./mvnw clean package -DskipTests
-   Start Command: java -Dserver.port=$PORT -jar backend/refill-microservice/target/refill-microservice-1.0.0.jar
+   Runtime: Docker
+   Dockerfile Path: ./Dockerfile.refill
+   Plan: Free
    ```
+
 3. Environment Variables:
-   ```
+
+   ``` txt
    SPRING_PROFILES_ACTIVE=prod
    DATABASE_URL=[Your PostgreSQL Internal Database URL]
    AUTH_SERVICE_URL=https://auth-microservice.onrender.com
@@ -370,15 +395,20 @@ git push origin main
    ```
 
 **Swagger Aggregator:**
+
 1. New → Web Service
 2. Configuration:
-   ```
+
+   ``` txt
    Name: swagger-aggregator
-   Build Command: cd backend/swagger-aggregator && chmod +x ./mvnw && ./mvnw clean package -DskipTests
-   Start Command: java -Dserver.port=$PORT -jar backend/swagger-aggregator/target/swagger-aggregator-1.0.0.jar
+   Runtime: Docker
+   Dockerfile Path: ./Dockerfile.swagger
+   Plan: Free
    ```
+
 3. Environment Variables:
-   ```
+
+   ``` txt
    SPRING_PROFILES_ACTIVE=prod
    AUTH_SERVICE_URL=https://auth-microservice.onrender.com
    DRUGS_SERVICE_URL=https://drugs-microservice.onrender.com
@@ -389,15 +419,19 @@ git push origin main
 #### Step 3: Deploy Frontend
 
 **React Member Portal:**
+
 1. New → Static Site
 2. Configuration:
-   ```
+
+   ``` txt
    Name: member-portal
    Build Command: cd frontend/member-portal && npm install && npm run build
    Publish Directory: frontend/member-portal/dist
    ```
+
 3. Environment Variables:
-   ```
+
+   ``` txt
    VITE_API_BASE_URL=https://auth-microservice.onrender.com
    VITE_DRUGS_SERVICE_URL=https://drugs-microservice.onrender.com
    VITE_SUBSCRIPTION_SERVICE_URL=https://subscription-microservice.onrender.com
@@ -427,22 +461,24 @@ After successful deployment, your services will be available at:
 
 | Service | Render URL | Purpose |
 |---------|------------|---------|
-| **Frontend** | https://member-portal.onrender.com | React Member Portal |
-| **Auth Service** | https://auth-microservice.onrender.com | Authentication API |
-| **Drugs Service** | https://drugs-microservice.onrender.com | Drug Inventory API |
-| **Subscription Service** | https://subscription-microservice.onrender.com | Subscription API |
-| **Refill Service** | https://refill-microservice.onrender.com | Refill Management API |
-| **Swagger UI** | https://swagger-aggregator.onrender.com | API Documentation |
+| **Frontend** | <https://member-portal.onrender.com> | React Member Portal |
+| **Auth Service** | <https://auth-microservice.onrender.com> | Authentication API |
+| **Drugs Service** | <https://drugs-microservice.onrender.com> | Drug Inventory API |
+| **Subscription Service** | <https://subscription-microservice.onrender.com> | Subscription API |
+| **Refill Service** | <https://refill-microservice.onrender.com> | Refill Management API |
+| **Swagger UI** | <https://swagger-aggregator.onrender.com> | API Documentation |
 | **Database** | Internal Render PostgreSQL | Production Database |
 
 ### 💡 Render Deployment Tips
 
 **Free Tier Limitations:**
+
 - Services sleep after 15 minutes of inactivity
 - 750 compute hours per month across all services
 - PostgreSQL: 1GB storage, 100 connections
 
 **Performance Optimization:**
+
 ```bash
 # Keep services awake with health checks
 curl https://auth-microservice.onrender.com/actuator/health
@@ -452,6 +488,7 @@ curl https://drugs-microservice.onrender.com/actuator/health
 ```
 
 **Database Connection:**
+
 ```yaml
 # Use connection pooling in application-prod.yml
 spring:
@@ -464,16 +501,19 @@ spring:
 ### 🚨 Render Troubleshooting
 
 **Build Failures:**
+
 - Check build logs in Render dashboard
 - Ensure Maven wrapper has execute permissions
 - Verify Java 17+ runtime in Render
 
 **Service Communication Issues:**
+
 - Use internal Render URLs for service-to-service communication
 - Update CORS configuration for cross-origin requests
 - Check environment variables are properly set
 
 **Database Connection Issues:**
+
 - Verify DATABASE_URL environment variable
 - Ensure PostgreSQL dependency in pom.xml
 - Check connection pool settings
@@ -481,12 +521,14 @@ spring:
 ### 🔄 Render Updates
 
 **Automatic Deployments:**
+
 ```bash
 # Enable auto-deploy from GitHub
 git push origin main  # Triggers automatic redeployment
 ```
 
 **Manual Deployments:**
+
 - Use Render Dashboard → Service → "Manual Deploy"
 - Redeploy specific services after configuration changes
 - Monitor deployment logs for issues

@@ -2,18 +2,15 @@ services:
   # PostgreSQL Database
   - type: pserv
     name: pharmacy-db
-    env: docker
     plan: free
-    region: oregon
+    runtime: docker
     
   # Auth Microservice
   - type: web
     name: auth-microservice
-    env: java
-    region: oregon
+    runtime: docker
     plan: free
-    buildCommand: cd backend/auth-microservice && ./mvnw clean package -DskipTests
-    startCommand: java -Dserver.port=$PORT -jar backend/auth-microservice/target/auth-microservice-1.0.0.jar
+    dockerfilePath: ./Dockerfile.auth
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
@@ -25,137 +22,73 @@ services:
         fromDatabase:
           name: pharmacy-db
           property: connectionString
-    healthCheckPath: /actuator/health
 
   # Drugs Microservice  
   - type: web
     name: drugs-microservice
-    env: java
-    region: oregon
+    runtime: docker
     plan: free
-    buildCommand: cd backend/drugs-microservice && ./mvnw clean package -DskipTests
-    startCommand: java -Dserver.port=$PORT -jar backend/drugs-microservice/target/drugs-microservice-1.0.0.jar
+    dockerfilePath: ./Dockerfile.drugs
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
       - key: AUTH_SERVICE_URL
-        fromService:
-          type: web
-          name: auth-microservice
-          property: host
+        value: https://auth-microservice.onrender.com
       - key: DATABASE_URL
         fromDatabase:
           name: pharmacy-db
           property: connectionString
-    healthCheckPath: /actuator/health
 
   # Subscription Microservice
   - type: web
     name: subscription-microservice
-    env: java
-    region: oregon
+    runtime: docker
     plan: free
-    buildCommand: cd backend/subscription-microservice && ./mvnw clean package -DskipTests
-    startCommand: java -Dserver.port=$PORT -jar backend/subscription-microservice/target/subscription-microservice-1.0.0.jar
+    dockerfilePath: ./Dockerfile.subscription
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
       - key: AUTH_SERVICE_URL
-        fromService:
-          type: web
-          name: auth-microservice
-          property: host
+        value: https://auth-microservice.onrender.com
       - key: DRUGS_SERVICE_URL
-        fromService:
-          type: web
-          name: drugs-microservice
-          property: host
+        value: https://drugs-microservice.onrender.com
       - key: DATABASE_URL
         fromDatabase:
           name: pharmacy-db
           property: connectionString
-    healthCheckPath: /actuator/health
 
   # Refill Microservice
   - type: web
     name: refill-microservice
-    env: java
-    region: oregon
+    runtime: docker
     plan: free
-    buildCommand: cd backend/refill-microservice && ./mvnw clean package -DskipTests
-    startCommand: java -Dserver.port=$PORT -jar backend/refill-microservice/target/refill-microservice-1.0.0.jar
+    dockerfilePath: ./Dockerfile.refill
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
       - key: AUTH_SERVICE_URL
-        fromService:
-          type: web
-          name: auth-microservice
-          property: host
+        value: https://auth-microservice.onrender.com
       - key: SUBSCRIPTION_SERVICE_URL
-        fromService:
-          type: web
-          name: subscription-microservice
-          property: host
+        value: https://subscription-microservice.onrender.com
       - key: DATABASE_URL
         fromDatabase:
           name: pharmacy-db
           property: connectionString
-    healthCheckPath: /actuator/health
 
   # Swagger Aggregator
   - type: web
     name: swagger-aggregator
-    env: java
-    region: oregon
+    runtime: docker
     plan: free
-    buildCommand: cd backend/swagger-aggregator && ./mvnw clean package -DskipTests
-    startCommand: java -Dserver.port=$PORT -jar backend/swagger-aggregator/target/swagger-aggregator-1.0.0.jar
+    dockerfilePath: ./Dockerfile.swagger
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
       - key: AUTH_SERVICE_URL
-        fromService:
-          type: web
-          name: auth-microservice
-          property: host
-      - key: DRUGS_SERVICE_URL
-        fromService:
-          type: web
-          name: drugs-microservice
-          property: host
-      - key: SUBSCRIPTION_SERVICE_URL
-        fromService:
-          type: web
-          name: subscription-microservice
-          property: host
-      - key: REFILL_SERVICE_URL
-        fromService:
-          type: web
-          name: refill-microservice
-          property: host
-    healthCheckPath: /actuator/health
-
-  # Frontend React App
-  - type: web
-    name: member-portal
-    env: static
-    region: oregon
-    plan: free
-    buildCommand: cd frontend/member-portal && npm install && npm run build
-    staticPublishPath: frontend/member-portal/dist
-    envVars:
-      - key: VITE_API_BASE_URL
         value: https://auth-microservice.onrender.com
-      - key: VITE_DRUGS_SERVICE_URL
+      - key: DRUGS_SERVICE_URL
         value: https://drugs-microservice.onrender.com
-      - key: VITE_SUBSCRIPTION_SERVICE_URL
+      - key: SUBSCRIPTION_SERVICE_URL
         value: https://subscription-microservice.onrender.com
-      - key: VITE_REFILL_SERVICE_URL
+      - key: REFILL_SERVICE_URL
         value: https://refill-microservice.onrender.com
-      - key: VITE_SWAGGER_URL
-        value: https://swagger-aggregator.onrender.com
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
