@@ -1,0 +1,29 @@
+server:
+  port: ${PORT:8085}
+
+spring:
+  profiles:
+    active: prod
+
+services:
+  auth:
+    url: ${AUTH_SERVICE_URL:https://auth-microservice.onrender.com}
+  drugs:
+    url: ${DRUGS_SERVICE_URL:https://drugs-microservice.onrender.com}
+  subscription:
+    url: ${SUBSCRIPTION_SERVICE_URL:https://subscription-microservice.onrender.com}
+  refill:
+    url: ${REFILL_SERVICE_URL:https://refill-microservice.onrender.com}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.pharmacy: INFO

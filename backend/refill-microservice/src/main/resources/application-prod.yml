@@ -1,0 +1,33 @@
+server:
+  port: ${PORT:8083}
+
+spring:
+  datasource:
+    url: ${DATABASE_URL}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: false
+  profiles:
+    active: prod
+
+services:
+  auth:
+    url: ${AUTH_SERVICE_URL:https://auth-microservice.onrender.com}
+  subscription:
+    url: ${SUBSCRIPTION_SERVICE_URL:https://subscription-microservice.onrender.com}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.pharmacy: INFO
