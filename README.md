@@ -61,6 +61,8 @@ A comprehensive full-stack application for pharmaceutical benefits management us
 - **ESLint Clean**: No linting warnings or errors
 - **Production Build**: Verified successful build process (4.27s build time)
 - **Type Safety**: Complete TypeScript interfaces for all data models
+- **Unit Testing**: Comprehensive test suite with Jest and React Testing Library
+- **Test Coverage**: Automated testing for critical components and services
 
 ## 📋 Prerequisites
 
@@ -161,6 +163,12 @@ npm run lint
 # Type check
 npx tsc --noEmit
 
+# Run tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
 # Clean build artifacts
 rm -rf dist node_modules
 npm install
@@ -187,6 +195,14 @@ npx tsc --noEmit
 npm run build
 # Expected: ✅ Build successful in ~4-5 seconds
 
+# Run test suite
+npm test
+# Expected: ✅ Tests pass
+
+# Run tests with coverage
+npm run test:coverage
+# Expected: ✅ Coverage reports generated
+
 # Backend quality checks
 cd backend/auth-microservice
 
@@ -201,6 +217,38 @@ cd backend/auth-microservice
 - ✅ **TypeScript**: 0 compilation errors
 - ✅ **Build Time**: ~4.27 seconds
 - ✅ **Bundle Size**: 479KB (gzipped: 155KB)
+- ✅ **Test Suite**: Jest + React Testing Library configured
+- ✅ **Test Coverage**: Comprehensive tests for types, services, hooks, and components
+
+## 🧪 Testing Framework
+
+### Test Setup
+- **Jest**: Modern JavaScript testing framework with TypeScript support
+- **React Testing Library**: Component testing utilities
+- **Coverage Reports**: HTML and LCOV coverage reports
+- **Mocking**: Comprehensive API and component mocking
+
+### Test Categories
+- **Type Definitions**: Interface and type validation tests
+- **API Services**: HTTP client and service layer tests
+- **React Hooks**: Custom hook behavior and state management tests
+- **Components**: UI component rendering and interaction tests
+- **Integration**: End-to-end user flow tests
+
+### Test Commands
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Generate coverage report
+npm run test:coverage
+
+# View coverage report
+open coverage/lcov-report/index.html
+```
 
 ## 🚀 Run Commands
 

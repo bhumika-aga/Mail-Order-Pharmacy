@@ -1,7 +1,12 @@
-import { Box, CircularProgress } from "@mui/material";
+import { Box, CircularProgress, CircularProgressProps } from "@mui/material";
 import React from "react";
 
-const LoadingSpinner: React.FC = () => {
+interface LoadingSpinnerProps {
+  size?: number;
+  color?: CircularProgressProps['color'];
+}
+
+const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ size, color }) => {
   return (
     <Box
       display="flex"
@@ -12,7 +17,7 @@ const LoadingSpinner: React.FC = () => {
       aria-live="polite"
       aria-label="Loading content"
     >
-      <CircularProgress />
+      <CircularProgress size={size} color={color} />
     </Box>
   );
 };
