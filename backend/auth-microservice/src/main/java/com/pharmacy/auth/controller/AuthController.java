@@ -34,10 +34,8 @@ public class AuthController {
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
         
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateJwtToken(authentication.getPrincipal(), 
-                ((UserDetailsImpl) authentication.getPrincipal()).getMemberId());
-        
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        String jwt = jwtUtils.generateJwtToken(userDetails, userDetails.getMemberId());
         
         return ResponseEntity.ok(new JwtResponse(jwt,
                 userDetails.getUsername(),
