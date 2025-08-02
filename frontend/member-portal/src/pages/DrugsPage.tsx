@@ -1,5 +1,5 @@
-import React from 'react';
-import { Typography, Container } from '@mui/material';
+import { Container, Typography } from "@mui/material";
+import React from "react";
 
 const DrugsPage: React.FC = () => {
   return (
@@ -7,9 +7,7 @@ const DrugsPage: React.FC = () => {
       <Typography variant="h4" component="h1" gutterBottom>
         Drug Search
       </Typography>
-      <Typography variant="body1">
-        Search and view available drugs.
-      </Typography>
+      <Typography variant="body1">Search and view available drugs.</Typography>
     </Container>
   );
 };

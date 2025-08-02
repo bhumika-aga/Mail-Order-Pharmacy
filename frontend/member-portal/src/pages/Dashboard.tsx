@@ -1,69 +1,72 @@
-import React from 'react';
 import {
+  LocalPharmacy,
+  Refresh,
+  Subscriptions,
+  TrendingUp,
+} from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
   Grid,
   Paper,
   Typography,
-  Box,
-  Card,
-  CardContent,
-  Button,
-} from '@mui/material';
-import {
-  LocalPharmacy,
-  Subscriptions,
-  Refresh,
-  TrendingUp,
-} from '@mui/icons-material';
-import { useQuery } from '@tanstack/react-query';
-import { subscriptionService, refillService } from '../services/api';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+} from "@mui/material";
+import { useQuery } from "@tanstack/react-query";
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+import { refillService, subscriptionService } from "../services/api";
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
   const { data: subscriptions } = useQuery({
-    queryKey: ['subscriptions'],
-    queryFn: () => subscriptionService.getMySubscriptions().then(res => res.data),
+    queryKey: ["subscriptions"],
+    queryFn: () =>
+      subscriptionService.getMySubscriptions().then((res) => res.data),
   });
 
   const { data: refillStatus } = useQuery({
-    queryKey: ['refillStatus'],
-    queryFn: () => refillService.getRefillStatus().then(res => res.data),
+    queryKey: ["refillStatus"],
+    queryFn: () => refillService.getRefillStatus().then((res) => res.data),
   });
 
-  const activeSubscriptions = subscriptions?.filter(s => s.subscriptionStatus === 'ACTIVE') || [];
-  const pendingRefills = refillStatus?.filter(r => r.paymentStatus === 'PENDING') || [];
+  const activeSubscriptions =
+    subscriptions?.filter((s) => s.subscriptionStatus === "ACTIVE") || [];
+  const pendingRefills =
+    refillStatus?.filter((r) => r.paymentStatus === "PENDING") || [];
 
   const dashboardCards = [
     {
-      title: 'Active Subscriptions',
+      title: "Active Subscriptions",
       value: activeSubscriptions.length,
       icon: <Subscriptions sx={{ fontSize: 40 }} />,
-      color: '#1976d2',
-      action: () => navigate('/subscriptions'),
+      color: "#1976d2",
+      action: () => navigate("/subscriptions"),
     },
     {
-      title: 'Pending Refills',
+      title: "Pending Refills",
       value: pendingRefills.length,
       icon: <Refresh sx={{ fontSize: 40 }} />,
-      color: '#ed6c02',
-      action: () => navigate('/refills'),
+      color: "#ed6c02",
+      action: () => navigate("/refills"),
     },
     {
-      title: 'Available Drugs',
-      value: 'Browse',
+      title: "Available Drugs",
+      value: "Browse",
       icon: <LocalPharmacy sx={{ fontSize: 40 }} />,
-      color: '#2e7d32',
-      action: () => navigate('/drugs'),
+      color: "#2e7d32",
+      action: () => navigate("/drugs"),
     },
     {
-      title: 'Health Analytics',
-      value: 'View',
+      title: "Health Analytics",
+      value: "View",
       icon: <TrendingUp sx={{ fontSize: 40 }} />,
-      color: '#9c27b0',
-      action: () => navigate('/dashboard'),
+      color: "#9c27b0",
+      action: () => navigate("/dashboard"),
     },
   ];
 
@@ -81,10 +84,10 @@ const Dashboard: React.FC = () => {
           <Grid item xs={12} sm={6} md={3} key={index}>
             <Card
               sx={{
-                cursor: 'pointer',
-                transition: 'transform 0.2s',
-                '&:hover': {
-                  transform: 'translateY(-4px)',
+                cursor: "pointer",
+                transition: "transform 0.2s",
+                "&:hover": {
+                  transform: "translateY(-4px)",
                 },
               }}
               onClick={card.action}
@@ -92,9 +95,9 @@ const Dashboard: React.FC = () => {
               <CardContent>
                 <Box
                   sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
                   }}
                 >
                   <Box>
@@ -105,9 +108,7 @@ const Dashboard: React.FC = () => {
                       {card.value}
                     </Typography>
                   </Box>
-                  <Box sx={{ color: card.color }}>
-                    {card.icon}
-                  </Box>
+                  <Box sx={{ color: card.color }}>{card.icon}</Box>
                 </Box>
               </CardContent>
             </Card>
@@ -126,10 +127,10 @@ const Dashboard: React.FC = () => {
                 <Box
                   key={subscription.subscriptionId}
                   sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
+                    display: "flex",
+                    justifyContent: "space-between",
                     py: 1,
-                    borderBottom: '1px solid #e0e0e0',
+                    borderBottom: "1px solid #e0e0e0",
                   }}
                 >
                   <Typography variant="body2">
@@ -149,7 +150,7 @@ const Dashboard: React.FC = () => {
               fullWidth
               variant="outlined"
               sx={{ mt: 2 }}
-              onClick={() => navigate('/subscriptions')}
+              onClick={() => navigate("/subscriptions")}
             >
               View All Subscriptions
             </Button>
@@ -161,25 +162,25 @@ const Dashboard: React.FC = () => {
             <Typography variant="h6" gutterBottom>
               Quick Actions
             </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
               <Button
                 variant="contained"
                 fullWidth
-                onClick={() => navigate('/drugs')}
+                onClick={() => navigate("/drugs")}
               >
                 Search Drugs
               </Button>
               <Button
                 variant="outlined"
                 fullWidth
-                onClick={() => navigate('/subscriptions')}
+                onClick={() => navigate("/subscriptions")}
               >
                 Manage Subscriptions
               </Button>
               <Button
                 variant="outlined"
                 fullWidth
-                onClick={() => navigate('/refills')}
+                onClick={() => navigate("/refills")}
               >
                 Request Refill
               </Button>

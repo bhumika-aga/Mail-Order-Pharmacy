@@ -1,6 +1,12 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import { AuthResponse, User } from '../types';
-import { authService, setAuthToken, clearAuthToken } from '../services/api';
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import { authService, clearAuthToken, setAuthToken } from "../services/api";
+import { AuthResponse, User } from "../types";
 
 interface AuthContextType {
   user: User | null;
@@ -15,7 +21,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
@@ -25,7 +31,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
       validateToken(token);
     } else {
@@ -37,18 +43,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await authService.validateToken(token);
       const authData = response.data;
-      
+
       const userData: User = {
         id: authData.memberId,
         username: authData.username,
-        email: '',
+        email: "",
         memberId: authData.memberId,
       };
-      
+
       setUser(userData);
       setAuthToken(token);
     } catch (error) {
-      localStorage.removeItem('token');
+      localStorage.removeItem("token");
       clearAuthToken();
     } finally {
       setLoading(false);
@@ -59,25 +65,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await authService.login(username, password);
       const authData: AuthResponse = response.data;
-      
-      localStorage.setItem('token', authData.token);
-      
+
+      localStorage.setItem("token", authData.token);
+
       const userData: User = {
         id: authData.memberId,
         username: authData.username,
-        email: '',
+        email: "",
         memberId: authData.memberId,
       };
-      
+
       setUser(userData);
       setAuthToken(authData.token);
     } catch (error) {
-      throw new Error('Login failed');
+      throw new Error("Login failed");
     }
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem("token");
     setUser(null);
     clearAuthToken();
   };

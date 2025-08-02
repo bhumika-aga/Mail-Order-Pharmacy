@@ -36,7 +36,7 @@ RUN echo 'server { \
     \
     # Handle client-side routing \
     location / { \
-        try_files $uri $uri/ /index.html; \
+    try_files $uri $uri/ /index.html; \
     } \
     \
     # Security headers \
@@ -48,8 +48,8 @@ RUN echo 'server { \
     \
     # Cache static assets \
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ { \
-        expires 1y; \
-        add_header Cache-Control "public, immutable"; \
+    expires 1y; \
+    add_header Cache-Control "public, immutable"; \
     } \
     \
     # Gzip compression \
@@ -57,14 +57,14 @@ RUN echo 'server { \
     gzip_vary on; \
     gzip_min_length 1024; \
     gzip_types \
-        text/plain \
-        text/css \
-        text/xml \
-        text/javascript \
-        application/javascript \
-        application/xml+rss \
-        application/json; \
-}' > /etc/nginx/conf.d/default.conf
+    text/plain \
+    text/css \
+    text/xml \
+    text/javascript \
+    application/javascript \
+    application/xml+rss \
+    application/json; \
+    }' > /etc/nginx/conf.d/default.conf
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \

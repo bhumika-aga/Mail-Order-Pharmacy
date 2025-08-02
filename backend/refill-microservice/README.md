@@ -14,6 +14,7 @@ This microservice handles refill orders and subscription management for the Mail
 ## API Endpoints
 
 ### Authentication Required
+
 All endpoints require a valid JWT token in the Authorization header: `Bearer <token>`
 
 ### Main Endpoints
@@ -45,6 +46,7 @@ All endpoints require a valid JWT token in the Authorization header: `Bearer <to
 ## Configuration
 
 The service runs on port **8083** and uses:
+
 - H2 Database for data storage
 - JWT for authentication
 - Integration with Subscription Service (port 8082)
@@ -53,20 +55,22 @@ The service runs on port **8083** and uses:
 ## Running the Service
 
 1. **Build the project:**
+
    ```bash
    mvn clean install
    ```
 
 2. **Run the application:**
+
    ```bash
    mvn spring-boot:run
    ```
 
 3. **Access Swagger UI:**
-   - URL: http://localhost:8083/swagger-ui.html
+   - URL: <http://localhost:8083/swagger-ui.html>
 
 4. **Access H2 Console:**
-   - URL: http://localhost:8083/h2-console
+   - URL: <http://localhost:8083/h2-console>
    - JDBC URL: jdbc:h2:file:./data/refill-pharmacy
    - Username: sa
    - Password: password
@@ -74,6 +78,7 @@ The service runs on port **8083** and uses:
 ## Data Model
 
 ### RefillOrder
+
 - refillOrderId (Primary Key)
 - memberId
 - orderDate
@@ -85,6 +90,7 @@ The service runs on port **8083** and uses:
 - trackingNumber
 
 ### RefillOrderLineItem
+
 - lineItemId (Primary Key)
 - drugCode
 - drugName
@@ -114,6 +120,7 @@ The service includes sample refill orders and line items for testing purposes.
 ## Testing
 
 Run tests with:
+
 ```bash
 mvn test
 ```

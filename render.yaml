@@ -4,7 +4,7 @@ services:
     name: pharmacy-db
     plan: free
     runtime: docker
-    
+
   # Auth Microservice
   - type: web
     name: auth-microservice
@@ -23,7 +23,7 @@ services:
           name: pharmacy-db
           property: connectionString
 
-  # Drugs Microservice  
+  # Drugs Microservice
   - type: web
     name: drugs-microservice
     runtime: docker

@@ -15,7 +15,7 @@ The application consists of the following services:
 
 ## 📁 Project Structure
 
-```
+``` txt
 Mail-Order-Pharmacy/
 ├── backend/
 │   ├── auth-microservice/
@@ -62,21 +62,25 @@ Mail-Order-Pharmacy/
 
 1. **Clone the repository** (if not already done)
 2. **Run the project setup script**:
+
    ```bash
    ./scripts/setup/setup-project.sh
    ```
 
 3. **Build all services**:
+
    ```bash
    ./scripts/build/build-all.sh
    ```
 
 4. **Start all services**:
+
    ```bash
    ./scripts/deploy/start-services.sh -d
    ```
 
 5. **Check service health**:
+
    ```bash
    ./scripts/deploy/health-check.sh
    ```
@@ -85,12 +89,12 @@ Mail-Order-Pharmacy/
 
 Once running, access the services at:
 
-- **Frontend**: http://localhost:3000
-- **Auth Service**: http://localhost:8084
-- **Drugs Service**: http://localhost:8081
-- **Subscription Service**: http://localhost:8082
-- **Refill Service**: http://localhost:8083
-- **Swagger UI**: http://localhost:8085
+- **Frontend**: <http://localhost:3000>
+- **Auth Service**: <http://localhost:8084>
+- **Drugs Service**: <http://localhost:8081>
+- **Subscription Service**: <http://localhost:8082>
+- **Refill Service**: <http://localhost:8083>
+- **Swagger UI**: <http://localhost:8085>
 
 ## 🔧 Docker Configuration
 
@@ -102,12 +106,14 @@ All backend services use a multi-stage build approach:
 2. **Runtime Stage**: Uses `openjdk:17-jre-slim` for smaller production images
 
 **Key Features**:
+
 - Non-root user execution for security
 - Health checks with actuator endpoints
 - Optimized layer caching
 - Volume mounts for H2 database persistence
 
 **Example Dockerfile Structure**:
+
 ```dockerfile
 # Multi-stage build
 FROM maven:3.9.2-openjdk-17-slim AS builder
@@ -127,6 +133,7 @@ The frontend uses a multi-stage build with Nginx:
 2. **Runtime Stage**: Uses `nginx:1.25-alpine` to serve static files
 
 **Key Features**:
+
 - Optimized Nginx configuration
 - Client-side routing support
 - Security headers
@@ -145,6 +152,7 @@ The frontend uses a multi-stage build with Nginx:
 | `scripts/build/clean-build.sh` | Clean all artifacts and rebuild everything |
 
 **Usage Examples**:
+
 ```bash
 # Build everything
 ./scripts/build/build-all.sh
@@ -172,6 +180,7 @@ The frontend uses a multi-stage build with Nginx:
 | `scripts/deploy/health-check.sh` | Check health of all services |
 
 **Usage Examples**:
+
 ```bash
 # Start services in background
 ./scripts/deploy/start-services.sh -d
@@ -203,6 +212,7 @@ The application uses H2 databases with file persistence:
 - **Refill Service**: `./data/refill/refill-pharmacy.db`
 
 Database console access:
+
 - URL: `http://localhost:808X/h2-console` (replace X with service port)
 - JDBC URL: `jdbc:h2:file:./data/[service]/[service]-pharmacy`
 - Username: `sa`
@@ -213,6 +223,7 @@ Database console access:
 ### Health Checks
 
 All services include health check endpoints:
+
 - Spring Boot services: `/actuator/health`
 - Frontend: Root endpoint `/`
 
@@ -245,12 +256,14 @@ docker-compose up -d --scale drugs-microservice=2
 ## 🔐 Security Features
 
 ### Container Security
+
 - All services run as non-root users
 - Minimal base images (Alpine/Slim)
 - Security headers in Nginx configuration
 - Health checks for service monitoring
 
 ### Network Security
+
 - Services communicate through Docker network
 - No direct external access to backend services (except through defined ports)
 - Environment-based configuration
@@ -258,12 +271,14 @@ docker-compose up -d --scale drugs-microservice=2
 ## 🚀 Production Considerations
 
 ### Performance Optimization
+
 - Multi-stage builds reduce image size
 - Layer caching optimizes build times
 - Nginx compression enabled for frontend
 - Java security entropy configuration
 
 ### Resource Management
+
 ```yaml
 # Add to docker-compose.yml for resource limits
 deploy:
@@ -277,6 +292,7 @@ deploy:
 ```
 
 ### External Database Configuration
+
 For production, replace H2 with external databases:
 
 ```yaml
@@ -324,12 +340,14 @@ docker system prune -a --volumes
 ## 📝 Development Workflow
 
 ### Local Development
+
 1. Run `./scripts/setup/setup-project.sh`
 2. Run `./scripts/setup/setup-dev-environment.sh`
 3. Use Docker Compose for services: `./scripts/deploy/start-services.sh -d`
 4. Develop with hot reload (frontend) or IDE debugging (backend)
 
 ### Testing
+
 ```bash
 # Run tests in containers
 docker-compose exec auth-microservice mvn test
@@ -337,6 +355,7 @@ docker-compose exec member-portal npm test
 ```
 
 ### CI/CD Integration
+
 The build scripts are designed for CI/CD integration:
 
 ```yaml
@@ -354,6 +373,7 @@ The build scripts are designed for CI/CD integration:
 ## 📞 Support
 
 For issues related to Docker setup:
+
 1. Check the troubleshooting section
 2. Review service logs: `docker-compose logs [service-name]`
 3. Verify all prerequisites are installed

@@ -1,18 +1,23 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { CssBaseline } from '@mui/material';
-import { AuthProvider, useAuth } from './hooks/useAuth';
-import LoginForm from './components/auth/LoginForm';
-import Layout from './components/common/Layout';
-import Dashboard from './pages/Dashboard';
-import LoadingSpinner from './components/common/LoadingSpinner';
+import { CssBaseline } from "@mui/material";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import React from "react";
+import {
+  Navigate,
+  Route,
+  BrowserRouter as Router,
+  Routes,
+} from "react-router-dom";
+import LoginForm from "./components/auth/LoginForm";
+import Layout from "./components/common/Layout";
+import LoadingSpinner from "./components/common/LoadingSpinner";
+import { AuthProvider, useAuth } from "./hooks/useAuth";
+import Dashboard from "./pages/Dashboard";
 
 // Lazy load pages
-const DrugsPage = React.lazy(() => import('./pages/DrugsPage'));
-const SubscriptionsPage = React.lazy(() => import('./pages/SubscriptionsPage'));
-const RefillsPage = React.lazy(() => import('./pages/RefillsPage'));
+const DrugsPage = React.lazy(() => import("./pages/DrugsPage"));
+const SubscriptionsPage = React.lazy(() => import("./pages/SubscriptionsPage"));
+const RefillsPage = React.lazy(() => import("./pages/RefillsPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,22 +31,28 @@ const queryClient = new QueryClient({
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#1976d2',
+      main: "#1976d2",
     },
     secondary: {
-      main: '#dc004e',
+      main: "#dc004e",
     },
   },
 });
 
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
     return <LoadingSpinner />;
   }
 
-  return isAuthenticated ? <Layout>{children}</Layout> : <Navigate to="/login" />;
+  return isAuthenticated ? (
+    <Layout>{children}</Layout>
+  ) : (
+    <Navigate to="/login" />
+  );
 };
 
 const AppRoutes: React.FC = () => {

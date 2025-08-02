@@ -1,18 +1,18 @@
-import React from 'react';
+import { AccountCircle, ExitToApp } from "@mui/icons-material";
 import {
   AppBar,
-  Toolbar,
-  Typography,
-  Button,
   Box,
+  Button,
   Container,
   IconButton,
   Menu,
   MenuItem,
-} from '@mui/material';
-import { AccountCircle, ExitToApp } from '@mui/icons-material';
-import { useAuth } from '../../hooks/useAuth';
-import { useNavigate, useLocation } from 'react-router-dom';
+  Toolbar,
+  Typography,
+} from "@mui/material";
+import React from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -38,10 +38,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   const navItems = [
-    { label: 'Dashboard', path: '/dashboard' },
-    { label: 'Drugs', path: '/drugs' },
-    { label: 'Subscriptions', path: '/subscriptions' },
-    { label: 'Refills', path: '/refills' },
+    { label: "Dashboard", path: "/dashboard" },
+    { label: "Drugs", path: "/drugs" },
+    { label: "Subscriptions", path: "/subscriptions" },
+    { label: "Refills", path: "/refills" },
   ];
 
   return (
@@ -51,15 +51,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Mail Order Pharmacy
           </Typography>
-          
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             {navItems.map((item) => (
               <Button
                 key={item.path}
                 color="inherit"
                 onClick={() => navigate(item.path)}
                 sx={{
-                  textDecoration: location.pathname === item.path ? 'underline' : 'none',
+                  textDecoration:
+                    location.pathname === item.path ? "underline" : "none",
                 }}
               >
                 {item.label}
@@ -82,13 +83,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               id="menu-appbar"
               anchorEl={anchorEl}
               anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
+                vertical: "top",
+                horizontal: "right",
               }}
               keepMounted
               transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
+                vertical: "top",
+                horizontal: "right",
               }}
               open={Boolean(anchorEl)}
               onClose={handleClose}
@@ -106,7 +107,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </Box>
         </Toolbar>
       </AppBar>
-      
+
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         {children}
       </Container>

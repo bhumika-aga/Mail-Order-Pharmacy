@@ -1,8 +1,8 @@
-version: '3.8'
+version: "3.8"
 
 services:
   auth-microservice:
-    build: 
+    build:
       context: ./backend/auth-microservice
       dockerfile: Dockerfile
     ports:
@@ -21,7 +21,7 @@ services:
       start_period: 40s
 
   drugs-microservice:
-    build: 
+    build:
       context: ./backend/drugs-microservice
       dockerfile: Dockerfile
     ports:
@@ -40,7 +40,7 @@ services:
       start_period: 40s
 
   subscription-microservice:
-    build: 
+    build:
       context: ./backend/subscription-microservice
       dockerfile: Dockerfile
     ports:
@@ -62,7 +62,7 @@ services:
       start_period: 40s
 
   refill-microservice:
-    build: 
+    build:
       context: ./backend/refill-microservice
       dockerfile: Dockerfile
     ports:
@@ -86,7 +86,7 @@ services:
       start_period: 40s
 
   swagger-aggregator:
-    build: 
+    build:
       context: ./backend/swagger-aggregator
       dockerfile: Dockerfile
     ports:
@@ -112,7 +112,7 @@ services:
       start_period: 40s
 
   member-portal:
-    build: 
+    build:
       context: ./frontend/member-portal
       dockerfile: Dockerfile
     ports:
