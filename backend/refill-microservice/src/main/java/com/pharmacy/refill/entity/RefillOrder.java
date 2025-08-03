@@ -29,12 +29,12 @@ public class RefillOrder {
     
     @NotBlank(message = "Order status is required")
     @Enumerated(EnumType.STRING)
-    @Column(name = "order_status")
+    @Column(name = "order_status", columnDefinition = "VARCHAR(50)")
     private OrderStatus orderStatus;
     
     @NotBlank(message = "Order type is required")
     @Enumerated(EnumType.STRING)
-    @Column(name = "order_type")
+    @Column(name = "order_type", columnDefinition = "VARCHAR(50)")
     private OrderType orderType;
     
     @Column(name = "subscription_id")
