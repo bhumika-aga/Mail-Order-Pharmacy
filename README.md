@@ -175,6 +175,24 @@ npm install
 npm run build
 ```
 
+### Frontend Environment Configuration
+
+The frontend now uses separate environment variables for each service URL instead of a single base URL with ports:
+
+```bash
+# Development (.env.local)
+VITE_AUTH_SERVICE_URL=http://localhost:8084
+VITE_DRUGS_SERVICE_URL=http://localhost:8081
+VITE_SUBSCRIPTION_SERVICE_URL=http://localhost:8082
+VITE_REFILL_SERVICE_URL=http://localhost:8083
+
+# Production (.env.production)
+VITE_AUTH_SERVICE_URL=https://auth-microservice-di14.onrender.com
+VITE_DRUGS_SERVICE_URL=https://drugs-microservice.onrender.com
+VITE_SUBSCRIPTION_SERVICE_URL=https://subscription-microservice.onrender.com
+VITE_REFILL_SERVICE_URL=https://refill-microservice.onrender.com
+```
+
 ## ✅ Quality Assurance
 
 ### Code Quality Verification
@@ -540,7 +558,7 @@ Step 2: Deploy Backend Services via Blueprint
 3. Environment Variables:
 
    ``` txt
-   VITE_API_BASE_URL=https://auth-microservice.onrender.com
+   VITE_AUTH_SERVICE_URL=https://auth-microservice-di14.onrender.com
    VITE_DRUGS_SERVICE_URL=https://drugs-microservice.onrender.com
    VITE_SUBSCRIPTION_SERVICE_URL=https://subscription-microservice.onrender.com
    VITE_REFILL_SERVICE_URL=https://refill-microservice.onrender.com
@@ -843,6 +861,7 @@ npm run build
 - ✅ **Fixed accessibility issue** - Added proper ARIA attributes to LoadingSpinner component
 - ✅ **Implemented user registration system** - Complete signup functionality with real-time validation
 - ✅ **Added user management interface** - Admin page for CRUD operations on user accounts
+- ✅ **Updated API configuration for production** - Changed from single base URL with ports to separate service URLs without ports for Render deployment
 
 ## 🐳 Docker Configuration
 

@@ -142,7 +142,7 @@ Since render.yaml has compatibility issues, follow this step-by-step manual depl
 3. Environment Variables:
 
    ``` txt
-   VITE_API_BASE_URL=https://auth-microservice.onrender.com
+   VITE_AUTH_SERVICE_URL=https://auth-microservice-di14.onrender.com
    VITE_DRUGS_SERVICE_URL=https://drugs-microservice.onrender.com
    VITE_SUBSCRIPTION_SERVICE_URL=https://subscription-microservice.onrender.com
    VITE_REFILL_SERVICE_URL=https://refill-microservice.onrender.com

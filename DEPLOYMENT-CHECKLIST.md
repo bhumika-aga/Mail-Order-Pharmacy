@@ -19,6 +19,7 @@
 - ✅ `render-manual-deployment.md` - Complete manual guide
 - ✅ `application-prod.yml` - Production configs for all services
 - ✅ PostgreSQL dependencies added to all microservices
+- ✅ Updated frontend API configuration to use separate service URLs without ports
 
 ---
 

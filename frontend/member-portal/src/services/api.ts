@@ -14,26 +14,29 @@ import {
   User
 } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost';
+const AUTH_SERVICE_URL = import.meta.env.VITE_AUTH_SERVICE_URL || 'http://localhost:8084';
+const DRUGS_SERVICE_URL = import.meta.env.VITE_DRUGS_SERVICE_URL || 'http://localhost:8081';
+const SUBSCRIPTION_SERVICE_URL = import.meta.env.VITE_SUBSCRIPTION_SERVICE_URL || 'http://localhost:8082';
+const REFILL_SERVICE_URL = import.meta.env.VITE_REFILL_SERVICE_URL || 'http://localhost:8083';
 
-console.log('API_BASE_URL:', API_BASE_URL);
+console.log('AUTH_SERVICE_URL:', AUTH_SERVICE_URL);
 
 const authApi = axios.create({
-  baseURL: `${API_BASE_URL}:8084/api/auth`,
+  baseURL: `${AUTH_SERVICE_URL}/api/auth`,
 });
 
 console.log('Auth API baseURL:', authApi.defaults.baseURL);
 
 const drugsApi = axios.create({
-  baseURL: `${API_BASE_URL}:8081/api/drugs`,
+  baseURL: `${DRUGS_SERVICE_URL}/api/drugs`,
 });
 
 const subscriptionApi = axios.create({
-  baseURL: `${API_BASE_URL}:8082/api/subscriptions`,
+  baseURL: `${SUBSCRIPTION_SERVICE_URL}/api/subscriptions`,
 });
 
 const refillApi = axios.create({
-  baseURL: `${API_BASE_URL}:8083/api/refill`,
+  baseURL: `${REFILL_SERVICE_URL}/api/refill`,
 });
 
 export const setAuthToken = (token: string) => {
