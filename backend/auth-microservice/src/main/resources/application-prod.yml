@@ -10,8 +10,6 @@ spring:
       ddl-auto: update
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: false
-  profiles:
-    active: prod
 
 jwt:
   secret: ${JWT_SECRET:pharmacySecretKeyForJWTTokenGenerationOnRender2024}
