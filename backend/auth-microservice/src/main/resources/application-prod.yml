@@ -3,13 +3,21 @@ server:
 
 spring:
   datasource:
-    url: jdbc:${DATABASE_URL}
+    url: ${DATABASE_URL}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update
     database-platform: org.hibernate.dialect.PostgreSQLDialect
-    show-sql: false
+    show-sql: true
+    defer-datasource-initialization: true
+    properties:
+      hibernate:
+        format_sql: true
+    generate-ddl: true
+  sql:
+    init:
+      mode: always
 
 jwt:
   secret: ${JWT_SECRET:pharmacySecretKeyForJWTTokenGenerationOnRender2024}
