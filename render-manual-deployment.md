@@ -37,7 +37,7 @@ Since render.yaml has compatibility issues, follow this step-by-step manual depl
 
    ``` txt
    SPRING_PROFILES_ACTIVE=prod
-   JWT_SECRET=pharmacySecretKeyForJWTTokenGenerationOnRender2024
+   JWT_SECRET=pharmacySecretKeyForJWTTokenGenerationWithSufficientLengthForHS512Algorithm2024OnRender
    JWT_EXPIRATION=900000
    DATABASE_URL=jdbc:postgresql://[username]:[password]@[host]:[port]/[database]
    ```

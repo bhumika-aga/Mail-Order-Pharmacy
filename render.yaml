@@ -15,7 +15,7 @@ services:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
       - key: JWT_SECRET
-        value: pharmacySecretKeyForJWTTokenGenerationOnRender2024
+        value: pharmacySecretKeyForJWTTokenGenerationWithSufficientLengthForHS512Algorithm2024OnRender
       - key: JWT_EXPIRATION
         value: 900000
       - key: DATABASE_URL

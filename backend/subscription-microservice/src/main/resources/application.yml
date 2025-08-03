@@ -27,7 +27,7 @@ spring:
       mode: always
 
 jwt:
-  secret: pharmacySecretKeyForJWTTokenGenerationWithSufficientLengthForHS512Algorithm2024
+  secret: pharmacySecretKeyForJWTTokenGenerationWithSufficientLengthForHS512Algorithm2024OnRender
   expiration: 900000
 
 services:

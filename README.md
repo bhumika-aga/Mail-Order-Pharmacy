@@ -453,7 +453,7 @@ Step 2: Deploy Backend Services via Blueprint
 
    ``` txt
    SPRING_PROFILES_ACTIVE=prod
-   JWT_SECRET=pharmacySecretKeyForJWTTokenGenerationOnRender2024
+   JWT_SECRET=pharmacySecretKeyForJWTTokenGenerationWithSufficientLengthForHS512Algorithm2024OnRender
    JWT_EXPIRATION=900000
    DATABASE_URL=[Your PostgreSQL Internal Database URL]
    ```
@@ -1078,6 +1078,9 @@ spring:
 # Fixed by synchronizing JWT secrets across all services (512+ bits for HS512)
 jwt:
   secret: pharmacySecretKeyForJWTTokenGenerationWithSufficientLengthForHS512Algorithm2024
+
+# For Render deployment, use even longer secret:
+JWT_SECRET=pharmacySecretKeyForJWTTokenGenerationWithSufficientLengthForHS512Algorithm2024OnRender
 ```
 
 **Frontend "process is not defined" Error:**
