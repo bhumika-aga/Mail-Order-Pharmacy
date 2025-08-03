@@ -1,17 +1,65 @@
-# Getting Started
+# Authentication Microservice
 
-## Reference Documentation
+JWT-based authentication and user management service for the Mail-Order Pharmacy system.
 
-For further reference, please consider the following sections:
+## Features
 
-* [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
-* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/3.4.8/maven-plugin)
-* [Create an OCI image](https://docs.spring.io/spring-boot/3.4.8/maven-plugin/build-image.html)
+- **JWT Authentication**: Secure token-based authentication with 15-minute expiration
+- **User Registration**: Auto-generated MemberID with real-time validation
+- **User Management**: Complete CRUD operations for user accounts
+- **Password Security**: BCrypt encryption with validation
+- **Real-time Validation**: Username, email, and MemberID availability checking
+- **Spring Security**: Comprehensive security configuration
 
-### Maven Parent overrides
+## API Endpoints
 
-Due to Maven's design, elements are inherited from the parent POM to the project POM.
-While most of the inheritance is fine, it also inherits unwanted elements like `<license>` and `<developers>` from the
-parent.
-To prevent this, the project POM contains empty overrides for these elements.
-If you manually switch to a different parent and actually want the inheritance, you need to remove those overrides.
+### Public Endpoints
+
+- `POST /api/auth/signin` - User login
+- `POST /api/auth/signup` - User registration
+- `GET /api/auth/check-username/{username}` - Check username availability
+- `GET /api/auth/check-email/{email}` - Check email availability
+- `GET /api/auth/check-memberid/{memberId}` - Check member ID availability
+
+### Protected Endpoints
+
+- `POST /api/auth/validate` - Token validation
+- `GET /api/auth/users` - Get all users (Admin)
+- `PUT /api/auth/users/{id}` - Update user (Admin)
+- `DELETE /api/auth/users/{id}` - Delete user (Admin)
+
+## Configuration
+
+- **Port**: 8084
+- **Database**: H2 (jdbc:h2:file:./data/auth-pharmacy)
+- **JWT Secret**: Configurable via environment variable
+- **Token Expiration**: 15 minutes (900000 ms)
+
+## Quick Start
+
+```bash
+# Build and run
+./mvnw clean spring-boot:run
+
+# Access H2 Console
+open http://localhost:8084/h2-console
+
+# View API Documentation
+open http://localhost:8084/swagger-ui.html
+```
+
+## Security Features
+
+- JWT token validation across all protected endpoints
+- BCrypt password hashing
+- CORS configuration for cross-origin requests
+- Input validation and sanitization
+- Automatic MemberID generation (MEM + 6 digits)
+
+## Demo Users
+
+```
+Username: member1 | Password: password | Member ID: MEM001
+Username: member2 | Password: password | Member ID: MEM002
+Username: member3 | Password: password | Member ID: MEM003
+```

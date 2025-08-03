@@ -1096,6 +1096,19 @@ public OpenAPI customOpenAPI() {
 }
 ```
 
+**Spring Boot Configuration Error - "Property 'spring.profiles.active' invalid in profile specific resource":**
+
+```yaml
+# Fixed by removing spring.profiles.active from application-prod.yml
+# BEFORE (Invalid):
+spring:
+  profiles:
+    active: prod  # ❌ Invalid in profile-specific file
+
+# AFTER (Fixed):
+# (Property removed from application-prod.yml)
+```
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
@@ -1122,3 +1135,7 @@ For questions and support:
   - Complete security implementation across services
   - Swagger API documentation aggregation
   - Admin interface for user management
+  - Updated documentation across all microservices
+  - Service-specific HELP.md files with comprehensive API documentation
+  - Fixed Spring Boot configuration error in swagger-aggregator service
+  - Resolved Render.com deployment configuration issues

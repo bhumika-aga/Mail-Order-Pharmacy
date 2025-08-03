@@ -1,17 +1,76 @@
-# Getting Started
+# Drugs Microservice
 
-## Reference Documentation
+Drug inventory management and stock availability service for the Mail-Order Pharmacy system.
 
-For further reference, please consider the following sections:
+## Features
 
-* [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
-* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/3.4.8/maven-plugin)
-* [Create an OCI image](https://docs.spring.io/spring-boot/3.4.8/maven-plugin/build-image.html)
+- **Drug Inventory**: Comprehensive drug catalog with manufacturer details
+- **Stock Management**: Location-based stock availability tracking
+- **Search Functionality**: Search drugs by ID or name
+- **Stock Dispatch**: Check dispatchable drug stock for orders
+- **JWT Security**: Protected endpoints with token validation
+- **Multi-location Support**: Stock tracking across multiple locations
 
-### Maven Parent overrides
+## API Endpoints
 
-Due to Maven's design, elements are inherited from the parent POM to the project POM.
-While most of the inheritance is fine, it also inherits unwanted elements like `<license>` and `<developers>` from the
-parent.
-To prevent this, the project POM contains empty overrides for these elements.
-If you manually switch to a different parent and actually want the inheritance, you need to remove those overrides.
+### Drug Search
+
+- `GET /api/drugs/searchDrugsByID?drugId={id}` - Search drug by ID
+- `GET /api/drugs/searchDrugsByName?drugName={name}` - Search drugs by name
+
+### Stock Management
+
+- `POST /api/drugs/getDispatchableDrugStock` - Get available stock for dispatch
+  - Body: DrugStockRequest with drug IDs and required quantities
+  - Returns: DrugStockResponse with availability details
+
+## Configuration
+
+- **Port**: 8081
+- **Database**: H2 (jdbc:h2:file:./data/drugs-pharmacy)
+- **Authentication**: JWT token validation
+- **CORS**: Configured for cross-origin requests
+
+## Quick Start
+
+```bash
+# Build and run
+./mvnw clean spring-boot:run
+
+# Access H2 Console
+open http://localhost:8081/h2-console
+
+# View API Documentation
+open http://localhost:8081/swagger-ui.html
+```
+
+## Data Model
+
+### Drug Entity
+- drugId (Primary Key)
+- drugName
+- manufacturer
+- packagingDate
+- expiryDate
+- unitPrice
+- composition
+
+### DrugLocation Entity
+- drugId (Foreign Key)
+- location (New York, Los Angeles, Chicago)
+- quantityAvailable
+
+## Sample Data
+
+Includes 10 drugs (D001-D010) with:
+- Pricing information
+- Composition details
+- Stock quantities across 3 locations
+- Various manufacturers
+
+## Security
+
+- JWT token validation for all endpoints
+- Spring Security configuration
+- Input validation and sanitization
+- Protected database console access
