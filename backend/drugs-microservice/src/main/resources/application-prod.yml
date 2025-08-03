@@ -8,14 +8,19 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    show-sql: false
-  profiles:
-    active: prod
+    show-sql: true
+    defer-datasource-initialization: true
+    properties:
+      hibernate:
+        format_sql: true
+    generate-ddl: true
+  sql:
+    init:
+      mode: always
 
 services:
   auth:
-    url: ${AUTH_SERVICE_URL:https://auth-microservice.onrender.com}
+    url: ${AUTH_SERVICE_URL}
 
 management:
   endpoints:

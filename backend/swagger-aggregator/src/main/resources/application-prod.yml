@@ -7,13 +7,13 @@ spring:
 
 services:
   auth:
-    url: ${AUTH_SERVICE_URL:https://auth-microservice.onrender.com}
+    url: ${AUTH_SERVICE_URL}
   drugs:
-    url: ${DRUGS_SERVICE_URL:https://drugs-microservice.onrender.com}
+    url: ${DRUGS_SERVICE_URL}
   subscription:
-    url: ${SUBSCRIPTION_SERVICE_URL:https://subscription-microservice.onrender.com}
+    url: ${SUBSCRIPTION_SERVICE_URL}
   refill:
-    url: ${REFILL_SERVICE_URL:https://refill-microservice.onrender.com}
+    url: ${REFILL_SERVICE_URL}
 
 management:
   endpoints:
