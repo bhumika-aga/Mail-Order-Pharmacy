@@ -28,7 +28,7 @@ public class MemberSubscription {
     
     @NotNull(message = "Refill frequency is required")
     @Enumerated(EnumType.STRING)
-    @Column(name = "refill_frequency")
+    @Column(name = "refill_frequency", columnDefinition = "VARCHAR(50)")
     private RefillFrequency refillFrequency;
     
     @NotBlank(message = "Member location is required")
@@ -37,7 +37,7 @@ public class MemberSubscription {
     
     @NotNull(message = "Subscription status is required")
     @Enumerated(EnumType.STRING)
-    @Column(name = "subscription_status")
+    @Column(name = "subscription_status", columnDefinition = "VARCHAR(50)")
     private SubscriptionStatus subscriptionStatus;
     
     @ManyToOne(fetch = FetchType.LAZY)
