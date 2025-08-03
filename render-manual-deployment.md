@@ -13,6 +13,10 @@ Since render.yaml has compatibility issues, follow this step-by-step manual depl
    - Plan: Free
    - Region: Oregon
 4. Save the **Internal Database URL** from the database info page
+5. **Important**: Convert the Internal Database URL to JDBC format:
+   - Original: `postgresql://username:password@host/database`
+   - JDBC Format: `jdbc:postgresql://username:password@host:5432/database`
+   - Add `jdbc:` prefix and `:5432` port number
 
 ## Step 2: Deploy Backend Microservices
 
@@ -35,7 +39,7 @@ Since render.yaml has compatibility issues, follow this step-by-step manual depl
    SPRING_PROFILES_ACTIVE=prod
    JWT_SECRET=pharmacySecretKeyForJWTTokenGenerationOnRender2024
    JWT_EXPIRATION=900000
-   DATABASE_URL=[Your PostgreSQL Internal Database URL]
+   DATABASE_URL=jdbc:postgresql://[username]:[password]@[host]:[port]/[database]
    ```
 
 ### Drugs Microservice
@@ -54,7 +58,7 @@ Since render.yaml has compatibility issues, follow this step-by-step manual depl
 
    ``` txt
    SPRING_PROFILES_ACTIVE=prod
-   DATABASE_URL=[Your PostgreSQL Internal Database URL]
+   DATABASE_URL=jdbc:postgresql://[username]:[password]@[host]:[port]/[database]
    AUTH_SERVICE_URL=https://auth-microservice.onrender.com
    ```
 
@@ -74,7 +78,7 @@ Since render.yaml has compatibility issues, follow this step-by-step manual depl
 
    ``` txt
    SPRING_PROFILES_ACTIVE=prod
-   DATABASE_URL=[Your PostgreSQL Internal Database URL]
+   DATABASE_URL=jdbc:postgresql://[username]:[password]@[host]:[port]/[database]
    AUTH_SERVICE_URL=https://auth-microservice.onrender.com
    DRUGS_SERVICE_URL=https://drugs-microservice.onrender.com
    ```
@@ -95,7 +99,7 @@ Since render.yaml has compatibility issues, follow this step-by-step manual depl
 
    ``` txt
    SPRING_PROFILES_ACTIVE=prod
-   DATABASE_URL=[Your PostgreSQL Internal Database URL]
+   DATABASE_URL=jdbc:postgresql://[username]:[password]@[host]:[port]/[database]
    AUTH_SERVICE_URL=https://auth-microservice.onrender.com
    SUBSCRIPTION_SERVICE_URL=https://subscription-microservice.onrender.com
    ```
