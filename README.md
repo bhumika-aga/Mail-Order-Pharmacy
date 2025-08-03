@@ -1109,6 +1109,28 @@ spring:
 # (Property removed from application-prod.yml)
 ```
 
+**TypeScript Test Errors - Mock function and type issues:**
+
+```typescript
+// Fixed by adding proper Jest mock function types and AxiosResponse properties
+// BEFORE (Invalid):
+mockedApiService.authService.login.mockResolvedValue(mockResponse);
+
+// AFTER (Fixed):
+(mockedApiService.authService.login as jest.MockedFunction<typeof mockedApiService.authService.login>).mockResolvedValue({
+  data: mockData,
+  status: 200,
+  statusText: "OK", 
+  headers: {},
+  config: {} as any,
+});
+
+// Fixed property name inconsistencies:
+// isLoading → loading (in AuthContext)
+// getMemberSubscriptions → getMySubscriptions 
+// getRefillOrders → getAllRefillOrders
+```
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
@@ -1139,3 +1161,6 @@ For questions and support:
   - Service-specific HELP.md files with comprehensive API documentation
   - Fixed Spring Boot configuration error in swagger-aggregator service
   - Resolved Render.com deployment configuration issues
+  - Fixed TypeScript test errors with proper Jest mock typing
+  - Corrected method name inconsistencies in test files
+  - Added complete AxiosResponse interface for test mocking

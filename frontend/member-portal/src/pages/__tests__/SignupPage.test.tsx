@@ -70,8 +70,12 @@ describe("SignupPage Component", () => {
   });
 
   it("should handle form submission with valid data", async () => {
-    mockedApiService.authService.register.mockResolvedValue({
+    (mockedApiService.authService.register as jest.MockedFunction<typeof mockedApiService.authService.register>).mockResolvedValue({
       data: { message: "User registered successfully!" },
+      status: 200,
+      statusText: "OK",
+      headers: {},
+      config: {} as any,
     });
 
     renderWithProviders();
@@ -102,8 +106,12 @@ describe("SignupPage Component", () => {
   });
 
   it("should check username availability on blur", async () => {
-    mockedApiService.authService.checkUsernameAvailability.mockResolvedValue({
+    (mockedApiService.authService.checkUsernameAvailability as jest.MockedFunction<typeof mockedApiService.authService.checkUsernameAvailability>).mockResolvedValue({
       data: { message: "Username is available" },
+      status: 200,
+      statusText: "OK",
+      headers: {},
+      config: {} as any,
     });
 
     renderWithProviders();
@@ -120,8 +128,12 @@ describe("SignupPage Component", () => {
   });
 
   it('should check email availability and show "Email is valid" message', async () => {
-    mockedApiService.authService.checkEmailAvailability.mockResolvedValue({
+    (mockedApiService.authService.checkEmailAvailability as jest.MockedFunction<typeof mockedApiService.authService.checkEmailAvailability>).mockResolvedValue({
       data: { message: "Email is available" },
+      status: 200,
+      statusText: "OK",
+      headers: {},
+      config: {} as any,
     });
 
     renderWithProviders();

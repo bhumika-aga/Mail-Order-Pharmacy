@@ -8,10 +8,10 @@ import Dashboard from "../Dashboard";
 // Mock the API services
 jest.mock("../../services/api", () => ({
   subscriptionService: {
-    getMemberSubscriptions: jest.fn(),
+    getMySubscriptions: jest.fn(),
   },
   refillService: {
-    getRefillOrders: jest.fn(),
+    getAllRefillOrders: jest.fn(),
   },
 }));
 
@@ -58,7 +58,7 @@ describe("Dashboard Component", () => {
     jest.clearAllMocks();
 
     // Default mock responses
-    mockedApiService.subscriptionService.getMemberSubscriptions.mockResolvedValue(
+    (mockedApiService.subscriptionService.getMySubscriptions as jest.MockedFunction<typeof mockedApiService.subscriptionService.getMySubscriptions>).mockResolvedValue(
       {
         data: [
           {
@@ -80,10 +80,14 @@ describe("Dashboard Component", () => {
             subscriptionStatus: "INACTIVE",
           },
         ],
+        status: 200,
+        statusText: "OK",
+        headers: {},
+        config: {} as any,
       }
     );
 
-    mockedApiService.refillService.getRefillOrders.mockResolvedValue({
+    (mockedApiService.refillService.getAllRefillOrders as jest.MockedFunction<typeof mockedApiService.refillService.getAllRefillOrders>).mockResolvedValue({
       data: [
         {
           refillOrderId: "ORDER001",
@@ -112,6 +116,10 @@ describe("Dashboard Component", () => {
           totalAmount: 149.99,
         },
       ],
+      status: 200,
+      statusText: "OK",
+      headers: {},
+      config: {} as any,
     });
   });
 
@@ -188,13 +196,21 @@ describe("Dashboard Component", () => {
   });
 
   it("should handle empty data arrays", async () => {
-    mockedApiService.subscriptionService.getMemberSubscriptions.mockResolvedValue(
+    (mockedApiService.subscriptionService.getMySubscriptions as jest.MockedFunction<typeof mockedApiService.subscriptionService.getMySubscriptions>).mockResolvedValue(
       {
         data: [],
+        status: 200,
+        statusText: "OK",
+        headers: {},
+        config: {} as any,
       }
     );
-    mockedApiService.refillService.getRefillOrders.mockResolvedValue({
+    (mockedApiService.refillService.getAllRefillOrders as jest.MockedFunction<typeof mockedApiService.refillService.getAllRefillOrders>).mockResolvedValue({
       data: [],
+      status: 200,
+      statusText: "OK",
+      headers: {},
+      config: {} as any,
     });
 
     renderWithProviders();

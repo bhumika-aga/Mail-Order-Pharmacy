@@ -154,3 +154,12 @@ export interface RefillDueResponse {
   refillFrequency: string;
   prescriptions: RefillDuePrescription[];
 }
+
+// Re-export AxiosResponse from axios for testing
+export interface AxiosResponse<T = any> {
+  data: T;
+  status: number;
+  statusText: string;
+  headers: any;
+  config: any;
+}

@@ -9,7 +9,7 @@ const mockAxiosResponse = <T>(data: T): AxiosResponse<T> => ({
 });
 
 export const authService = {
-  login: jest.fn((username: string, password: string) =>
+  login: jest.fn((username: string, _password: string) =>
     Promise.resolve(mockAxiosResponse({
       token: 'mock-jwt-token',
       type: 'Bearer',
@@ -19,7 +19,7 @@ export const authService = {
     }))
   ),
 
-  register: jest.fn((signupData: SignupRequest) =>
+  register: jest.fn((_signupData: SignupRequest) =>
     Promise.resolve(mockAxiosResponse({ message: 'User registered successfully!' }))
   ),
 
@@ -51,19 +51,19 @@ export const authService = {
     }))
   ),
 
-  deleteUser: jest.fn((id: number) =>
+  deleteUser: jest.fn((_id: number) =>
     Promise.resolve(mockAxiosResponse({ message: 'User deleted successfully!' }))
   ),
 
-  checkUsernameAvailability: jest.fn((username: string) =>
+  checkUsernameAvailability: jest.fn((_username: string) =>
     Promise.resolve(mockAxiosResponse({ message: 'Username is available' }))
   ),
 
-  checkEmailAvailability: jest.fn((email: string) =>
+  checkEmailAvailability: jest.fn((_email: string) =>
     Promise.resolve(mockAxiosResponse({ message: 'Email is available' }))
   ),
 
-  checkMemberIdAvailability: jest.fn((memberId: string) =>
+  checkMemberIdAvailability: jest.fn((_memberId: string) =>
     Promise.resolve(mockAxiosResponse({ message: 'Member ID is available' }))
   ),
 };
@@ -90,7 +90,7 @@ export const drugService = {
     }]))
   ),
 
-  getDispatchableStock: jest.fn((drugIds: string[], location: string) =>
+  getDispatchableStock: jest.fn((_drugIds: string[], location: string) =>
     Promise.resolve(mockAxiosResponse([{
       drugId: 'DRUG001', drugName: 'Mock Drug', location, quantityAvailable: 100, costPerPackage: 15.99, isAvailable: true
     }]))
@@ -110,7 +110,7 @@ export const subscriptionService = {
     }))
   ),
 
-  unsubscribe: jest.fn((subscriptionId: string) =>
+  unsubscribe: jest.fn((_subscriptionId: string) =>
     Promise.resolve(mockAxiosResponse({ message: 'Unsubscribed successfully' }))
   ),
 
@@ -171,7 +171,7 @@ export const refillService = {
     }]))
   ),
 
-  requestAdhocRefill: jest.fn((request: AdhocRefillRequest) =>
+  requestAdhocRefill: jest.fn((_request: AdhocRefillRequest) =>
     Promise.resolve(mockAxiosResponse({ message: 'Adhoc refill requested successfully' }))
   ),
 

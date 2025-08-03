@@ -51,20 +51,25 @@ describe("useAuth Hook", () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
 
     expect(result.current.user).toBeNull();
-    expect(result.current.isLoading).toBe(false);
+    expect(result.current.loading).toBe(false);
   });
 
   it("should login successfully", async () => {
     const mockAuthResponse = {
       data: {
         token: "jwt-token",
+        type: "Bearer",
         username: "testuser",
         memberId: "MEM123456",
         expirationTime: 900000,
       },
+      status: 200,
+      statusText: "OK",
+      headers: {},
+      config: {} as any,
     };
 
-    mockedApiService.authService.login.mockResolvedValue(mockAuthResponse);
+    (mockedApiService.authService.login as jest.MockedFunction<typeof mockedApiService.authService.login>).mockResolvedValue(mockAuthResponse);
 
     const wrapper = createWrapper();
     const { result } = renderHook(() => useAuth(), { wrapper });
@@ -90,7 +95,7 @@ describe("useAuth Hook", () => {
 
   it("should handle login error", async () => {
     const loginError = new Error("Invalid credentials");
-    mockedApiService.authService.login.mockRejectedValue(loginError);
+    (mockedApiService.authService.login as jest.MockedFunction<typeof mockedApiService.authService.login>).mockRejectedValue(loginError);
 
     const wrapper = createWrapper();
     const { result } = renderHook(() => useAuth(), { wrapper });
@@ -110,13 +115,18 @@ describe("useAuth Hook", () => {
     const mockAuthResponse = {
       data: {
         token: "jwt-token",
+        type: "Bearer",
         username: "testuser",
         memberId: "MEM123456",
         expirationTime: 900000,
       },
+      status: 200,
+      statusText: "OK",
+      headers: {},
+      config: {} as any,
     };
 
-    mockedApiService.authService.login.mockResolvedValue(mockAuthResponse);
+    (mockedApiService.authService.login as jest.MockedFunction<typeof mockedApiService.authService.login>).mockResolvedValue(mockAuthResponse);
 
     const wrapper = createWrapper();
     const { result } = renderHook(() => useAuth(), { wrapper });
@@ -142,14 +152,19 @@ describe("useAuth Hook", () => {
     const mockValidateResponse = {
       data: {
         token: mockToken,
+        type: "Bearer",
         username: "testuser",
         memberId: "MEM123456",
         expirationTime: 900000,
       },
+      status: 200,
+      statusText: "OK",
+      headers: {},
+      config: {} as any,
     };
 
     (localStorage.getItem as jest.Mock).mockReturnValue(mockToken);
-    mockedApiService.authService.validateToken.mockResolvedValue(
+    (mockedApiService.authService.validateToken as jest.MockedFunction<typeof mockedApiService.authService.validateToken>).mockResolvedValue(
       mockValidateResponse
     );
 
@@ -179,7 +194,7 @@ describe("useAuth Hook", () => {
     const mockToken = "invalid-jwt-token";
 
     (localStorage.getItem as jest.Mock).mockReturnValue(mockToken);
-    mockedApiService.authService.validateToken.mockRejectedValue(
+    (mockedApiService.authService.validateToken as jest.MockedFunction<typeof mockedApiService.authService.validateToken>).mockRejectedValue(
       new Error("Invalid token")
     );
 
