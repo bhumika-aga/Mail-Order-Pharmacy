@@ -1,94 +1,105 @@
 services:
-  # PostgreSQL Database
-  - type: pserv
-    name: pharmacy-db
-    plan: free
-    runtime: docker
-
-  # Auth Microservice
+  # Auth Microservice - Core Authentication
   - type: web
-    name: auth-microservice
+    name: mediflow-auth
     runtime: docker
     plan: free
     dockerfilePath: ./Dockerfile.auth
+    healthCheckPath: /actuator/health
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
       - key: JWT_SECRET
-        value: pharmacySecretKeyForJWTTokenGenerationWithSufficientLengthForHS512Algorithm2024OnRender
+        value: mediFlowSecureSecretKeyForProductionDeploymentWithSufficientLengthForHS512Algorithm2024
       - key: JWT_EXPIRATION
         value: 900000
       - key: DATABASE_URL
         fromDatabase:
-          name: pharmacy-db
+          name: mediflow-database
           property: connectionString
 
-  # Drugs Microservice
+  # Drugs Microservice - Inventory Management
   - type: web
-    name: drugs-microservice
+    name: mediflow-drugs
     runtime: docker
     plan: free
     dockerfilePath: ./Dockerfile.drugs
+    healthCheckPath: /actuator/health
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
       - key: AUTH_SERVICE_URL
-        value: https://auth-microservice.onrender.com
+        value: https://mediflow-auth.onrender.com
+      - key: JWT_SECRET
+        value: mediFlowSecureSecretKeyForProductionDeploymentWithSufficientLengthForHS512Algorithm2024
+      - key: JWT_EXPIRATION
+        value: 900000
       - key: DATABASE_URL
         fromDatabase:
-          name: pharmacy-db
+          name: mediflow-database
           property: connectionString
 
-  # Subscription Microservice
+  # Subscription Microservice - Subscription Management
   - type: web
-    name: subscription-microservice
+    name: mediflow-subscriptions
     runtime: docker
     plan: free
     dockerfilePath: ./Dockerfile.subscription
+    healthCheckPath: /actuator/health
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
       - key: AUTH_SERVICE_URL
-        value: https://auth-microservice.onrender.com
+        value: https://mediflow-auth.onrender.com
       - key: DRUGS_SERVICE_URL
-        value: https://drugs-microservice.onrender.com
+        value: https://mediflow-drugs.onrender.com
+      - key: JWT_SECRET
+        value: mediFlowSecureSecretKeyForProductionDeploymentWithSufficientLengthForHS512Algorithm2024
+      - key: JWT_EXPIRATION
+        value: 900000
       - key: DATABASE_URL
         fromDatabase:
-          name: pharmacy-db
+          name: mediflow-database
           property: connectionString
 
-  # Refill Microservice
+  # Refill Microservice - Order Processing
   - type: web
-    name: refill-microservice
+    name: mediflow-refills
     runtime: docker
     plan: free
     dockerfilePath: ./Dockerfile.refill
+    healthCheckPath: /actuator/health
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
       - key: AUTH_SERVICE_URL
-        value: https://auth-microservice.onrender.com
+        value: https://mediflow-auth.onrender.com
       - key: SUBSCRIPTION_SERVICE_URL
-        value: https://subscription-microservice.onrender.com
+        value: https://mediflow-subscriptions.onrender.com
+      - key: JWT_SECRET
+        value: mediFlowSecureSecretKeyForProductionDeploymentWithSufficientLengthForHS512Algorithm2024
+      - key: JWT_EXPIRATION
+        value: 900000
       - key: DATABASE_URL
         fromDatabase:
-          name: pharmacy-db
+          name: mediflow-database
           property: connectionString
 
-  # Swagger Aggregator
+  # Swagger Aggregator - API Documentation
   - type: web
-    name: swagger-aggregator
+    name: mediflow-swagger
     runtime: docker
     plan: free
     dockerfilePath: ./Dockerfile.swagger
+    healthCheckPath: /actuator/health
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
       - key: AUTH_SERVICE_URL
-        value: https://auth-microservice.onrender.com
+        value: https://mediflow-auth.onrender.com
       - key: DRUGS_SERVICE_URL
-        value: https://drugs-microservice.onrender.com
+        value: https://mediflow-drugs.onrender.com
       - key: SUBSCRIPTION_SERVICE_URL
-        value: https://subscription-microservice.onrender.com
+        value: https://mediflow-subscriptions.onrender.com
       - key: REFILL_SERVICE_URL
-        value: https://refill-microservice.onrender.com
+        value: https://mediflow-refills.onrender.com

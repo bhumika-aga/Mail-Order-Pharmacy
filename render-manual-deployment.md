@@ -1,15 +1,17 @@
-# Manual Render.com Deployment Guide
+# MediFlow Manual Deployment - Alternative Method 🏥
 
-Since render.yaml has compatibility issues, follow this step-by-step manual deployment approach:
+**Note**: For most users, we recommend the [Quick Deploy Guide](QUICK_DEPLOY.md). Use this manual method if you need more control over the deployment process.
+
+Complete step-by-step manual deployment guide for MediFlow on Render.com's free tier with optimized configuration for performance and cost-efficiency.
 
 ## Step 1: Create PostgreSQL Database
 
 1. Login to [Render Dashboard](https://dashboard.render.com)
 2. Click "New" → "PostgreSQL"
 3. Configuration:
-   - Name: `pharmacy-db`
-   - Database: `pharmacy`
-   - User: `pharmacy_user`
+   - Name: `mediflow-database`
+   - Database: `mediflow`
+   - User: `mediflow_user`
    - Plan: Free
    - Region: Oregon
 4. Save the **Internal Database URL** from the database info page
@@ -27,7 +29,7 @@ Since render.yaml has compatibility issues, follow this step-by-step manual depl
 3. Configuration:
 
    ``` txt
-   Name: auth-microservice
+   Name: mediflow-auth
    Runtime: Docker
    Dockerfile Path: ./Dockerfile.auth
    Plan: Free
@@ -37,7 +39,7 @@ Since render.yaml has compatibility issues, follow this step-by-step manual depl
 
    ``` txt
    SPRING_PROFILES_ACTIVE=prod
-   JWT_SECRET=pharmacySecretKeyForJWTTokenGenerationWithSufficientLengthForHS512Algorithm2024OnRender
+   JWT_SECRET=mediFlowSecureSecretKeyForProductionDeploymentWithSufficientLengthForHS512Algorithm2024
    JWT_EXPIRATION=900000
    DATABASE_URL=jdbc:postgresql://[username]:[password]@[host]:[port]/[database]
    ```
@@ -60,6 +62,8 @@ Since render.yaml has compatibility issues, follow this step-by-step manual depl
    SPRING_PROFILES_ACTIVE=prod
    DATABASE_URL=jdbc:postgresql://[username]:[password]@[host]:[port]/[database]
    AUTH_SERVICE_URL=https://auth-microservice.onrender.com
+   JWT_SECRET=pharmacySecretKeyForJWTTokenGenerationWithSufficientLengthForHS512Algorithm2024OnRender
+   JWT_EXPIRATION=900000
    ```
 
 ### Subscription Microservice
@@ -81,6 +85,8 @@ Since render.yaml has compatibility issues, follow this step-by-step manual depl
    DATABASE_URL=jdbc:postgresql://[username]:[password]@[host]:[port]/[database]
    AUTH_SERVICE_URL=https://auth-microservice.onrender.com
    DRUGS_SERVICE_URL=https://drugs-microservice.onrender.com
+   JWT_SECRET=pharmacySecretKeyForJWTTokenGenerationWithSufficientLengthForHS512Algorithm2024OnRender
+   JWT_EXPIRATION=900000
    ```
 
 ### Refill Microservice
@@ -102,6 +108,8 @@ Since render.yaml has compatibility issues, follow this step-by-step manual depl
    DATABASE_URL=jdbc:postgresql://[username]:[password]@[host]:[port]/[database]
    AUTH_SERVICE_URL=https://auth-microservice.onrender.com
    SUBSCRIPTION_SERVICE_URL=https://subscription-microservice.onrender.com
+   JWT_SECRET=pharmacySecretKeyForJWTTokenGenerationWithSufficientLengthForHS512Algorithm2024OnRender
+   JWT_EXPIRATION=900000
    ```
 
 ### Swagger Aggregator
