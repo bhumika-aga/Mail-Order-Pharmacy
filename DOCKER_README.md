@@ -1,12 +1,12 @@
-# Mail Order Pharmacy - Docker Setup
+# MediFlow - Docker Setup
 
-This document provides comprehensive information about the Docker setup for the Mail Order Pharmacy microservices application.
+This document provides comprehensive information about the Docker setup for the MediFlow microservices application.
 
 ## 🏗️ Architecture Overview
 
 The application consists of the following services:
 
-- **Frontend**: React-based member portal (port 3000)
+- **Frontend**: React-based MediFlow member portal (port 3000)
 - **Auth Microservice**: Authentication and authorization (port 8084)
 - **Drugs Microservice**: Drug inventory management (port 8081)
 - **Subscription Microservice**: Subscription management (port 8082)
@@ -16,7 +16,7 @@ The application consists of the following services:
 ## 📁 Project Structure
 
 ``` txt
-Mail-Order-Pharmacy/
+MediFlow/
 ├── backend/
 │   ├── auth-microservice/
 │   │   └── Dockerfile
@@ -381,4 +381,4 @@ For issues related to Docker setup:
 
 ---
 
-*This documentation covers the complete Docker setup for the Mail Order Pharmacy application. Keep it updated as the application evolves.*
+*This documentation covers the complete Docker setup for the MediFlow application. Keep it updated as the application evolves.*

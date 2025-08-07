@@ -41,7 +41,7 @@ Complete step-by-step manual deployment guide for MediFlow on Render.com's free 
    SPRING_PROFILES_ACTIVE=prod
    JWT_SECRET=mediFlowSecureSecretKeyForProductionDeploymentWithSufficientLengthForHS512Algorithm2024
    JWT_EXPIRATION=900000
-   DATABASE_URL=jdbc:postgresql://[username]:[password]@[host]:[port]/[database]
+   DATABASE_URL=jdbc:postgresql://dpg-d2a7qjadbo4c73b2j4n0-a.oregon-postgres.render.com:5432/mediflow?user=mediflow_user&password=p9b7x3MCz3VJFZycM6AagAu4023WzX8Z&sslmode=require
    ```
 
 ### Drugs Microservice
@@ -60,9 +60,9 @@ Complete step-by-step manual deployment guide for MediFlow on Render.com's free 
 
    ``` txt
    SPRING_PROFILES_ACTIVE=prod
-   DATABASE_URL=jdbc:postgresql://[username]:[password]@[host]:[port]/[database]
-   AUTH_SERVICE_URL=https://auth-microservice.onrender.com
-   JWT_SECRET=pharmacySecretKeyForJWTTokenGenerationWithSufficientLengthForHS512Algorithm2024OnRender
+   DATABASE_URL=jdbc:postgresql://dpg-d2a7qjadbo4c73b2j4n0-a.oregon-postgres.render.com:5432/mediflow?user=mediflow_user&password=p9b7x3MCz3VJFZycM6AagAu4023WzX8Z&sslmode=require
+   AUTH_SERVICE_URL=https://mediflow-auth.onrender.com
+   JWT_SECRET=mediFlowSecureSecretKeyForProductionDeploymentWithSufficientLengthForHS512Algorithm2024
    JWT_EXPIRATION=900000
    ```
 
@@ -82,10 +82,10 @@ Complete step-by-step manual deployment guide for MediFlow on Render.com's free 
 
    ``` txt
    SPRING_PROFILES_ACTIVE=prod
-   DATABASE_URL=jdbc:postgresql://[username]:[password]@[host]:[port]/[database]
-   AUTH_SERVICE_URL=https://auth-microservice.onrender.com
+   DATABASE_URL=jdbc:postgresql://dpg-d2a7qjadbo4c73b2j4n0-a.oregon-postgres.render.com:5432/mediflow?user=mediflow_user&password=p9b7x3MCz3VJFZycM6AagAu4023WzX8Z&sslmode=require
+   AUTH_SERVICE_URL=https://mediflow-auth.onrender.com
    DRUGS_SERVICE_URL=https://drugs-microservice.onrender.com
-   JWT_SECRET=pharmacySecretKeyForJWTTokenGenerationWithSufficientLengthForHS512Algorithm2024OnRender
+   JWT_SECRET=mediFlowSecureSecretKeyForProductionDeploymentWithSufficientLengthForHS512Algorithm2024
    JWT_EXPIRATION=900000
    ```
 
@@ -105,10 +105,10 @@ Complete step-by-step manual deployment guide for MediFlow on Render.com's free 
 
    ``` txt
    SPRING_PROFILES_ACTIVE=prod
-   DATABASE_URL=jdbc:postgresql://[username]:[password]@[host]:[port]/[database]
-   AUTH_SERVICE_URL=https://auth-microservice.onrender.com
+   DATABASE_URL=jdbc:postgresql://dpg-d2a7qjadbo4c73b2j4n0-a.oregon-postgres.render.com:5432/mediflow?user=mediflow_user&password=p9b7x3MCz3VJFZycM6AagAu4023WzX8Z&sslmode=require
+   AUTH_SERVICE_URL=https://mediflow-auth.onrender.com
    SUBSCRIPTION_SERVICE_URL=https://subscription-microservice.onrender.com
-   JWT_SECRET=pharmacySecretKeyForJWTTokenGenerationWithSufficientLengthForHS512Algorithm2024OnRender
+   JWT_SECRET=mediFlowSecureSecretKeyForProductionDeploymentWithSufficientLengthForHS512Algorithm2024
    JWT_EXPIRATION=900000
    ```
 
@@ -128,7 +128,7 @@ Complete step-by-step manual deployment guide for MediFlow on Render.com's free 
 
    ``` txt
    SPRING_PROFILES_ACTIVE=prod
-   AUTH_SERVICE_URL=https://auth-microservice.onrender.com
+   AUTH_SERVICE_URL=https://mediflow-auth.onrender.com
    DRUGS_SERVICE_URL=https://drugs-microservice.onrender.com
    SUBSCRIPTION_SERVICE_URL=https://subscription-microservice.onrender.com
    REFILL_SERVICE_URL=https://refill-microservice.onrender.com
@@ -150,7 +150,7 @@ Complete step-by-step manual deployment guide for MediFlow on Render.com's free 
 3. Environment Variables:
 
    ``` txt
-   VITE_AUTH_SERVICE_URL=https://auth-microservice-di14.onrender.com
+   VITE_AUTH_SERVICE_URL=https://mediflow-auth.onrender.com
    VITE_DRUGS_SERVICE_URL=https://drugs-microservice.onrender.com
    VITE_SUBSCRIPTION_SERVICE_URL=https://subscription-microservice.onrender.com
    VITE_REFILL_SERVICE_URL=https://refill-microservice.onrender.com
@@ -160,7 +160,7 @@ Complete step-by-step manual deployment guide for MediFlow on Render.com's free 
 ## Final URLs
 
 - Frontend: <https://member-portal.onrender.com>
-- Auth API: <https://auth-microservice.onrender.com>
+- Auth API: <https://mediflow-auth.onrender.com>
 - Drugs API: <https://drugs-microservice.onrender.com>
 - Subscriptions API: <https://subscription-microservice.onrender.com>
 - Refills API: <https://refill-microservice.onrender.com>

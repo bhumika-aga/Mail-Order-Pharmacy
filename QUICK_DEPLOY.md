@@ -105,13 +105,21 @@ After deployment, your MediFlow services will be available at:
 
 **Database Connection Failed?**
 
-- Ensure DATABASE_URL uses correct format: `jdbc:postgresql://user:pass@host:port/db`
+- Ensure DATABASE_URL uses correct format: `jdbc:postgresql://host:port/db?user=username&password=password&sslmode=require`
 - Verify PostgreSQL service is running
 
 **Blueprint Deployment Failed?**
 
 - Create database manually first
 - Use manual deployment as fallback
+
+**Frontend Improvements Include:**
+
+- Modern Apple/Vercel-inspired design with Inter font
+- Enhanced color system with professional blue (#3b82f6) palette  
+- Smooth animations and hover effects on all interactive elements
+- Updated MediFlow branding throughout the application
+- Improved card components with modern shadows and borders
 
 For complete details, see [MediFlow Complete Guide](MEDIFLOW_COMPLETE_GUIDE.md)
 

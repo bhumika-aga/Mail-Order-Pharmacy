@@ -1,6 +1,6 @@
 # Refill Microservice
 
-This microservice handles refill orders and subscription management for the Mail-Order Pharmacy system.
+This microservice handles refill orders and subscription management for the MediFlow system.
 
 ## Features
 

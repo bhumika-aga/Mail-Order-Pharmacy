@@ -64,8 +64,20 @@ const LoginForm: React.FC = () => {
         }}
       >
         <Paper elevation={3} sx={{ padding: 4, width: "100%" }}>
-          <Typography component="h1" variant="h4" align="center" gutterBottom>
-            Mail Order Pharmacy
+          <Typography
+            component="h1"
+            variant="h4"
+            align="center"
+            gutterBottom
+            sx={{
+              fontWeight: 700,
+              background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              mb: 1,
+            }}
+          >
+            MediFlow
           </Typography>
           <Typography
             component="h2"
