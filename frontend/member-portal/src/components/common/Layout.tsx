@@ -1,4 +1,4 @@
-import { AccountCircle, ExitToApp } from "@mui/icons-material";
+import { AccountCircleOutlined, ExitToAppOutlined } from "@mui/icons-material";
 import {
   AppBar,
   Box,
@@ -13,6 +13,7 @@ import {
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import ThemeToggle from "./ThemeToggle";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -54,11 +55,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             component="div"
             sx={{
               flexGrow: 1,
-              fontWeight: 700,
-              background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              fontSize: "1.25rem",
+              fontWeight: 600,
             }}
           >
             MediFlow
@@ -69,31 +66,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <Button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                sx={{
-                  color:
-                    location.pathname === item.path ? "#3b82f6" : "#64748b",
-                  backgroundColor:
-                    location.pathname === item.path
-                      ? "rgba(59, 130, 246, 0.1)"
-                      : "transparent",
-                  borderRadius: 2,
-                  px: 2,
-                  py: 1,
-                  fontWeight: location.pathname === item.path ? 600 : 500,
-                  transition: "all 0.2s ease-in-out",
-                  "&:hover": {
-                    backgroundColor: "rgba(59, 130, 246, 0.08)",
-                    color: "#3b82f6",
-                    transform: "translateY(-1px)",
-                  },
-                }}
+                color={location.pathname === item.path ? "primary" : "inherit"}
+                variant={location.pathname === item.path ? "contained" : "text"}
               >
                 {item.label}
               </Button>
             ))}
           </Box>
 
-          <Box sx={{ ml: 2 }}>
+          <Box sx={{ ml: 2, display: 'flex', alignItems: 'center' }}>
+            <ThemeToggle />
             <IconButton
               size="large"
               aria-label="account of current user"
@@ -102,7 +84,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               onClick={handleMenu}
               color="inherit"
             >
-              <AccountCircle />
+              <AccountCircleOutlined />
             </IconButton>
             <Menu
               id="menu-appbar"
@@ -125,7 +107,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </Typography>
               </MenuItem>
               <MenuItem onClick={handleLogout}>
-                <ExitToApp sx={{ mr: 1 }} />
+                <ExitToAppOutlined sx={{ mr: 1 }} />
                 Logout
               </MenuItem>
             </Menu>

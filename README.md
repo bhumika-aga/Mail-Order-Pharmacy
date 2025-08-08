@@ -15,6 +15,8 @@ A next-generation mail-order pharmacy platform that combines reliability with mo
 ### Key Features
 
 - 🎨 **Modern Design**: Apple & Vercel-inspired UI/UX with clean, minimal interfaces
+- 🌙 **Dark/Light Mode**: Seamless theme switching with system preference detection and localStorage persistence
+- 🎯 **Minimal UI**: Clean outlined icons and simplified styling for better usability
 - 🚀 **Free Tier Optimized**: Designed for Render.com free tier with 62% smaller images
 - 🐳 **Containerized**: Docker optimization with 30-40% faster startup times
 - 🔒 **Secure**: JWT authentication with HIPAA compliance standards
@@ -61,6 +63,8 @@ For detailed technical specifications, refer to MailOrderPharmacy.docx
 ### Frontend Application
 
 - **Member Portal**: React 18+ TypeScript application with Material-UI
+- **Theme System**: Light/dark mode toggle with localStorage persistence and dynamic Material-UI theming
+- **Minimal Design**: Outlined icons throughout the interface with simplified, clean styling
 - **Authentication**: JWT token management with protected routes and user registration
 - **User Management**: Complete user registration with auto-generated MemberID, full name validation, and enhanced email verification feedback
 - **Drug Management**: Search and browse drug inventory
@@ -68,6 +72,13 @@ For detailed technical specifications, refer to MailOrderPharmacy.docx
 - **Refill Management**: Track refills and request adhoc refills
 
 ## 🔧 Recent Improvements
+
+### UI/UX Enhancements (Latest)
+
+- **Light/Dark Mode Toggle**: Complete theme switching system with localStorage persistence
+- **Minimal Design Update**: Replaced all icons with outlined variants for cleaner appearance
+- **Simplified Styling**: Removed complex animations and shadows for better performance and accessibility
+- **Theme Context**: Centralized theme management with React Context API
 
 ### User Registration Enhancement
 

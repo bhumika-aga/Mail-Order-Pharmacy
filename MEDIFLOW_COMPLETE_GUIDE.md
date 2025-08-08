@@ -51,22 +51,47 @@ A next-generation mail-order pharmacy platform that combines the reliability of 
 }
 ```
 
-### Modern Theme Configuration
+### Modern Theme Configuration with Dark/Light Mode
 
 ```typescript
-// frontend/member-portal/src/theme.ts
+// frontend/member-portal/src/contexts/ThemeContext.tsx
 import { createTheme } from '@mui/material/styles';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
-const mediFlowTheme = createTheme({
+type ThemeMode = 'light' | 'dark';
+
+const getDesignTokens = (mode: ThemeMode) => ({
   palette: {
-    primary: {
-      main: '#3b82f6', // Modern blue (iOS system blue)
-      light: '#60a5fa',
-      dark: '#1d4ed8',
-    },
-    secondary: {
-      main: '#10b981', // Success green
-    },
+    mode,
+    ...(mode === 'light'
+      ? {
+          primary: {
+            main: '#3b82f6', // Modern blue (iOS system blue)
+            light: '#60a5fa',
+            dark: '#1d4ed8',
+          },
+          secondary: {
+            main: '#10b981', // Success green
+          },
+          background: {
+            default: '#f8fafc',
+            paper: '#ffffff',
+          },
+        }
+      : {
+          primary: {
+            main: '#60a5fa',
+            light: '#93c5fd',
+            dark: '#3b82f6',
+          },
+          secondary: {
+            main: '#34d399',
+          },
+          background: {
+            default: '#0f172a',
+            paper: '#1e293b',
+          },
+        }),
   },
   typography: {
     fontFamily: [
@@ -76,40 +101,54 @@ const mediFlowTheme = createTheme({
       '"Segoe UI"',
       'Roboto',
     ].join(','),
-    button: {
-      textTransform: 'none', // Apple-style buttons
-    },
-  },
-  shape: {
-    borderRadius: 12, // Rounded corners
   },
   components: {
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 12,
-          boxShadow: 'none',
-          '&:hover': {
-            boxShadow: '0 4px 12px rgba(59, 130, 246, 0.15)',
-            transform: 'translateY(-1px)',
-          },
+          textTransform: 'none', // Minimal styling
         },
       },
     },
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 16,
-          transition: 'all 0.2s ease',
-          '&:hover': {
-            transform: 'translateY(-2px)',
-            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
-          },
+          border: mode === 'light' ? '1px solid #e2e8f0' : '1px solid #334155',
+        },
+      },
+    },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          borderBottom: mode === 'light' ? '1px solid #e2e8f0' : '1px solid #334155',
+          boxShadow: 'none',
         },
       },
     },
   },
 });
+
+// Theme Provider with localStorage persistence
+export const ThemeProvider = ({ children }) => {
+  const [mode, setMode] = useState(() => {
+    const savedMode = localStorage.getItem('theme-mode');
+    return savedMode || 'light';
+  });
+
+  const theme = React.useMemo(() => createTheme(getDesignTokens(mode)), [mode]);
+
+  const toggleTheme = () => {
+    const newMode = mode === 'light' ? 'dark' : 'light';
+    setMode(newMode);
+    localStorage.setItem('theme-mode', newMode);
+  };
+
+  return (
+    <ThemeContext.Provider value={{ mode, toggleTheme, theme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+};
 ```
 
 ## 🏗️ System Architecture
@@ -584,34 +623,44 @@ curl https://mediflow-auth.onrender.com/actuator/health/db
 - ✅ Upgraded component styling with smooth animations and hover effects
 - ✅ Enhanced card components with modern shadows and subtle borders
 
+**Dark/Light Mode System:**
+
+- ✅ Complete theme switching with React Context API and Material-UI integration
+- ✅ localStorage persistence for user theme preference
+- ✅ Dynamic color palette adjustment for both light and dark themes
+- ✅ Theme toggle component with outlined icons (Brightness4Outlined/Brightness7Outlined)
+- ✅ Seamless mode switching without page reload
+
+**Minimal UI Implementation:**
+
+- ✅ Replaced all filled icons with outlined variants for cleaner appearance
+- ✅ Simplified button styling - removed complex hover animations and shadows
+- ✅ Minimized card styling - kept only essential borders, removed shadows
+- ✅ Streamlined AppBar styling - removed backdrop blur and complex backgrounds
+- ✅ Clean navigation buttons using standard Material-UI variants
+
 **Branding Update:**
 
 - ✅ Changed application name from "Mail Order Pharmacy" to "MediFlow"
-- ✅ Added gradient logo text effect in header and login form
+- ✅ Simplified logo text styling for minimal approach
 - ✅ Updated page title to "MediFlow - Member Portal"
 - ✅ Consistent branding across all UI components
-
-**User Experience Enhancements:**
-
-- ✅ Modern navigation with color-coded active states and hover animations
-- ✅ Improved dashboard cards with enhanced visual hierarchy
-- ✅ Color-coded service indicators with subtle background gradients
-- ✅ Glassmorphism effects on AppBar with backdrop blur
-- ✅ Smooth transform animations on all interactive elements
 
 **Technical Improvements:**
 
 - ✅ Material-UI theme customization for consistent design system
-- ✅ Enhanced button styling with Apple-style hover effects
-- ✅ Improved form components with modern border radius and focus states
+- ✅ Centralized theme management with React Context
+- ✅ TypeScript support for theme types and interfaces
 - ✅ Responsive design optimizations for all screen sizes
 
 ### Performance Impact
 
 - **Build Time**: Maintained ~4.27 seconds build time
-- **Bundle Size**: Optimized to 479KB (gzipped: 155KB)
-- **User Experience**: Smooth 60fps animations with CSS transforms
-- **Accessibility**: Enhanced ARIA attributes and keyboard navigation
+- **Bundle Size**: Optimized bundle with minimal styling overhead
+- **User Experience**: Clean, accessible interface with improved usability
+- **Accessibility**: Enhanced with simplified styling and outlined icons for better visibility
+- **Theme Performance**: Instant theme switching with no performance impact
+- **Memory Efficiency**: Reduced CSS overhead with minimal styling approach
 
 ## 📈 Deployment Checklist
 
