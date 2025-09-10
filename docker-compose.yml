@@ -59,6 +59,7 @@ services:
       - JWT_EXPIRATION=86400000
       - AUTH_SERVICE_URL=http://auth-microservice:8084
       - SERVICES_DRUGS_URL=http://drugs-microservice:8081
+      - DRUGS_SERVICE_URL=http://drugs-microservice:8081
     volumes:
       - ./data/subscription:/app/data
     depends_on:
@@ -86,6 +87,8 @@ services:
       - AUTH_SERVICE_URL=http://auth-microservice:8084
       - SERVICES_SUBSCRIPTION_URL=http://subscription-microservice:8082
       - SERVICES_DRUGS_URL=http://drugs-microservice:8081
+      - SUBSCRIPTION_SERVICE_URL=http://subscription-microservice:8082
+      - DRUGS_SERVICE_URL=http://drugs-microservice:8081
     volumes:
       - ./data/refill:/app/data
     depends_on:

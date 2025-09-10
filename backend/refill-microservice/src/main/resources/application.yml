@@ -57,6 +57,38 @@ management:
 spring:
   config:
     activate:
+      on-profile: docker
+  datasource:
+    url: ${DATABASE_URL}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  sql:
+    init:
+      mode: always
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION}
+
+services:
+  auth:
+    url: ${AUTH_SERVICE_URL}
+  subscription:
+    url: ${SERVICES_SUBSCRIPTION_URL}
+  drugs:
+    url: ${SERVICES_DRUGS_URL}
+
+---
+spring:
+  config:
+    activate:
       on-profile: cloud
   datasource:
     url: jdbc:postgresql://db.dsffzidiqrmxkunjagfn.supabase.co:5432/postgres?user=postgres&password=V1dbMnocekObliTj
