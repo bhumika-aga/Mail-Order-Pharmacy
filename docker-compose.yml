@@ -31,7 +31,7 @@ services:
       - "8081:8081"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - DATABASE_URL=jdbc:postgresql://db.dsffzidiqrmxkunjagfn.supabase.co:5432/postgres?user=postgres&password=V1dbMnocekObliTj&sslmode=require
+      - DATABASE_URL=jdbc:postgresql://db.dsffzidiqrmxkunjagfn.supabase.co:5432/postgres?user=postgres&password=V1dbMnocekObliTj
       - JWT_SECRET=mySecretKey123456789012345678901234567890
       - JWT_EXPIRATION=86400000
       - AUTH_SERVICE_URL=http://auth-microservice:8084
