@@ -5,7 +5,7 @@ spring:
   application:
     name: drugs-microservice
   datasource:
-    url: jdbc:postgresql://db.dsffzidiqrmxkunjagfn.supabase.co:5432/postgres?user=postgres&password=V1dbMnocekObliTj&sslmode=require
+    url: jdbc:postgresql://db.dsffzidiqrmxkunjagfn.supabase.co:5432/postgres?user=postgres&password=V1dbMnocekObliTj
     driver-class-name: org.postgresql.Driver
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -69,7 +69,7 @@ spring:
     activate:
       on-profile: cloud
   datasource:
-    url: jdbc:postgresql://db.dsffzidiqrmxkunjagfn.supabase.co:5432/postgres?user=postgres&password=V1dbMnocekObliTj&sslmode=require
+    url: jdbc:postgresql://db.dsffzidiqrmxkunjagfn.supabase.co:5432/postgres?user=postgres&password=V1dbMnocekObliTj
     driver-class-name: org.postgresql.Driver
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
