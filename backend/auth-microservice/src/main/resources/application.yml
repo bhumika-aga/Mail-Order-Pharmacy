@@ -5,7 +5,7 @@ spring:
   application:
     name: auth-microservice
   datasource:
-    url: jdbc:postgresql://db.dsffzidiqrmxkunjagfn.supabase.co:5432/postgres?user=postgres&password=V1dbMnocekObliTj
+    url: jdbc:postgresql://db.dsffzidiqrmxkunjagfn.supabase.co:5432/postgres?user=postgres&password=V1dbMnocekObliTj&sslmode=require
     driver-class-name: org.postgresql.Driver
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -66,7 +66,7 @@ spring:
     activate:
       on-profile: cloud
   datasource:
-    url: jdbc:postgresql://db.dsffzidiqrmxkunjagfn.supabase.co:5432/postgres?user=postgres&password=V1dbMnocekObliTj
+    url: jdbc:postgresql://db.dsffzidiqrmxkunjagfn.supabase.co:5432/postgres?user=postgres&password=V1dbMnocekObliTj&sslmode=require
     driver-class-name: org.postgresql.Driver
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
