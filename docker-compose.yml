@@ -8,7 +8,7 @@ services:
     ports:
       - "8084:8084"
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_PROFILES_ACTIVE=prod
       - DATABASE_URL=jdbc:postgresql://db.dsffzidiqrmxkunjagfn.supabase.co:5432/postgres?user=postgres&password=V1dbMnocekObliTj
       - JWT_SECRET=mySecretKey123456789012345678901234567890
       - JWT_EXPIRATION=86400000
@@ -30,7 +30,7 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_PROFILES_ACTIVE=prod
       - DATABASE_URL=jdbc:postgresql://db.dsffzidiqrmxkunjagfn.supabase.co:5432/postgres?user=postgres&password=V1dbMnocekObliTj
       - JWT_SECRET=mySecretKey123456789012345678901234567890
       - JWT_EXPIRATION=86400000
@@ -53,7 +53,7 @@ services:
     ports:
       - "8082:8082"
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_PROFILES_ACTIVE=prod
       - DATABASE_URL=jdbc:postgresql://db.dsffzidiqrmxkunjagfn.supabase.co:5432/postgres?user=postgres&password=V1dbMnocekObliTj
       - JWT_SECRET=mySecretKey123456789012345678901234567890
       - JWT_EXPIRATION=86400000
@@ -80,7 +80,7 @@ services:
     ports:
       - "8083:8083"
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_PROFILES_ACTIVE=prod
       - DATABASE_URL=jdbc:postgresql://db.dsffzidiqrmxkunjagfn.supabase.co:5432/postgres?user=postgres&password=V1dbMnocekObliTj
       - JWT_SECRET=mySecretKey123456789012345678901234567890
       - JWT_EXPIRATION=86400000
@@ -110,7 +110,7 @@ services:
     ports:
       - "8085:8085"
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_PROFILES_ACTIVE=prod
       - SERVICES_AUTH_URL=http://auth-microservice:8084
       - SERVICES_DRUGS_URL=http://drugs-microservice:8081
       - SERVICES_SUBSCRIPTION_URL=http://subscription-microservice:8082
