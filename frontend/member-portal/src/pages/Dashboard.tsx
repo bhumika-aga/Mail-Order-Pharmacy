@@ -12,6 +12,7 @@ import {
   Grid,
   Paper,
   Typography,
+  useTheme,
 } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import React from "react";
@@ -22,6 +23,8 @@ import { refillService, subscriptionService } from "../services/api";
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
 
   const { data: subscriptions } = useQuery({
     queryKey: ["subscriptions"],
@@ -46,32 +49,32 @@ const Dashboard: React.FC = () => {
       title: "Active Subscriptions",
       value: activeSubscriptions.length,
       icon: <Subscriptions sx={{ fontSize: 32 }} />,
-      color: "#3b82f6",
-      bgColor: "#eff6ff",
+      color: theme.palette.primary.main,
+      bgColor: isDarkMode ? 'rgba(59, 130, 246, 0.1)' : '#eff6ff',
       action: () => navigate("/subscriptions"),
     },
     {
       title: "Pending Refills",
       value: pendingRefills.length,
       icon: <Refresh sx={{ fontSize: 32 }} />,
-      color: "#f59e0b",
-      bgColor: "#fffbeb",
+      color: theme.palette.warning.main,
+      bgColor: isDarkMode ? 'rgba(245, 158, 11, 0.1)' : '#fffbeb',
       action: () => navigate("/refills"),
     },
     {
       title: "Available Drugs",
       value: "Browse",
       icon: <LocalPharmacy sx={{ fontSize: 32 }} />,
-      color: "#10b981",
-      bgColor: "#ecfdf5",
+      color: theme.palette.success.main,
+      bgColor: isDarkMode ? 'rgba(16, 185, 129, 0.1)' : '#ecfdf5',
       action: () => navigate("/drugs"),
     },
     {
       title: "Health Analytics",
       value: "View",
       icon: <TrendingUp sx={{ fontSize: 32 }} />,
-      color: "#8b5cf6",
-      bgColor: "#f5f3ff",
+      color: '#8b5cf6',
+      bgColor: isDarkMode ? 'rgba(139, 92, 246, 0.1)' : '#f5f3ff',
       action: () => navigate("/dashboard"),
     },
   ];
@@ -84,7 +87,7 @@ const Dashboard: React.FC = () => {
           gutterBottom
           sx={{
             fontWeight: 700,
-            color: "#1e293b",
+            color: theme.palette.text.primary,
             mb: 1,
           }}
         >
@@ -93,7 +96,7 @@ const Dashboard: React.FC = () => {
         <Typography
           variant="body1"
           sx={{
-            color: "#64748b",
+            color: theme.palette.text.secondary,
             fontSize: "1rem",
           }}
         >
@@ -126,7 +129,7 @@ const Dashboard: React.FC = () => {
                     <Typography
                       variant="body2"
                       sx={{
-                        color: "#64748b",
+                        color: theme.palette.text.secondary,
                         fontWeight: 500,
                         mb: 1,
                         textTransform: "uppercase",
@@ -141,7 +144,7 @@ const Dashboard: React.FC = () => {
                       component="div"
                       sx={{
                         fontWeight: 700,
-                        color: "#1e293b",
+                        color: theme.palette.text.primary,
                         fontSize: "2rem",
                         lineHeight: 1.2,
                       }}
@@ -177,7 +180,7 @@ const Dashboard: React.FC = () => {
               gutterBottom
               sx={{
                 fontWeight: 600,
-                color: "#1e293b",
+                color: theme.palette.text.primary,
                 mb: 2,
               }}
             >
@@ -225,7 +228,7 @@ const Dashboard: React.FC = () => {
               gutterBottom
               sx={{
                 fontWeight: 600,
-                color: "#1e293b",
+                color: theme.palette.text.primary,
                 mb: 2,
               }}
             >

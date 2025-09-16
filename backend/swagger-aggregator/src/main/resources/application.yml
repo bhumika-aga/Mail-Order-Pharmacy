@@ -38,3 +38,21 @@ springdoc:
         url: http://localhost:8083/v3/api-docs
       - name: Aggregated
         url: /v3/api-docs/aggregated
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+  thymeleaf:
+    mode: HTML
+
+services:
+  auth:
+    url: http://localhost:8084
+  drugs:
+    url: http://localhost:8081
+  subscription:
+    url: http://localhost:8082
+  refill:
+    url: http://localhost:8083
