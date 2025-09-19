@@ -1,15 +1,17 @@
-# Subscription Microservice
+# MediFlow Subscription Microservice 📋
 
-Subscription management and prescription handling service for the Mail-Order Pharmacy system.
+Advanced subscription management and intelligent prescription handling service for the MediFlow platform, featuring automated refill scheduling and comprehensive insurance integration.
 
 ## Features
 
-- **Subscription Management**: Create, update, and cancel mail-order subscriptions
-- **Prescription Tracking**: Manage member prescriptions and drug details
-- **Refill Scheduling**: Track refill due dates and frequencies
-- **Insurance Integration**: Handle insurance information and claims
-- **JWT Security**: Protected endpoints with token validation
-- **Member-specific Access**: Secure data access control per member
+- **Intelligent Subscription Management**: Create, update, and cancel subscriptions with automated scheduling
+- **Advanced Prescription Tracking**: Complete prescription lifecycle management with doctor integration
+- **Smart Refill Scheduling**: Automated due date tracking with weekly, monthly, and quarterly frequencies
+- **Comprehensive Insurance Integration**: Real-time insurance verification and claims processing
+- **Enterprise Security**: JWT token validation with member-specific access control
+- **Multi-Location Support**: Location-based delivery optimization
+- **Production Ready**: Optimized for Render.com deployment with PostgreSQL
+- **Health Monitoring**: Real-time service monitoring with actuator endpoints
 
 ## API Endpoints
 
@@ -77,12 +79,20 @@ open http://localhost:8082/swagger-ui.html
 
 ## Sample Data
 
-Includes:
+Professionally curated test data includes:
 
-- 5 member prescriptions (PRES001-PRES005)
-- 5 member subscriptions (SUB001-SUB005)
-- Various frequencies and statuses
-- Insurance and doctor information
+- **5 Member Prescriptions** (PRES001-PRES005): Complete prescription details with realistic doctor information
+- **5 Active Subscriptions** (SUB001-SUB005): Various frequencies (WEEKLY, MONTHLY, QUARTERLY)
+- **Insurance Integration**: Real insurance provider data with policy numbers
+- **Location Mapping**: Prescriptions mapped to New York, Los Angeles, and Chicago
+- **Status Tracking**: ACTIVE, PAUSED, and CANCELLED subscription states
+
+## Advanced Features
+
+- **Automated Refill Alerts**: Intelligent notification system for upcoming refills
+- **Insurance Verification**: Real-time coverage validation before prescription processing
+- **Doctor Integration**: Secure prescription management with healthcare provider details
+- **Compliance Tracking**: Full audit trail for regulatory compliance
 
 ## Security
 

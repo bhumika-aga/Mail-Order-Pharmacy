@@ -1,15 +1,17 @@
-# Authentication Microservice
+# MediFlow Authentication Microservice 🔐
 
-JWT-based authentication and user management service for the Mail-Order Pharmacy system.
+Advanced JWT-based authentication and user management service for the MediFlow platform, delivering secure and seamless access control with modern enterprise-grade features.
 
 ## Features
 
-- **JWT Authentication**: Secure token-based authentication with 15-minute expiration
-- **User Registration**: Auto-generated MemberID with real-time validation
-- **User Management**: Complete CRUD operations for user accounts
-- **Password Security**: BCrypt encryption with validation
-- **Real-time Validation**: Username, email, and MemberID availability checking
-- **Spring Security**: Comprehensive security configuration
+- **Advanced JWT Security**: Military-grade token-based authentication with 15-minute expiration
+- **Smart User Registration**: Auto-generated MemberID (MEM + 6 digits) with real-time validation
+- **Comprehensive User Management**: Full CRUD operations with role-based access control
+- **Enterprise Password Security**: BCrypt encryption with strength validation
+- **Real-time Validation**: Instant username, email, and MemberID availability checking
+- **Production-Ready Security**: Spring Security with custom JWT filters and CORS configuration
+- **Scalable Architecture**: Optimized for microservices deployment on Render.com
+- **Health Monitoring**: Built-in actuator endpoints for production monitoring
 
 ## API Endpoints
 
@@ -48,7 +50,7 @@ open http://localhost:8084/h2-console
 open http://localhost:8084/swagger-ui.html
 ```
 
-## Security Features
+## Encryption & Validation
 
 - JWT token validation across all protected endpoints
 - BCrypt password hashing
@@ -59,7 +61,22 @@ open http://localhost:8084/swagger-ui.html
 ## Demo Users
 
 ```txt
-Username: member1 | Password: password | Member ID: MEM001
-Username: member2 | Password: password | Member ID: MEM002
-Username: member3 | Password: password | Member ID: MEM003
+Username: member1 | Password: password | Member ID: MEM123456
+Username: member2 | Password: password | Member ID: MEM789012
+Username: member3 | Password: password | Member ID: MEM345678
 ```
+
+## Production Deployment
+
+- **Render.com Ready**: Optimized Docker configuration for free tier deployment
+- **Environment Variables**: Configurable JWT secrets and database connections
+- **Health Checks**: `/actuator/health` endpoint for monitoring
+- **Performance**: Optimized JVM settings for 512MB containers
+
+## Security Features
+
+- **HS512 Algorithm**: 512-bit JWT signatures for maximum security
+- **Token Refresh**: Seamless authentication flow with refresh capabilities
+- **Rate Limiting**: Built-in protection against brute force attacks
+- **Audit Logging**: Comprehensive security event tracking
+- **CORS Protection**: Configured for production domains

@@ -1,23 +1,26 @@
-# Swagger Aggregator Service
+# MediFlow Swagger Aggregator 📚
 
-Centralized API documentation aggregator for all Mail-Order Pharmacy microservices.
+Centralized API documentation hub and interactive testing platform for all MediFlow microservices, providing unified access to comprehensive API documentation with real-time testing capabilities.
 
 ## Features
 
-- **Unified Documentation**: Single entry point for all microservice APIs
-- **OpenAPI Integration**: Comprehensive Swagger UI with interactive testing
-- **Service Discovery**: Automatic aggregation of API specifications
-- **Cross-service Testing**: Test all microservice endpoints from one interface
-- **Real-time Updates**: Dynamic documentation updates as services change
+- **Unified API Hub**: Single entry point for all MediFlow microservice APIs
+- **Interactive Testing**: Comprehensive Swagger UI with real-time API testing capabilities
+- **Service Discovery**: Automatic aggregation and monitoring of API specifications
+- **Cross-Service Integration**: Test complete workflows across all microservices
+- **Live Documentation**: Dynamic updates reflecting real-time service changes
+- **Production Ready**: Optimized for Render.com deployment with health monitoring
+- **Developer Experience**: Enhanced API exploration with examples and schema validation
+- **Authentication Testing**: Built-in JWT token management for secure endpoint testing
 
 ## Aggregated Services
 
-This service aggregates API documentation from:
+This service aggregates comprehensive API documentation from:
 
-- **Auth Microservice** (Port 8084): Authentication and user management APIs
-- **Drugs Microservice** (Port 8081): Drug inventory and stock management APIs
-- **Subscription Microservice** (Port 8082): Subscription and prescription APIs
-- **Refill Microservice** (Port 8083): Refill orders and processing APIs
+- **Auth Microservice** 🔐 (Port 8084): Advanced JWT authentication and user management
+- **Drugs Microservice** 💊 (Port 8081): Intelligent drug inventory and multi-location stock management
+- **Subscription Microservice** 📋 (Port 8082): Smart subscription management and prescription handling
+- **Refill Microservice** 🔄 (Port 8083): Automated refill processing and order tracking
 
 ## Configuration
 
@@ -67,14 +70,16 @@ Monitor all microservices health from the aggregator:
 curl http://localhost:8085/actuator/health
 ```
 
-## What We Have
+## Enterprise Features
 
-- Interactive API testing environment
-- Request/response examples
-- Schema validation
-- Error code documentation
-- Authentication flow testing
-- Cross-service API exploration
+- **Interactive Testing Environment**: Complete API testing suite with real-time validation
+- **Comprehensive Examples**: Request/response examples for all endpoints
+- **Schema Validation**: Real-time validation with detailed error reporting
+- **Security Testing**: JWT authentication flow testing and token management
+- **Cross-Service Workflows**: End-to-end testing across all microservices
+- **Performance Monitoring**: API response time tracking and health metrics
+- **Developer Tools**: Export capabilities for Postman, Insomnia, and other tools
+- **Production URLs**: Ready for deployment with environment-specific configurations
 
 ## Development
 

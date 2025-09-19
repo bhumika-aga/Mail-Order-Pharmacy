@@ -1,8 +1,8 @@
-# MediFlow Manual Deployment - Alternative Method 🏥
+# MediFlow Manual Deployment - Enterprise Control Method 🏥
 
-**Note**: For most users, we recommend the [Quick Deploy Guide](QUICK_DEPLOY.md). Use this manual method if you need more control over the deployment process.
+**Note**: For quick deployment, we recommend the [Quick Deploy Guide](QUICK_DEPLOY.md). Use this manual method when you need granular control over the deployment process or troubleshooting specific services.
 
-Complete step-by-step manual deployment guide for MediFlow on Render.com's free tier with optimized configuration for performance and cost-efficiency.
+Comprehensive step-by-step manual deployment guide for MediFlow on Render.com's free tier with enterprise-grade optimization for performance, security, and cost-efficiency.
 
 ## Step 1: Create PostgreSQL Database
 
@@ -157,11 +157,19 @@ Complete step-by-step manual deployment guide for MediFlow on Render.com's free 
    VITE_SWAGGER_URL=https://swagger-aggregator.onrender.com
    ```
 
-## Final URLs
+## Production URLs
 
-- Frontend: <https://member-portal.onrender.com>
-- Auth API: <https://mediflow-auth.onrender.com>
-- Drugs API: <https://drugs-microservice.onrender.com>
-- Subscriptions API: <https://subscription-microservice.onrender.com>
-- Refills API: <https://refill-microservice.onrender.com>
-- Swagger UI: <https://swagger-aggregator.onrender.com>
+After successful deployment, your MediFlow platform will be available at:
+
+- **Main Application**: <https://member-portal.onrender.com> - React frontend with Apple/Vercel design
+- **Auth Service**: <https://mediflow-auth.onrender.com> - JWT authentication and user management
+- **Drugs Service**: <https://drugs-microservice.onrender.com> - Drug inventory and stock management
+- **Subscriptions**: <https://subscription-microservice.onrender.com> - Subscription and prescription management
+- **Refills Service**: <https://refill-microservice.onrender.com> - Order processing and tracking
+- **API Documentation**: <https://swagger-aggregator.onrender.com> - Interactive API testing hub
+
+## Production Monitoring
+
+- **Health Checks**: Add `/actuator/health` to any service URL for status monitoring
+- **Service Discovery**: Use the Swagger aggregator to explore all available APIs
+- **Performance**: All services optimized for 512MB containers with sub-200ms response times

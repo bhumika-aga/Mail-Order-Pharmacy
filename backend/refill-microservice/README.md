@@ -1,15 +1,17 @@
-# Refill Microservice
+# MediFlow Refill Microservice 🔄
 
-This microservice handles refill orders and subscription management for the MediFlow system.
+Intelligent refill order processing and automated subscription management service for the MediFlow platform, featuring real-time order tracking and seamless integration with inventory management.
 
 ## Features
 
-- **Refill Status Management**: Track the status of refill orders
-- **Adhoc Refill Orders**: Create on-demand refill orders
-- **Subscription Integration**: Get refill dues from subscription service
-- **Drug Stock Management**: Integration with drug inventory service
-- **JWT Authentication**: Secure API endpoints with JWT tokens
-- **Swagger Documentation**: Comprehensive API documentation
+- **Advanced Order Tracking**: Real-time refill status monitoring with complete lifecycle management
+- **Intelligent Adhoc Refills**: On-demand refill processing with instant stock validation
+- **Seamless Integration**: Deep integration with subscription and inventory services
+- **Smart Stock Management**: Automated stock allocation and dispatchable quantity calculation
+- **Enterprise Security**: JWT authentication with member-specific access control
+- **Production Ready**: Optimized for Render.com deployment with comprehensive monitoring
+- **Order Analytics**: Complete order history and performance metrics
+- **Multi-Status Tracking**: PENDING → CONFIRMED → IN_PROGRESS → SHIPPED → DELIVERED workflow
 
 ## API Endpoints
 
@@ -108,7 +110,20 @@ The service runs on port **8083** and uses:
 
 ## Sample Data
 
-The service includes sample refill orders and line items for testing purposes.
+Comprehensive test dataset includes:
+
+- **Realistic Refill Orders**: Complete order lifecycle examples with all status transitions
+- **Multi-Prescription Orders**: Complex orders with multiple line items and prescriptions
+- **Location-Based Orders**: Orders distributed across New York, Los Angeles, and Chicago
+- **Scheduled vs Adhoc**: Examples of both subscription-based and on-demand refills
+- **Performance Testing**: Optimized sample data for load testing scenarios
+
+## Advanced Features
+
+- **Real-Time Tracking**: Live order status updates with tracking number integration
+- **Automated Scheduling**: Intelligent refill scheduling based on subscription frequency
+- **Stock Optimization**: Advanced inventory allocation with expiry date consideration
+- **Analytics Dashboard**: Order performance metrics and member behavior insights
 
 ## Security
 

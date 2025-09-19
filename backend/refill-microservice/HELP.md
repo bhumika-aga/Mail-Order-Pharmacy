@@ -1,17 +1,45 @@
-# Getting Started
+# MediFlow Refill Microservice - Development Guide 🚀
+
+## Quick Start
+
+Get the MediFlow Refill Microservice running in minutes:
+
+```bash
+# Clone and build
+git clone <repository-url>
+cd backend/refill-microservice
+./mvnw clean spring-boot:run
+
+# Access services
+open http://localhost:8083/swagger-ui.html  # API Documentation
+open http://localhost:8083/h2-console      # Database Console
+open http://localhost:8083/actuator/health # Health Check
+```
 
 ## Reference Documentation
 
-For further reference, please consider the following sections:
+Comprehensive documentation for MediFlow development:
 
-* [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
-* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/3.4.8/maven-plugin)
-* [Create an OCI image](https://docs.spring.io/spring-boot/3.4.8/maven-plugin/build-image.html)
+* [MediFlow Complete Guide](../../MEDIFLOW_COMPLETE_GUIDE.md) - Full system documentation
+* [Quick Deploy Guide](../../QUICK_DEPLOY.md) - Render.com deployment instructions
+* [Docker Setup](../../DOCKER_README.md) - Container development guide
+* [Official Spring Boot Documentation](https://docs.spring.io/spring-boot/docs/current/reference/html/)
+* [Render.com Deployment Guide](https://render.com/docs)
 
-### Maven Parent overrides
+## Production Deployment
 
-Due to Maven's design, elements are inherited from the parent POM to the project POM.
-While most of the inheritance is fine, it also inherits unwanted elements like `<license>` and `<developers>` from the
-parent.
-To prevent this, the project POM contains empty overrides for these elements.
-If you manually switch to a different parent and actually want the inheritance, you need to remove those overrides.
+This microservice is optimized for Render.com free tier deployment:
+
+* **Docker Ready**: Optimized Dockerfile.refill for production
+* **Environment Configuration**: Production-ready application-prod.yml
+* **Health Monitoring**: Built-in actuator endpoints
+* **JWT Security**: Enterprise-grade authentication
+* **PostgreSQL Support**: Ready for production database
+
+## Development Features
+
+* **Hot Reload**: Spring DevTools for rapid development
+* **Interactive Testing**: Swagger UI for API exploration
+* **H2 Console**: In-memory database for development
+* **Comprehensive Logging**: Detailed logging for debugging
+* **Maven Wrapper**: No local Maven installation required
