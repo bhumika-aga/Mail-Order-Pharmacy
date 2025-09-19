@@ -22,7 +22,7 @@ This service aggregates API documentation from:
 ## Configuration
 
 - **Port**: 8085
-- **Main URL**: http://localhost:8085/swagger-ui.html
+- **Main URL**: <http://localhost:8085/swagger-ui.html>
 - **Service URLs**: Configurable via environment variables
 - **OpenAPI Version**: 3.0.3
 
@@ -67,7 +67,7 @@ Monitor all microservices health from the aggregator:
 curl http://localhost:8085/actuator/health
 ```
 
-## Features
+## What We Have
 
 - Interactive API testing environment
 - Request/response examples

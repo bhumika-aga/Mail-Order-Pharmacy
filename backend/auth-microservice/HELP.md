@@ -58,7 +58,7 @@ open http://localhost:8084/swagger-ui.html
 
 ## Demo Users
 
-```
+```txt
 Username: member1 | Password: password | Member ID: MEM001
 Username: member2 | Password: password | Member ID: MEM002
 Username: member3 | Password: password | Member ID: MEM003

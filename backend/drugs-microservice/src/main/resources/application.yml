@@ -69,7 +69,6 @@ spring:
   sql:
     init:
       mode: always
-
 ---
 spring:
   config:

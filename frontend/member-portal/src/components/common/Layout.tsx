@@ -74,7 +74,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             ))}
           </Box>
 
-          <Box sx={{ ml: 2, display: 'flex', alignItems: 'center' }}>
+          <Box sx={{ ml: 2, display: "flex", alignItems: "center" }}>
             <ThemeToggle />
             <IconButton
               size="large"

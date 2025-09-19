@@ -24,7 +24,7 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const theme = useTheme();
-  const isDarkMode = theme.palette.mode === 'dark';
+  const isDarkMode = theme.palette.mode === "dark";
 
   const { data: subscriptions } = useQuery({
     queryKey: ["subscriptions"],
@@ -50,7 +50,7 @@ const Dashboard: React.FC = () => {
       value: activeSubscriptions.length,
       icon: <Subscriptions sx={{ fontSize: 32 }} />,
       color: theme.palette.primary.main,
-      bgColor: isDarkMode ? 'rgba(59, 130, 246, 0.1)' : '#eff6ff',
+      bgColor: isDarkMode ? "rgba(59, 130, 246, 0.1)" : "#eff6ff",
       action: () => navigate("/subscriptions"),
     },
     {
@@ -58,7 +58,7 @@ const Dashboard: React.FC = () => {
       value: pendingRefills.length,
       icon: <Refresh sx={{ fontSize: 32 }} />,
       color: theme.palette.warning.main,
-      bgColor: isDarkMode ? 'rgba(245, 158, 11, 0.1)' : '#fffbeb',
+      bgColor: isDarkMode ? "rgba(245, 158, 11, 0.1)" : "#fffbeb",
       action: () => navigate("/refills"),
     },
     {
@@ -66,15 +66,15 @@ const Dashboard: React.FC = () => {
       value: "Browse",
       icon: <LocalPharmacy sx={{ fontSize: 32 }} />,
       color: theme.palette.success.main,
-      bgColor: isDarkMode ? 'rgba(16, 185, 129, 0.1)' : '#ecfdf5',
+      bgColor: isDarkMode ? "rgba(16, 185, 129, 0.1)" : "#ecfdf5",
       action: () => navigate("/drugs"),
     },
     {
       title: "Health Analytics",
       value: "View",
       icon: <TrendingUp sx={{ fontSize: 32 }} />,
-      color: '#8b5cf6',
-      bgColor: isDarkMode ? 'rgba(139, 92, 246, 0.1)' : '#f5f3ff',
+      color: "#8b5cf6",
+      bgColor: isDarkMode ? "rgba(139, 92, 246, 0.1)" : "#f5f3ff",
       action: () => navigate("/dashboard"),
     },
   ];

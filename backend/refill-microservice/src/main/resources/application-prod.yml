@@ -7,6 +7,10 @@ spring:
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      data-source-properties:
+        sslmode: disable
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:

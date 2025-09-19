@@ -55,6 +55,7 @@ open http://localhost:8082/swagger-ui.html
 ## Data Model
 
 ### MemberPrescription
+
 - prescriptionId (Primary Key)
 - memberId
 - drugCode
@@ -65,6 +66,7 @@ open http://localhost:8082/swagger-ui.html
 - expiryDate
 
 ### MemberSubscription
+
 - subscriptionId (Primary Key)
 - memberId
 - prescriptionId (Foreign Key)
@@ -76,6 +78,7 @@ open http://localhost:8082/swagger-ui.html
 ## Sample Data
 
 Includes:
+
 - 5 member prescriptions (PRES001-PRES005)
 - 5 member subscriptions (SUB001-SUB005)
 - Various frequencies and statuses

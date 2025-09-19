@@ -47,6 +47,7 @@ open http://localhost:8081/swagger-ui.html
 ## Data Model
 
 ### Drug Entity
+
 - drugId (Primary Key)
 - drugName
 - manufacturer
@@ -56,6 +57,7 @@ open http://localhost:8081/swagger-ui.html
 - composition
 
 ### DrugLocation Entity
+
 - drugId (Foreign Key)
 - location (New York, Los Angeles, Chicago)
 - quantityAvailable
@@ -63,6 +65,7 @@ open http://localhost:8081/swagger-ui.html
 ## Sample Data
 
 Includes 10 drugs (D001-D010) with:
+
 - Pricing information
 - Composition details
 - Stock quantities across 3 locations

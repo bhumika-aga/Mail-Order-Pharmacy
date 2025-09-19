@@ -102,33 +102,33 @@
 </head>
 
 <body>
-<div class="container">
-    <div class="header">
-        <h1>Mail Order Pharmacy</h1>
-        <p>Microservices API Documentation Portal</p>
-    </div>
+    <div class="container">
+        <div class="header">
+            <h1>Mail Order Pharmacy</h1>
+            <p>Microservices API Documentation Portal</p>
+        </div>
 
-    <div class="services-grid">
-        <div th:each="service : ${services}" class="service-card">
-            <div class="service-name" th:text="${service.key} + ' Service'"></div>
-            <div class="service-url" th:text="${service.value}"></div>
-            <a th:href="${service.value + '/swagger-ui.html'}" class="btn" target="_blank">
-                View API Docs
-            </a>
-            <a th:href="${service.value + '/v3/api-docs'}" class="btn" target="_blank">
-                JSON Spec
+        <div class="services-grid">
+            <div th:each="service : ${services}" class="service-card">
+                <div class="service-name" th:text="${service.key} + ' Service'"></div>
+                <div class="service-url" th:text="${service.value}"></div>
+                <a th:href="${service.value + '/swagger-ui.html'}" class="btn" target="_blank">
+                    View API Docs
+                </a>
+                <a th:href="${service.value + '/v3/api-docs'}" class="btn" target="_blank">
+                    JSON Spec
+                </a>
+            </div>
+        </div>
+
+        <div class="aggregated-section">
+            <h2>Unified API Documentation</h2>
+            <p>Access all microservices APIs from a single interface</p>
+            <a href="/swagger-ui.html" class="btn btn-primary">
+                Open Unified Swagger UI
             </a>
         </div>
     </div>
-
-    <div class="aggregated-section">
-        <h2>Unified API Documentation</h2>
-        <p>Access all microservices APIs from a single interface</p>
-        <a href="/swagger-ui.html" class="btn btn-primary">
-            Open Unified Swagger UI
-        </a>
-    </div>
-</div>
 </body>
 
 </html>

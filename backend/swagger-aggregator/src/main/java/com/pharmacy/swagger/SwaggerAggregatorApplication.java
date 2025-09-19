@@ -10,7 +10,7 @@ public class SwaggerAggregatorApplication {
     public static void main(String[] args) {
         SpringApplication.run(SwaggerAggregatorApplication.class, args);
     }
-    
+
     @Bean
     public WebClient webClient() {
         return WebClient.builder().build();
