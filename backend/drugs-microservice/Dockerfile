@@ -1,5 +1,5 @@
 # Multi-stage build for drugs-microservice
-FROM maven:3.9.2-openjdk-17-slim AS builder
+FROM maven:3.9-eclipse-temurin-17 AS builder
 
 # Set working directory
 WORKDIR /app
@@ -17,7 +17,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Production stage
-FROM openjdk:17-jre-slim
+FROM eclipse-temurin:17-jre-jammy
 
 # Add labels for better container management
 LABEL maintainer="pharmacy-team"
