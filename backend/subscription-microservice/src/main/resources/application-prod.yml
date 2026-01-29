@@ -19,7 +19,7 @@ spring:
     defer-datasource-initialization: true
     properties:
       hibernate:
-        format_sql: true
+        "format_sql": true
     generate-ddl: true
   sql:
     init:
@@ -46,4 +46,4 @@ management:
 
 logging:
   level:
-    com.pharmacy: INFO
+    "com.pharmacy": INFO

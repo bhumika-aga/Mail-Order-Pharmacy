@@ -149,7 +149,7 @@ const RefillsPage: React.FC = () => {
   const updatePrescriptionRequest = (
     index: number,
     field: string,
-    value: any
+    value: any,
   ) => {
     const newRequests = [...adhocForm.prescriptions];
     newRequests[index] = { ...newRequests[index], [field]: value };
@@ -256,7 +256,7 @@ const RefillsPage: React.FC = () => {
                         <Typography color="text.secondary" gutterBottom>
                           <strong>Order Date:</strong>{" "}
                           {new Date(
-                            refillStatus.orderDate
+                            refillStatus.orderDate,
                           ).toLocaleDateString()}
                         </Typography>
                         <Typography color="text.secondary" gutterBottom>
@@ -279,7 +279,7 @@ const RefillsPage: React.FC = () => {
                           <Typography color="text.secondary" gutterBottom>
                             <strong>Delivery Date:</strong>{" "}
                             {new Date(
-                              refillStatus.deliveryDate
+                              refillStatus.deliveryDate,
                             ).toLocaleDateString()}
                           </Typography>
                         )}
@@ -554,7 +554,7 @@ const RefillsPage: React.FC = () => {
                             updatePrescriptionRequest(
                               index,
                               "prescriptionId",
-                              e.target.value
+                              e.target.value,
                             )
                           }
                           placeholder="e.g., PRES001"
@@ -569,7 +569,7 @@ const RefillsPage: React.FC = () => {
                             updatePrescriptionRequest(
                               index,
                               "drugCode",
-                              e.target.value
+                              e.target.value,
                             )
                           }
                           placeholder="e.g., D001"
@@ -585,7 +585,7 @@ const RefillsPage: React.FC = () => {
                             updatePrescriptionRequest(
                               index,
                               "quantity",
-                              parseInt(e.target.value)
+                              parseInt(e.target.value),
                             )
                           }
                           inputProps={{ min: 1 }}
@@ -681,7 +681,7 @@ const RefillsPage: React.FC = () => {
                       <Typography>
                         <strong>Delivery:</strong>{" "}
                         {new Date(
-                          selectedRefill.deliveryDate
+                          selectedRefill.deliveryDate,
                         ).toLocaleDateString()}
                       </Typography>
                     )}

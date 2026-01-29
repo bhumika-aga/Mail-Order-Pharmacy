@@ -28,7 +28,7 @@ Comprehensive step-by-step manual deployment guide for MediFlow on Render.com's 
 2. Connect GitHub repository
 3. Configuration:
 
-   ``` txt
+   ```txt
    Name: mediflow-auth
    Runtime: Docker
    Dockerfile Path: ./Dockerfile.auth
@@ -37,7 +37,7 @@ Comprehensive step-by-step manual deployment guide for MediFlow on Render.com's 
 
 4. Environment Variables:
 
-   ``` txt
+   ```txt
    SPRING_PROFILES_ACTIVE=prod
    JWT_SECRET=mediFlowSecureSecretKeyForProductionDeploymentWithSufficientLengthForHS512Algorithm2024
    JWT_EXPIRATION=900000
@@ -49,7 +49,7 @@ Comprehensive step-by-step manual deployment guide for MediFlow on Render.com's 
 1. New → Web Service
 2. Configuration:
 
-   ``` txt
+   ```txt
    Name: drugs-microservice
    Runtime: Docker
    Dockerfile Path: ./Dockerfile.drugs
@@ -58,7 +58,7 @@ Comprehensive step-by-step manual deployment guide for MediFlow on Render.com's 
 
 3. Environment Variables:
 
-   ``` txt
+   ```txt
    SPRING_PROFILES_ACTIVE=prod
    DATABASE_URL=jdbc:postgresql://dpg-d2a7qjadbo4c73b2j4n0-a.oregon-postgres.render.com:5432/mediflow?user=mediflow_user&password=p9b7x3MCz3VJFZycM6AagAu4023WzX8Z&sslmode=require
    AUTH_SERVICE_URL=https://mediflow-auth.onrender.com
@@ -71,7 +71,7 @@ Comprehensive step-by-step manual deployment guide for MediFlow on Render.com's 
 1. New → Web Service
 2. Configuration:
 
-   ``` txt
+   ```txt
    Name: subscription-microservice
    Runtime: Docker
    Dockerfile Path: ./Dockerfile.subscription
@@ -80,7 +80,7 @@ Comprehensive step-by-step manual deployment guide for MediFlow on Render.com's 
 
 3. Environment Variables:
 
-   ``` txt
+   ```txt
    SPRING_PROFILES_ACTIVE=prod
    DATABASE_URL=jdbc:postgresql://dpg-d2a7qjadbo4c73b2j4n0-a.oregon-postgres.render.com:5432/mediflow?user=mediflow_user&password=p9b7x3MCz3VJFZycM6AagAu4023WzX8Z&sslmode=require
    AUTH_SERVICE_URL=https://mediflow-auth.onrender.com
@@ -94,7 +94,7 @@ Comprehensive step-by-step manual deployment guide for MediFlow on Render.com's 
 1. New → Web Service
 2. Configuration:
 
-   ``` txt
+   ```txt
    Name: refill-microservice
    Runtime: Docker
    Dockerfile Path: ./Dockerfile.refill
@@ -103,7 +103,7 @@ Comprehensive step-by-step manual deployment guide for MediFlow on Render.com's 
 
 3. Environment Variables:
 
-   ``` txt
+   ```txt
    SPRING_PROFILES_ACTIVE=prod
    DATABASE_URL=jdbc:postgresql://dpg-d2a7qjadbo4c73b2j4n0-a.oregon-postgres.render.com:5432/mediflow?user=mediflow_user&password=p9b7x3MCz3VJFZycM6AagAu4023WzX8Z&sslmode=require
    AUTH_SERVICE_URL=https://mediflow-auth.onrender.com
@@ -117,7 +117,7 @@ Comprehensive step-by-step manual deployment guide for MediFlow on Render.com's 
 1. New → Web Service
 2. Configuration:
 
-   ``` txt
+   ```txt
    Name: swagger-aggregator
    Runtime: Docker
    Dockerfile Path: ./Dockerfile.swagger
@@ -126,7 +126,7 @@ Comprehensive step-by-step manual deployment guide for MediFlow on Render.com's 
 
 3. Environment Variables:
 
-   ``` txt
+   ```txt
    SPRING_PROFILES_ACTIVE=prod
    AUTH_SERVICE_URL=https://mediflow-auth.onrender.com
    DRUGS_SERVICE_URL=https://drugs-microservice.onrender.com
@@ -141,7 +141,7 @@ Comprehensive step-by-step manual deployment guide for MediFlow on Render.com's 
 1. New → Static Site
 2. Configuration:
 
-   ``` txt
+   ```txt
    Name: member-portal
    Build Command: cd frontend/member-portal && npm install && npm run build
    Publish Directory: frontend/member-portal/dist
@@ -149,7 +149,7 @@ Comprehensive step-by-step manual deployment guide for MediFlow on Render.com's 
 
 3. Environment Variables:
 
-   ``` txt
+   ```txt
    VITE_AUTH_SERVICE_URL=https://mediflow-auth.onrender.com
    VITE_DRUGS_SERVICE_URL=https://drugs-microservice.onrender.com
    VITE_SUBSCRIPTION_SERVICE_URL=https://subscription-microservice.onrender.com

@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -32,11 +33,13 @@ public class DrugServiceClient {
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(request, headers);
 
-            ResponseEntity<List> response = restTemplate.exchange(
+            ParameterizedTypeReference<List<Map<String, Object>>> responseType = new ParameterizedTypeReference<>() {
+            };
+            ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(
                     drugsServiceUrl + "/api/drugs/getDispatchableDrugStock",
                     HttpMethod.POST,
                     entity,
-                    List.class);
+                    responseType);
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 List<Map<String, Object>> stockResponses = response.getBody();
@@ -57,11 +60,13 @@ public class DrugServiceClient {
             headers.set("Authorization", "Bearer " + token);
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
-            ResponseEntity<Map> response = restTemplate.exchange(
+            ParameterizedTypeReference<Map<String, Object>> responseType = new ParameterizedTypeReference<>() {
+            };
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
                     drugsServiceUrl + "/api/drugs/searchDrugsByID?drugId=" + drugId,
                     HttpMethod.GET,
                     entity,
-                    Map.class);
+                    responseType);
 
             if (response.getStatusCode().is2xxSuccessful()) {
                 return response.getBody();

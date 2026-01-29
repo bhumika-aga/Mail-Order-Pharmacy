@@ -1,0 +1,19 @@
+{
+    "properties": [
+        {
+            "name": "jwt.secret",
+            "type": "java.lang.String",
+            "description": "Secret key for JWT generation."
+        },
+        {
+            "name": "jwt.expiration",
+            "type": "java.lang.Integer",
+            "description": "JWT expiration time in milliseconds."
+        },
+        {
+            "name": "services.auth.url",
+            "type": "java.lang.String",
+            "description": "URL of the Auth Service."
+        }
+    ]
+}

@@ -14,25 +14,25 @@ import com.pharmacy.refill.entity.RefillOrder;
 @Repository
 public interface RefillOrderRepository extends JpaRepository<RefillOrder, String> {
 
-    List<RefillOrder> findByMemberIdOrderByOrderDateDesc(String memberId);
+        List<RefillOrder> findByMemberIdOrderByOrderDateDesc(String memberId);
 
-    Optional<RefillOrder> findTopByMemberIdOrderByOrderDateDesc(String memberId);
+        Optional<RefillOrder> findTopByMemberIdOrderByOrderDateDesc(String memberId);
 
-    List<RefillOrder> findByOrderStatus(RefillOrder.OrderStatus orderStatus);
+        List<RefillOrder> findByOrderStatus(RefillOrder.OrderStatus orderStatus);
 
-    List<RefillOrder> findByOrderType(RefillOrder.OrderType orderType);
+        List<RefillOrder> findByOrderType(RefillOrder.OrderType orderType);
 
-    List<RefillOrder> findByMemberIdAndOrderStatus(String memberId, RefillOrder.OrderStatus orderStatus);
+        List<RefillOrder> findByMemberIdAndOrderStatus(String memberId, RefillOrder.OrderStatus orderStatus);
 
-    @Query("SELECT ro FROM RefillOrder ro WHERE ro.memberId = :memberId AND ro.orderDate >= :fromDate")
-    List<RefillOrder> findByMemberIdAndOrderDateAfter(@Param("memberId") String memberId,
-            @Param("fromDate") LocalDateTime fromDate);
+        @Query("SELECT ro FROM RefillOrder ro WHERE ro.memberId = :memberId AND ro.orderDate >= :fromDate")
+        List<RefillOrder> findByMemberIdAndOrderDateAfter(@Param("memberId") String memberId,
+                        @Param("fromDate") LocalDateTime fromDate);
 
-    @Query("SELECT ro FROM RefillOrder ro WHERE ro.orderDate BETWEEN :startDate AND :endDate")
-    List<RefillOrder> findOrdersBetweenDates(@Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate);
+        @Query("SELECT ro FROM RefillOrder ro WHERE ro.orderDate BETWEEN :startDate AND :endDate")
+        List<RefillOrder> findOrdersBetweenDates(@Param("startDate") LocalDateTime startDate,
+                        @Param("endDate") LocalDateTime endDate);
 
-    @Query("SELECT COUNT(ro) FROM RefillOrder ro WHERE ro.memberId = :memberId AND ro.orderStatus = :status")
-    Long countByMemberIdAndOrderStatus(@Param("memberId") String memberId,
-            @Param("status") RefillOrder.OrderStatus status);
+        @Query("SELECT COUNT(ro) FROM RefillOrder ro WHERE ro.memberId = :memberId AND ro.orderStatus = :status")
+        Long countByMemberIdAndOrderStatus(@Param("memberId") String memberId,
+                        @Param("status") RefillOrder.OrderStatus status);
 }

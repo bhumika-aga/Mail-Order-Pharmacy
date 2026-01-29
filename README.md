@@ -97,7 +97,7 @@ cd backend/auth-microservice
 mvn spring-boot:run
 
 # Start Drugs Service (new terminal)
-cd backend/drugs-microservice  
+cd backend/drugs-microservice
 mvn spring-boot:run
 
 # Start Subscription Service (new terminal)
@@ -167,7 +167,7 @@ docker compose up auth-microservice drugs-microservice
 
 ```txt
 POST /api/auth/signin          - User login
-POST /api/auth/signup          - User registration  
+POST /api/auth/signup          - User registration
 POST /api/auth/validate        - Token validation
 GET  /api/auth/users           - List all users (admin)
 GET  /api/auth/check-username  - Username availability
@@ -258,7 +258,7 @@ The frontend implements a comprehensive design system inspired by Apple and Verc
 ```css
 /* Light Mode */
 Primary: #3b82f6 (Blue 500)
-Secondary: #10b981 (Emerald 500)  
+Secondary: #10b981 (Emerald 500)
 Background: #f8fafc (Slate 50)
 Surface: #ffffff (White)
 Text Primary: #1e293b (Slate 800)
@@ -294,7 +294,7 @@ src/
 ├── contexts/           # React contexts (Theme, Auth)
 ├── hooks/             # Custom React hooks
 ├── pages/             # Page components
-├── services/          # API service layer  
+├── services/          # API service layer
 └── types/             # TypeScript definitions
 ```
 
@@ -318,7 +318,7 @@ src/
 ### 👤 **New Member Onboarding**
 
 1. **Registration**: Sign up with auto-generated Member ID
-2. **Profile Setup**: Add insurance and location information  
+2. **Profile Setup**: Add insurance and location information
 3. **Drug Discovery**: Browse and search available medications
 4. **First Subscription**: Create automated refill subscription
 5. **Order Management**: Track delivery and manage preferences
@@ -348,8 +348,8 @@ src/
 
 ```typescript
 // Smart search - detects ID vs name automatically
-searchById("D001")     // Returns: Single drug object
-searchByName("aspirin") // Returns: Array of matching drugs
+searchById("D001"); // Returns: Single drug object
+searchByName("aspirin"); // Returns: Array of matching drugs
 ```
 
 #### **UC3: Subscription Management**
@@ -388,7 +388,7 @@ searchByName("aspirin") // Returns: Array of matching drugs
 ### 📝 **Code Standards**
 
 - **TypeScript**: Strict mode enabled with comprehensive type definitions
-- **ESLint**: Consistent code formatting and error detection  
+- **ESLint**: Consistent code formatting and error detection
 - **Prettier**: Automated code formatting
 - **Conventional Commits**: Structured commit messages
 
@@ -400,7 +400,7 @@ npm run test              # Run unit tests
 npm run test:watch        # Watch mode
 npm run test:coverage     # Coverage reports
 
-# Backend Testing  
+# Backend Testing
 mvn test                  # Run all tests
 mvn test -Dtest=UserServiceTest  # Run specific tests
 ```
@@ -417,7 +417,7 @@ mvn test -Dtest=UserServiceTest  # Run specific tests
 ### 🛡️ **Security Measures**
 
 - **JWT Authentication**: Secure token-based authentication
-- **Password Encryption**: BCrypt hashing for user passwords  
+- **Password Encryption**: BCrypt hashing for user passwords
 - **CORS Configuration**: Controlled cross-origin resource sharing
 - **Input Validation**: Comprehensive request validation
 - **SQL Injection Prevention**: Parameterized queries and JPA
@@ -438,7 +438,7 @@ All services expose health check endpoints:
 
 ```txt
 GET /actuator/health      # Service health status
-GET /actuator/info        # Application information  
+GET /actuator/info        # Application information
 GET /actuator/metrics     # Performance metrics
 ```
 
@@ -507,7 +507,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 Built with ❤️ by the MediFlow Team
 
-*Revolutionizing healthcare through technology, one prescription at a time.*
+_Revolutionizing healthcare through technology, one prescription at a time._
 
 ## 🎆 Latest 2024 Production Updates
 

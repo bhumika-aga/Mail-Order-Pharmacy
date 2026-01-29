@@ -245,7 +245,7 @@ const DrugsPage: React.FC = () => {
                   <Typography>
                     <strong>Manufactured Date:</strong>{" "}
                     {new Date(
-                      selectedDrug.manufacturedDate
+                      selectedDrug.manufacturedDate,
                     ).toLocaleDateString()}
                   </Typography>
                   <Typography>

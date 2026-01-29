@@ -23,7 +23,7 @@ git push origin main
 
 # In Render Dashboard:
 # 1. New → Blueprint
-# 2. Connect GitHub repo  
+# 2. Connect GitHub repo
 # 3. Deploy (uses render.yaml)
 ```
 
@@ -32,7 +32,7 @@ git push origin main
 Create each service manually:
 
 - `mediflow-auth` (Dockerfile.auth)
-- `mediflow-drugs` (Dockerfile.drugs)  
+- `mediflow-drugs` (Dockerfile.drugs)
 - `mediflow-subscriptions` (Dockerfile.subscription)
 - `mediflow-refills` (Dockerfile.refill)
 - `mediflow-swagger` (Dockerfile.swagger)
@@ -55,7 +55,7 @@ DATABASE_URL=[Your PostgreSQL URL from Step 1]
 # Add to each service as needed:
 AUTH_SERVICE_URL=https://mediflow-auth.onrender.com
 DRUGS_SERVICE_URL=https://mediflow-drugs.onrender.com
-SUBSCRIPTION_SERVICE_URL=https://mediflow-subscriptions.onrender.com  
+SUBSCRIPTION_SERVICE_URL=https://mediflow-subscriptions.onrender.com
 REFILL_SERVICE_URL=https://mediflow-refills.onrender.com
 ```
 
@@ -77,7 +77,7 @@ Create `.github/workflows/keep-alive.yml`:
 name: Keep MediFlow Alive
 on:
   schedule:
-    - cron: '*/14 * * * *'
+    - cron: "*/14 * * * *"
 jobs:
   wake:
     runs-on: ubuntu-latest
@@ -139,7 +139,7 @@ After deployment, your MediFlow services will be available at:
 - **Free Tier Optimized**: Designed specifically for Render.com free tier
 - **CI/CD Ready**: GitHub Actions integration for automated deployment
 
-For complete technical details, see [MediFlow Complete Guide](MEDIFLOW_COMPLETE_GUIDE.md)
+For complete technical details, see [MediFlow Project Implementation Guide](PROJECT_IMPLEMENTATION.md)
 
 ---
 

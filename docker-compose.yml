@@ -141,7 +141,6 @@ services:
     networks:
       - pharmacy-network
 
-
 networks:
   pharmacy-network:
     driver: bridge

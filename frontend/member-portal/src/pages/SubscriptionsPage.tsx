@@ -42,7 +42,7 @@ const SubscriptionsPage: React.FC = () => {
       doctorDetails: "",
       refillFrequency: "MONTHLY",
       memberLocation: "",
-    }
+    },
   );
 
   const queryClient = useQueryClient();
@@ -158,7 +158,7 @@ const SubscriptionsPage: React.FC = () => {
                   <Typography color="text.secondary">
                     Date:{" "}
                     {new Date(
-                      subscription.subscriptionDate
+                      subscription.subscriptionDate,
                     ).toLocaleDateString()}
                   </Typography>
                 </CardContent>
@@ -383,7 +383,7 @@ const SubscriptionsPage: React.FC = () => {
               <Typography>
                 <strong>Date:</strong>{" "}
                 {new Date(
-                  selectedSubscription.subscriptionDate
+                  selectedSubscription.subscriptionDate,
                 ).toLocaleDateString()}
               </Typography>
               {selectedSubscription.prescription && (

@@ -131,7 +131,7 @@ const SignupPage: React.FC = () => {
 
     // Check if any field validation failed
     const hasValidationErrors = Object.values(fieldValidation).some(
-      (field) => !field.isValid
+      (field) => !field.isValid,
     );
     if (hasValidationErrors) {
       return;

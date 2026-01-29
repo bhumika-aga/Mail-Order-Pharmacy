@@ -84,7 +84,7 @@ public class AuthController {
     @Operation(summary = "User registration", description = "Register a new user")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
         try {
-            User user = userService.createUser(
+            userService.createUser(
                     signUpRequest.getUsername(),
                     signUpRequest.getEmail(),
                     signUpRequest.getPassword(),

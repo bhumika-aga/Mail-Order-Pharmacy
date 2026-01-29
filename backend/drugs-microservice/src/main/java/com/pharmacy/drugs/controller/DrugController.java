@@ -41,9 +41,6 @@ public class DrugController {
             @Parameter(description = "Drug ID to search for", required = true) @RequestParam String drugId,
             HttpServletRequest request) {
 
-        String memberId = (String) request.getAttribute("memberId");
-        String username = (String) request.getAttribute("username");
-
         Optional<Drug> drug = drugService.searchDrugById(drugId);
 
         if (drug.isPresent()) {
@@ -59,9 +56,6 @@ public class DrugController {
             @Parameter(description = "Drug name to search for", required = true) @RequestParam String drugName,
             HttpServletRequest request) {
 
-        String memberId = (String) request.getAttribute("memberId");
-        String username = (String) request.getAttribute("username");
-
         List<Drug> drugs = drugService.searchDrugsByName(drugName);
         return ResponseEntity.ok(drugs);
     }
@@ -72,9 +66,6 @@ public class DrugController {
             @Valid @RequestBody DrugStockRequest request,
             HttpServletRequest httpRequest) {
 
-        String memberId = (String) httpRequest.getAttribute("memberId");
-        String username = (String) httpRequest.getAttribute("username");
-
         List<DrugStockResponse> stockResponses = drugService.getDispatchableDrugStock(request);
         return ResponseEntity.ok(stockResponses);
     }
@@ -82,8 +73,6 @@ public class DrugController {
     @GetMapping("/all")
     @Operation(summary = "Get all valid drugs", description = "Get all drugs that are not expired")
     public ResponseEntity<List<Drug>> getAllValidDrugs(HttpServletRequest request) {
-        String memberId = (String) request.getAttribute("memberId");
-        String username = (String) request.getAttribute("username");
 
         List<Drug> drugs = drugService.getAllValidDrugs();
         return ResponseEntity.ok(drugs);
@@ -94,9 +83,6 @@ public class DrugController {
     public ResponseEntity<List<DrugLocation>> getDrugLocations(
             @Parameter(description = "Drug ID", required = true) @PathVariable String drugId,
             HttpServletRequest request) {
-
-        String memberId = (String) request.getAttribute("memberId");
-        String username = (String) request.getAttribute("username");
 
         List<DrugLocation> locations = drugService.getDrugLocationsByDrugId(drugId);
         return ResponseEntity.ok(locations);

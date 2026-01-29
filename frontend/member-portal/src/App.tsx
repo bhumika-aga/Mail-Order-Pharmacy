@@ -21,7 +21,7 @@ const SubscriptionsPage = React.lazy(() => import("./pages/SubscriptionsPage"));
 const RefillsPage = React.lazy(() => import("./pages/RefillsPage"));
 const SignupPage = React.lazy(() => import("./pages/SignupPage"));
 const UserManagementPage = React.lazy(
-  () => import("./pages/UserManagementPage")
+  () => import("./pages/UserManagementPage"),
 );
 
 const queryClient = new QueryClient({
