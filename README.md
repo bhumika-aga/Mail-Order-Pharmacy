@@ -301,7 +301,6 @@ Mail-Order-Pharmacy/
 
 ## 📚 Documentation
 
-- **[LOGICAL_IMPLEMENTATION.md](LOGICAL_IMPLEMENTATION.md)** - Comprehensive technical guide covering business logic, architecture, and design decisions
 - **[PROJECT_IMPLEMENTATION.md](PROJECT_IMPLEMENTATION.md)** - Implementation patterns and core concepts
 - **[QUICK_DEPLOY.md](QUICK_DEPLOY.md)** - Quick deployment guide
 - **[render-manual-deployment.md](render-manual-deployment.md)** - Render.com deployment instructions
