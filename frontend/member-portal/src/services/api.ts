@@ -19,13 +19,9 @@ const DRUGS_SERVICE_URL = import.meta.env.VITE_DRUGS_SERVICE_URL || 'http://loca
 const SUBSCRIPTION_SERVICE_URL = import.meta.env.VITE_SUBSCRIPTION_SERVICE_URL || 'http://localhost:8082';
 const REFILL_SERVICE_URL = import.meta.env.VITE_REFILL_SERVICE_URL || 'http://localhost:8083';
 
-console.log('AUTH_SERVICE_URL:', AUTH_SERVICE_URL);
-
 const authApi = axios.create({
   baseURL: `${AUTH_SERVICE_URL}/api/auth`,
 });
-
-console.log('Auth API baseURL:', authApi.defaults.baseURL);
 
 const drugsApi = axios.create({
   baseURL: `${DRUGS_SERVICE_URL}/api/drugs`,
@@ -61,11 +57,8 @@ export const authService = {
       headers: { Authorization: `Bearer ${token}` }
     }),
 
-  register: (signupData: SignupRequest): Promise<AxiosResponse<MessageResponse>> => {
-    console.log('Registering user with data:', signupData);
-    console.log('Using URL:', `${authApi.defaults.baseURL}/signup`);
-    return authApi.post('/signup', signupData);
-  },
+  register: (signupData: SignupRequest): Promise<AxiosResponse<MessageResponse>> =>
+    authApi.post('/signup', signupData),
 
   getAllUsers: (): Promise<AxiosResponse<User[]>> =>
     authApi.get('/users'),
