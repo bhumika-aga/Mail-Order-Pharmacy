@@ -1,3 +1,5 @@
+import { drugService } from "@/services/api";
+import { Drug } from "@/types";
 import { CheckCircle, Info, Search, Warning } from "@mui/icons-material";
 import {
   Box,
@@ -18,8 +20,6 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import React, { useState } from "react";
 import LoadingSpinner from "../components/common/LoadingSpinner";
-import { drugService } from "../services/api";
-import { Drug } from "../types";
 
 const DrugsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -233,8 +233,8 @@ const DrugsPage: React.FC = () => {
                     <strong>Manufacturer:</strong> {selectedDrug.manufacturer}
                   </Typography>
                   <Typography>
-                    <strong>Cost per Package:</strong> $
-                    {selectedDrug.costPerPackage}
+                    <strong>Cost per Package:</strong> ₹
+                    {selectedDrug.costPerPackage?.toFixed(2)}
                   </Typography>
                   <Typography>
                     <strong>Units per Package:</strong>{" "}

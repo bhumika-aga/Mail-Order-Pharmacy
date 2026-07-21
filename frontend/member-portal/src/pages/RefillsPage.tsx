@@ -1,3 +1,5 @@
+import { refillService } from "@/services/api";
+import { AdhocRefillRequest, RefillStatusResponse } from "@/types";
 import {
   Add,
   Assignment,
@@ -32,8 +34,6 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useState } from "react";
 import LoadingSpinner from "../components/common/LoadingSpinner";
-import { refillService } from "../services/api";
-import { AdhocRefillRequest, RefillStatusResponse } from "../types";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -272,7 +272,7 @@ const RefillsPage: React.FC = () => {
                       </Grid>
                       <Grid item xs={12} sm={6}>
                         <Typography color="text.secondary" gutterBottom>
-                          <strong>Total Amount:</strong> $
+                          <strong>Total Amount:</strong> ₹
                           {refillStatus.totalAmount?.toFixed(2) || "N/A"}
                         </Typography>
                         {refillStatus.deliveryDate && (
@@ -353,7 +353,7 @@ const RefillsPage: React.FC = () => {
                           <strong>Location:</strong> {refill.memberLocation}
                         </Typography>
                         <Typography color="text.secondary" gutterBottom>
-                          <strong>Amount:</strong> $
+                          <strong>Amount:</strong> ₹
                           {refill.totalAmount?.toFixed(2) || "N/A"}
                         </Typography>
                         <Typography color="text.secondary" gutterBottom>
@@ -668,7 +668,7 @@ const RefillsPage: React.FC = () => {
                       <strong>Order Type:</strong> {selectedRefill.orderType}
                     </Typography>
                     <Typography>
-                      <strong>Total Amount:</strong> $
+                      <strong>Total Amount:</strong> ₹
                       {selectedRefill.totalAmount?.toFixed(2) || "N/A"}
                     </Typography>
                     <Box display="flex" alignItems="center" gap={1}>
@@ -728,11 +728,11 @@ const RefillsPage: React.FC = () => {
                               <strong>Quantity:</strong> {item.quantity}
                             </Typography>
                             <Typography variant="body2">
-                              <strong>Unit Price:</strong> $
+                              <strong>Unit Price:</strong> ₹
                               {item.unitPrice?.toFixed(2) || "N/A"}
                             </Typography>
                             <Typography variant="body2">
-                              <strong>Total Price:</strong> $
+                              <strong>Total Price:</strong> ₹
                               {item.totalPrice?.toFixed(2) || "N/A"}
                             </Typography>
                           </Grid>
