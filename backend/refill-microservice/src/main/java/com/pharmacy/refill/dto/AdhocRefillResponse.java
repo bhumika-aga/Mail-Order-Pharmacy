@@ -1,5 +1,6 @@
 package com.pharmacy.refill.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class AdhocRefillResponse {
@@ -9,14 +10,14 @@ public class AdhocRefillResponse {
     private String memberLocation;
     private String orderStatus;
     private String message;
-    private Double totalAmount;
-
+    private BigDecimal totalAmount;
+    
     public AdhocRefillResponse() {
     }
-
+    
     public AdhocRefillResponse(String refillOrderId, String memberId, LocalDateTime orderDate,
-            String memberLocation, String orderStatus, String message,
-            Double totalAmount) {
+                               String memberLocation, String orderStatus, String message,
+                               BigDecimal totalAmount) {
         this.refillOrderId = refillOrderId;
         this.memberId = memberId;
         this.orderDate = orderDate;
@@ -25,61 +26,61 @@ public class AdhocRefillResponse {
         this.message = message;
         this.totalAmount = totalAmount;
     }
-
+    
     // Getters and Setters
     public String getRefillOrderId() {
         return refillOrderId;
     }
-
+    
     public void setRefillOrderId(String refillOrderId) {
         this.refillOrderId = refillOrderId;
     }
-
+    
     public String getMemberId() {
         return memberId;
     }
-
+    
     public void setMemberId(String memberId) {
         this.memberId = memberId;
     }
-
+    
     public LocalDateTime getOrderDate() {
         return orderDate;
     }
-
+    
     public void setOrderDate(LocalDateTime orderDate) {
         this.orderDate = orderDate;
     }
-
+    
     public String getMemberLocation() {
         return memberLocation;
     }
-
+    
     public void setMemberLocation(String memberLocation) {
         this.memberLocation = memberLocation;
     }
-
+    
     public String getOrderStatus() {
         return orderStatus;
     }
-
+    
     public void setOrderStatus(String orderStatus) {
         this.orderStatus = orderStatus;
     }
-
+    
     public String getMessage() {
         return message;
     }
-
+    
     public void setMessage(String message) {
         this.message = message;
     }
-
-    public Double getTotalAmount() {
+    
+    public BigDecimal getTotalAmount() {
         return totalAmount;
     }
-
-    public void setTotalAmount(Double totalAmount) {
+    
+    public void setTotalAmount(BigDecimal totalAmount) {
         this.totalAmount = totalAmount;
     }
 }

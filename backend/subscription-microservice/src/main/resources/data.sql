@@ -15,8 +15,8 @@ VALUES ('PRES001', 'MEM001', 'POL12345', 'BlueCross BlueShield', '2024-01-10', '
 -- Insert member subscriptions
 INSERT INTO member_subscriptions (subscription_id, member_id, subscription_date, prescription_id, refill_frequency,
                                   member_location, subscription_status)
-VALUES ('SUB001', 'MEM001', '2024-01-15', 'PRES001', 'MONTHLY', 'NYC', 'ACTIVE'),
-       ('SUB002', 'MEM001', '2024-01-16', 'PRES002', 'MONTHLY', 'NYC', 'ACTIVE'),
-       ('SUB003', 'MEM002', '2024-01-20', 'PRES003', 'WEEKLY', 'LAX', 'ACTIVE'),
-       ('SUB004', 'MEM002', '2024-01-22', 'PRES004', 'MONTHLY', 'LAX', 'INACTIVE'),
-       ('SUB005', 'MEM003', '2024-01-25', 'PRES005', 'MONTHLY', 'CHI', 'ACTIVE');
+VALUES ('SUB001', 'MEM001', '2024-01-15', 'PRES001', 'MONTHLY', 'New York', 'ACTIVE'),
+       ('SUB002', 'MEM001', '2024-01-16', 'PRES002', 'MONTHLY', 'New York', 'ACTIVE'),
+       ('SUB003', 'MEM002', '2024-01-20', 'PRES003', 'WEEKLY', 'Los Angeles', 'ACTIVE'),
+       ('SUB004', 'MEM002', '2024-01-22', 'PRES004', 'MONTHLY', 'Los Angeles', 'INACTIVE'),
+       ('SUB005', 'MEM003', '2024-01-25', 'PRES005', 'MONTHLY', 'Chicago', 'ACTIVE');

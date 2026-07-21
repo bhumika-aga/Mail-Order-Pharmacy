@@ -1,0 +1,589 @@
+{
+  "info": {
+    "name": "MediFlow - Mail-Order Pharmacy",
+    "description": "End-to-end API collection for the MediFlow microservices (auth, drugs, subscriptions, refill).\n\nUsage:\n1. Run **Auth > Sign In** first — its test script stores `token` and `memberId` as collection variables, which every other request reuses via `Authorization: Bearer {{token}}`.\n2. Base URLs default to the local dev ports (8081-8084). Override the `*_url` variables for a deployed environment.\n\nAll example responses were captured from a live run against the H2 dev profile.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "auth_url", "value": "http://localhost:8084" },
+    { "key": "drugs_url", "value": "http://localhost:8081" },
+    { "key": "sub_url", "value": "http://localhost:8082" },
+    { "key": "refill_url", "value": "http://localhost:8083" },
+    { "key": "token", "value": "" },
+    { "key": "memberId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Sign Up",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{auth_url}}/api/auth/signup",
+              "host": ["{{auth_url}}"],
+              "path": ["api", "auth", "signup"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"bob\",\n  \"email\": \"bob@pharmacy.com\",\n  \"password\": \"password\",\n  \"fullName\": \"Bob Tester\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 Registered",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{auth_url}}/api/auth/signup" }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"message\": \"User registered successfully!\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Sign In",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.collectionVariables.set('token', res.token);",
+                  "pm.collectionVariables.set('memberId', res.memberId);",
+                  "pm.test('token issued', () => pm.expect(res.token).to.be.a('string'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{auth_url}}/api/auth/signin",
+              "host": ["{{auth_url}}"],
+              "path": ["api", "auth", "signin"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"member1\",\n  \"password\": \"password\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 JWT issued",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{auth_url}}/api/auth/signin" }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"token\": \"eyJhbGciOiJIUzUxMiJ9...\",\n  \"username\": \"member1\",\n  \"memberId\": \"MEM001\",\n  \"expirationTime\": 900000,\n  \"type\": \"Bearer\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Validate Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{auth_url}}/api/auth/validate",
+              "host": ["{{auth_url}}"],
+              "path": ["api", "auth", "validate"]
+            }
+          }
+        },
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{auth_url}}/api/auth/users",
+              "host": ["{{auth_url}}"],
+              "path": ["api", "auth", "users"]
+            }
+          }
+        },
+        {
+          "name": "Get User By Id",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{auth_url}}/api/auth/users/1",
+              "host": ["{{auth_url}}"],
+              "path": ["api", "auth", "users", "1"]
+            }
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{auth_url}}/api/auth/users/1",
+              "host": ["{{auth_url}}"],
+              "path": ["api", "auth", "users", "1"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"member1\",\n  \"email\": \"member1@pharmacy.com\",\n  \"memberId\": \"MEM001\",\n  \"fullName\": \"Member One Updated\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{auth_url}}/api/auth/users/99",
+              "host": ["{{auth_url}}"],
+              "path": ["api", "auth", "users", "99"]
+            }
+          }
+        },
+        {
+          "name": "Check Username Availability",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{auth_url}}/api/auth/check-username/member1",
+              "host": ["{{auth_url}}"],
+              "path": ["api", "auth", "check-username", "member1"]
+            }
+          }
+        },
+        {
+          "name": "Check Email Availability",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{auth_url}}/api/auth/check-email/member1@pharmacy.com",
+              "host": ["{{auth_url}}"],
+              "path": ["api", "auth", "check-email", "member1@pharmacy.com"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Drugs",
+      "item": [
+        {
+          "name": "All Valid Drugs",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{drugs_url}}/api/drugs/all",
+              "host": ["{{drugs_url}}"],
+              "path": ["api", "drugs", "all"]
+            }
+          }
+        },
+        {
+          "name": "Search Drug By ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{drugs_url}}/api/drugs/searchDrugsByID?drugId=D001",
+              "host": ["{{drugs_url}}"],
+              "path": ["api", "drugs", "searchDrugsByID"],
+              "query": [{ "key": "drugId", "value": "D001" }]
+            }
+          },
+          "response": [
+            {
+              "name": "200 Drug",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{drugs_url}}/api/drugs/searchDrugsByID?drugId=D001"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"drugId\": \"D001\",\n  \"drugName\": \"Paracetamol 500mg\",\n  \"manufacturer\": \"PharmaCorp\",\n  \"manufacturedDate\": \"2025-01-15\",\n  \"expiryDate\": \"2027-01-15\",\n  \"unitsPerPackage\": 10,\n  \"costPerPackage\": 15.50,\n  \"medicalComposition\": \"Paracetamol 500mg, Microcrystalline Cellulose, Starch\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Search Drugs By Name",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{drugs_url}}/api/drugs/searchDrugsByName?drugName=Paracetamol",
+              "host": ["{{drugs_url}}"],
+              "path": ["api", "drugs", "searchDrugsByName"],
+              "query": [{ "key": "drugName", "value": "Paracetamol" }]
+            }
+          }
+        },
+        {
+          "name": "Dispatchable Drug Stock",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{drugs_url}}/api/drugs/getDispatchableDrugStock",
+              "host": ["{{drugs_url}}"],
+              "path": ["api", "drugs", "getDispatchableDrugStock"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"drugIds\": [\"D001\", \"D002\"],\n  \"location\": \"New York\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 Stock",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{drugs_url}}/api/drugs/getDispatchableDrugStock"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "[\n  {\n    \"drugId\": \"D001\",\n    \"drugName\": \"Paracetamol 500mg\",\n    \"location\": \"New York\",\n    \"quantityAvailable\": 150,\n    \"costPerPackage\": 15.50,\n    \"isAvailable\": true\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Drug Locations",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{drugs_url}}/api/drugs/D001/locations",
+              "host": ["{{drugs_url}}"],
+              "path": ["api", "drugs", "D001", "locations"]
+            }
+          }
+        },
+        {
+          "name": "Check Availability",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{drugs_url}}/api/drugs/availability?drugCode=D001&location=New York&quantity=10",
+              "host": ["{{drugs_url}}"],
+              "path": ["api", "drugs", "availability"],
+              "query": [
+                { "key": "drugCode", "value": "D001" },
+                { "key": "location", "value": "New York" },
+                { "key": "quantity", "value": "10" }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 true",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{drugs_url}}/api/drugs/availability?drugCode=D001&location=New York&quantity=10"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "true"
+            }
+          ]
+        },
+        {
+          "name": "Reserve Stock",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{drugs_url}}/api/drugs/reserve",
+              "host": ["{{drugs_url}}"],
+              "path": ["api", "drugs", "reserve"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"drugCode\": \"D001\",\n  \"location\": \"New York\",\n  \"quantity\": 5\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 true",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{drugs_url}}/api/drugs/reserve" }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "true"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Subscriptions",
+      "item": [
+        {
+          "name": "Subscribe",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{sub_url}}/api/subscriptions/subscribe",
+              "host": ["{{sub_url}}"],
+              "path": ["api", "subscriptions", "subscribe"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"drugId\": \"D001\",\n  \"memberLocation\": \"New York\",\n  \"insurancePolicyNumber\": \"POL123\",\n  \"insuranceProvider\": \"Acme Health\",\n  \"prescriptionDate\": \"2026-07-01\",\n  \"dosagePerDay\": \"2\",\n  \"prescriptionCourse\": 30,\n  \"doctorDetails\": \"Dr. Smith\",\n  \"refillFrequency\": \"MONTHLY\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 Subscription created",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{sub_url}}/api/subscriptions/subscribe" }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"subscriptionId\": \"SUB_582524d0\",\n  \"memberId\": \"MEM001\",\n  \"subscriptionDate\": \"2026-07-20\",\n  \"prescriptionId\": \"PRESC_582fa206\",\n  \"refillFrequency\": \"MONTHLY\",\n  \"memberLocation\": \"New York\",\n  \"subscriptionStatus\": \"ACTIVE\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "My Subscriptions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{sub_url}}/api/subscriptions/my-subscriptions",
+              "host": ["{{sub_url}}"],
+              "path": ["api", "subscriptions", "my-subscriptions"]
+            }
+          }
+        },
+        {
+          "name": "Active Subscriptions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{sub_url}}/api/subscriptions/active",
+              "host": ["{{sub_url}}"],
+              "path": ["api", "subscriptions", "active"]
+            }
+          }
+        },
+        {
+          "name": "Member Prescriptions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{sub_url}}/api/subscriptions/prescriptions",
+              "host": ["{{sub_url}}"],
+              "path": ["api", "subscriptions", "prescriptions"]
+            }
+          }
+        },
+        {
+          "name": "Subscription By Id",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{sub_url}}/api/subscriptions/SUB001",
+              "host": ["{{sub_url}}"],
+              "path": ["api", "subscriptions", "SUB001"]
+            }
+          }
+        },
+        {
+          "name": "Refill Dues (as of date)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{sub_url}}/api/subscriptions/refillDues?dueDate=2026-09-01",
+              "host": ["{{sub_url}}"],
+              "path": ["api", "subscriptions", "refillDues"],
+              "query": [{ "key": "dueDate", "value": "2026-09-01" }]
+            }
+          }
+        },
+        {
+          "name": "Unsubscribe",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{sub_url}}/api/subscriptions/unsubscribe?subscriptionId=SUB001",
+              "host": ["{{sub_url}}"],
+              "path": ["api", "subscriptions", "unsubscribe"],
+              "query": [{ "key": "subscriptionId", "value": "SUB001" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Refill",
+      "item": [
+        {
+          "name": "View Refill Status (latest)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{refill_url}}/api/refill/viewRefillStatus",
+              "host": ["{{refill_url}}"],
+              "path": ["api", "refill", "viewRefillStatus"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 Latest order",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{refill_url}}/api/refill/viewRefillStatus" }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"refillOrderId\": \"REF002\",\n  \"memberId\": \"MEM001\",\n  \"orderDate\": \"2024-02-20T09:15:00\",\n  \"memberLocation\": \"New York\",\n  \"orderStatus\": \"SHIPPED\",\n  \"orderType\": \"SCHEDULED\",\n  \"subscriptionId\": \"SUB002\",\n  \"deliveryDate\": \"2024-02-23T16:30:00\",\n  \"trackingNumber\": \"TRK001234568\",\n  \"lineItems\": [\n    { \"lineItemId\": 2, \"drugCode\": \"D002\", \"drugName\": \"Ibuprofen 400mg\", \"quantity\": 90, \"prescriptionId\": \"PRES002\", \"unitPrice\": 15.75, \"totalPrice\": 1417.50 }\n  ],\n  \"totalAmount\": 1417.50\n}"
+            }
+          ]
+        },
+        {
+          "name": "All Refill Orders",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{refill_url}}/api/refill/orders",
+              "host": ["{{refill_url}}"],
+              "path": ["api", "refill", "orders"]
+            }
+          }
+        },
+        {
+          "name": "Request Adhoc Refill",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{refill_url}}/api/refill/requestAdhocRefill",
+              "host": ["{{refill_url}}"],
+              "path": ["api", "refill", "requestAdhocRefill"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"memberId\": \"MEM001\",\n  \"memberLocation\": \"New York\",\n  \"prescriptions\": [\n    { \"prescriptionId\": \"PRES001\", \"drugCode\": \"D001\", \"quantity\": 5 }\n  ]\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{refill_url}}/api/refill/requestAdhocRefill" }
+              },
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"refillOrderId\": \"ROFFD1C894\",\n  \"memberId\": \"MEM001\",\n  \"orderDate\": \"2026-07-20T22:16:59\",\n  \"memberLocation\": \"New York\",\n  \"orderStatus\": \"CONFIRMED\",\n  \"message\": \"Adhoc refill order created successfully\",\n  \"totalAmount\": 77.50\n}"
+            },
+            {
+              "name": "400 Stock Unavailable",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{refill_url}}/api/refill/requestAdhocRefill" }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"error\": \"Stock Unavailable\",\n  \"message\": \"Drug D001 is not available in required quantity at location New York\"\n}"
+            },
+            {
+              "name": "403 Access Denied",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{refill_url}}/api/refill/requestAdhocRefill" }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "body": "{\n  \"error\": \"Access Denied\",\n  \"message\": \"Cannot create refill order for different member\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Refill Dues As Of Date",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{refill_url}}/api/refill/getRefillDuesAsOfDate?date=2026-09-01",
+              "host": ["{{refill_url}}"],
+              "path": ["api", "refill", "getRefillDuesAsOfDate"],
+              "query": [{ "key": "date", "value": "2026-09-01" }]
+            }
+          }
+        },
+        {
+          "name": "Update Refill Order Status",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{refill_url}}/api/refill/orders/REF005/status?status=SHIPPED",
+              "host": ["{{refill_url}}"],
+              "path": ["api", "refill", "orders", "REF005", "status"],
+              "query": [{ "key": "status", "value": "SHIPPED" }]
+            }
+          },
+          "response": [
+            {
+              "name": "200 Shipped (tracking generated)",
+              "originalRequest": {
+                "method": "PUT",
+                "url": {
+                  "raw": "{{refill_url}}/api/refill/orders/REF005/status?status=SHIPPED"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"refillOrderId\": \"REF005\",\n  \"orderStatus\": \"SHIPPED\",\n  \"trackingNumber\": \"TRKC8671648\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

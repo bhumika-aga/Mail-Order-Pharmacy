@@ -1,16 +1,6 @@
 server:
   port: ${PORT:8085}
 
-services:
-  auth:
-    url: ${AUTH_SERVICE_URL}
-  drugs:
-    url: ${DRUGS_SERVICE_URL}
-  subscription:
-    url: ${SUBSCRIPTION_SERVICE_URL}
-  refill:
-    url: ${REFILL_SERVICE_URL}
-
 management:
   endpoints:
     web:

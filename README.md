@@ -48,7 +48,7 @@ MediFlow follows the **Microservices Architecture** pattern — each business ca
 | **Authentication**        | Stateless JWT (HS512) with shared secret                  | Each service validates tokens independently — no central auth dependency at runtime    |
 | **Database Strategy**     | Database-per-service (logical)                            | Loose coupling: each service owns its tables; H2 for dev, PostgreSQL/Supabase for prod |
 | **DDL Management**        | Hibernate `ddl-auto: update` (prod) / `create-drop` (dev) | Dev gets clean state on each restart; prod preserves data and schema                   |
-| **API Documentation**     | OpenAPI 3.0 via springdoc + Swagger Aggregator            | Single entry point for exploring all service APIs                                      |
+| **API Documentation**     | OpenAPI 3.0 via springdoc; a thin Swagger UI host aggregates specs | Each service self-documents; one Swagger UI switches between all service specs via `springdoc.swagger-ui.urls` (no custom code) |
 | **Row Level Security**    | Supabase RLS enabled on all tables                        | Prevents direct API access to data via Supabase's PostgREST layer                      |
 
 ### Inter-Service Communication Flow
@@ -95,10 +95,11 @@ Since the database is hosted on **Supabase**, all public tables are exposed via 
 
 ### 1. Drug Inventory (Drugs Microservice)
 
-- **Dual-mode search**: If the input matches the pattern `D[0-9]+`, it searches by ID; otherwise, it performs a case-insensitive name search
-- **Expiry validation**: Only drugs with `expiry_date` after today are returned as valid
+- **Search**: Dedicated endpoints for exact ID lookup (`searchDrugsByID`) and case-insensitive name search (`searchDrugsByName`); name search only returns non-expired drugs
+- **Expiry validation**: Only drugs with `expiry_date` after today are treated as valid/dispatchable
 - **Multi-location stock**: Each drug has inventory across New York, Los Angeles, and Chicago
 - **Dispatchable stock**: Calculates availability by location, combining expiry and quantity checks
+- **Availability & reservation**: `availability` answers whether a quantity can be dispatched from a location; `reserve` atomically decrements stock (used by the refill service when confirming an order)
 
 ### 2. Subscription Management (Subscription Microservice)
 
@@ -198,12 +199,15 @@ npm run dev
 
 ### Drugs Service (`/api/drugs`)
 
-| Method | Endpoint                       | Description                    |
-| ------ | ------------------------------ | ------------------------------ |
-| `GET`  | `/searchDrugsByID?drugId=`     | Search by drug ID              |
-| `GET`  | `/searchDrugsByName?drugName=` | Search by name (fuzzy)         |
-| `GET`  | `/all`                         | All valid (non-expired) drugs  |
-| `POST` | `/getDispatchableDrugStock`    | Stock availability by location |
+| Method | Endpoint                                        | Description                             |
+| ------ | ----------------------------------------------- | --------------------------------------- |
+| `GET`  | `/searchDrugsByID?drugId=`                      | Search by drug ID                       |
+| `GET`  | `/searchDrugsByName?drugName=`                  | Search by name (fuzzy, non-expired)     |
+| `GET`  | `/all`                                          | All valid (non-expired) drugs           |
+| `GET`  | `/{drugId}/locations`                           | Stock rows for a drug across locations  |
+| `POST` | `/getDispatchableDrugStock`                     | Stock availability for drug IDs at a location |
+| `GET`  | `/availability?drugCode=&location=&quantity=`   | Can this quantity be dispatched? (bool) |
+| `POST` | `/reserve`                                      | Atomically decrement stock (bool)       |
 
 ### Subscription Service (`/api/subscriptions`)
 
@@ -217,12 +221,13 @@ npm run dev
 
 ### Refill Service (`/api/refill`)
 
-| Method | Endpoint                 | Description                                     |
-| ------ | ------------------------ | ----------------------------------------------- |
-| `GET`  | `/viewRefillStatus`      | Latest refill status                            |
-| `GET`  | `/orders`                | All orders for member                           |
-| `POST` | `/requestAdhocRefill`    | Create adhoc refill order                       |
-| `GET`  | `/getRefillDuesAsOfDate` | Due refills (delegates to subscription service) |
+| Method | Endpoint                          | Description                                     |
+| ------ | --------------------------------- | ----------------------------------------------- |
+| `GET`  | `/viewRefillStatus`               | Latest refill status                            |
+| `GET`  | `/orders`                         | All orders for member                           |
+| `POST` | `/requestAdhocRefill`             | Create adhoc refill order                       |
+| `GET`  | `/getRefillDuesAsOfDate?date=`    | Due refills (delegates to subscription service) |
+| `PUT`  | `/orders/{id}/status?status=`     | Update order status (auto-sets tracking on SHIPPED) |
 
 ---
 
@@ -334,6 +339,15 @@ npm install
 npm run build
 ```
 
+### API Testing (Postman)
+
+Import `MediFlow.postman_collection.json`. Run **Auth → Sign In** first — its test
+script captures the JWT into the `token` collection variable that every other request
+reuses. The `*_url` variables default to the local dev ports; override them to target a
+deployed environment. Seed logins are `member1` / `member2` / `member3`, all with
+password `password`. The collection ships with captured example responses for the
+happy path plus the 400/403/404 error cases.
+
 ---
 
 ## 📁 Project Structure
@@ -345,16 +359,16 @@ Mail-Order-Pharmacy/
 │   ├── drugs-microservice/         # Drug catalog, inventory, stock queries
 │   ├── subscription-microservice/  # Prescription subscriptions, refill scheduling
 │   ├── refill-microservice/        # Order processing, adhoc refills, tracking
-│   └── swagger-aggregator/         # Unified API documentation
+│   └── swagger-aggregator/         # Thin Swagger UI host (springdoc urls dropdown)
 ├── frontend/
 │   └── member-portal/              # React TypeScript SPA
 ├── supabase/
-│   └── enable_rls.sql              # RLS migration for Supabase
-├── bruno-collection/               # API testing collection
-├── Dockerfile.* (5 files)          # Multi-stage Docker builds
-├── docker-compose.yml              # Local Docker orchestration
-├── render.yaml                     # Render.com deployment config
-└── render-manual-deployment.md     # Deployment guide
+│   └── enable_rls.sql                  # RLS migration for Supabase
+├── MediFlow.postman_collection.json    # Postman API collection (full flow)
+├── Dockerfile.* (5 files)              # Multi-stage Docker builds
+├── docker-compose.yml                  # Local Docker orchestration
+├── render.yaml                         # Render.com deployment config
+└── render-manual-deployment.md         # Deployment guide
 ```
 
 ---

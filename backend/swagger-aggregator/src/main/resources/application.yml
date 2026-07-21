@@ -1,58 +1,22 @@
 server:
-  port: 8085
+  port: ${PORT:8085}
 
 spring:
   application:
     name: swagger-aggregator
-  thymeleaf:
-    mode: HTML
 
-services:
-  auth:
-    url: http://localhost:8084
-  drugs:
-    url: http://localhost:8081
-  subscription:
-    url: http://localhost:8082
-  refill:
-    url: http://localhost:8083
-
-logging:
-  level:
-    com.pharmacy.swagger: DEBUG
-
+# Single Swagger UI that switches between each service's live spec via the
+# top-right dropdown. URLs default to local dev ports and are overridden by the
+# *_SERVICE_URL environment variables in deployed environments.
 springdoc:
-  api-docs:
-    path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
-    config-url: /v3/api-docs/swagger-config
     urls:
       - name: Auth Service
-        url: http://localhost:8084/v3/api-docs
+        url: ${AUTH_SERVICE_URL:http://localhost:8084}/v3/api-docs
       - name: Drugs Service
-        url: http://localhost:8081/v3/api-docs
+        url: ${DRUGS_SERVICE_URL:http://localhost:8081}/v3/api-docs
       - name: Subscription Service
-        url: http://localhost:8082/v3/api-docs
+        url: ${SUBSCRIPTION_SERVICE_URL:http://localhost:8082}/v3/api-docs
       - name: Refill Service
-        url: http://localhost:8083/v3/api-docs
-      - name: Aggregated
-        url: /v3/api-docs/aggregated
-
----
-spring:
-  config:
-    activate:
-      on-profile: docker
-  thymeleaf:
-    mode: HTML
-
-services:
-  auth:
-    url: http://localhost:8084
-  drugs:
-    url: http://localhost:8081
-  subscription:
-    url: http://localhost:8082
-  refill:
-    url: http://localhost:8083
+        url: ${REFILL_SERVICE_URL:http://localhost:8083}/v3/api-docs

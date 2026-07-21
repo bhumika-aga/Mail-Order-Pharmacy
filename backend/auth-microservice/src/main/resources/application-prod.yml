@@ -10,7 +10,7 @@ spring:
     hikari:
       maximum-pool-size: 10
       data-source-properties:
-        sslmode: disable
+        sslmode: require
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:

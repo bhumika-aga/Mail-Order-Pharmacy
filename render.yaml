@@ -13,10 +13,14 @@ services:
         value: mediFlowSecureSecretKeyForProductionDeploymentWithSufficientLengthForHS512Algorithm2024
       - key: JWT_EXPIRATION
         value: 900000
+      # Supabase Session-pooler connection (IPv4-compatible, required on Render).
+      # Set the values in the Render dashboard — never commit real credentials.
       - key: DATABASE_URL
-        fromDatabase:
-          name: mediflow-database
-          property: connectionString
+        sync: false
+      - key: DATABASE_USERNAME
+        sync: false
+      - key: DATABASE_PASSWORD
+        sync: false
 
   # Drugs Microservice - Inventory Management
   - type: web
@@ -34,10 +38,14 @@ services:
         value: mediFlowSecureSecretKeyForProductionDeploymentWithSufficientLengthForHS512Algorithm2024
       - key: JWT_EXPIRATION
         value: 900000
+      # Supabase Session-pooler connection (IPv4-compatible, required on Render).
+      # Set the values in the Render dashboard — never commit real credentials.
       - key: DATABASE_URL
-        fromDatabase:
-          name: mediflow-database
-          property: connectionString
+        sync: false
+      - key: DATABASE_USERNAME
+        sync: false
+      - key: DATABASE_PASSWORD
+        sync: false
 
   # Subscription Microservice - Subscription Management
   - type: web
@@ -57,10 +65,14 @@ services:
         value: mediFlowSecureSecretKeyForProductionDeploymentWithSufficientLengthForHS512Algorithm2024
       - key: JWT_EXPIRATION
         value: 900000
+      # Supabase Session-pooler connection (IPv4-compatible, required on Render).
+      # Set the values in the Render dashboard — never commit real credentials.
       - key: DATABASE_URL
-        fromDatabase:
-          name: mediflow-database
-          property: connectionString
+        sync: false
+      - key: DATABASE_USERNAME
+        sync: false
+      - key: DATABASE_PASSWORD
+        sync: false
 
   # Refill Microservice - Order Processing
   - type: web
@@ -80,10 +92,14 @@ services:
         value: mediFlowSecureSecretKeyForProductionDeploymentWithSufficientLengthForHS512Algorithm2024
       - key: JWT_EXPIRATION
         value: 900000
+      # Supabase Session-pooler connection (IPv4-compatible, required on Render).
+      # Set the values in the Render dashboard — never commit real credentials.
       - key: DATABASE_URL
-        fromDatabase:
-          name: mediflow-database
-          property: connectionString
+        sync: false
+      - key: DATABASE_USERNAME
+        sync: false
+      - key: DATABASE_PASSWORD
+        sync: false
 
   # Swagger Aggregator - API Documentation
   - type: web

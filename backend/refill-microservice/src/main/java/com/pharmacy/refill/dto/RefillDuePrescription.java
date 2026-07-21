@@ -1,83 +1,56 @@
 package com.pharmacy.refill.dto;
 
+/**
+ * A prescription entry within a refill-due response. Field names mirror the
+ * payload produced by the subscription service so the values map through
+ * cleanly when this service proxies {@code getRefillDuesAsOfDate}.
+ */
 public class RefillDuePrescription {
     private String prescriptionId;
-    private String drugCode;
-    private String drugName;
-    private Integer dosage;
-    private String drugForm;
-    private Integer quantity;
-    private Integer refillsRemaining;
-
+    private String drugId;
+    private String dosagePerDay;
+    private Integer prescriptionCourse;
+    
     public RefillDuePrescription() {
     }
-
-    public RefillDuePrescription(String prescriptionId, String drugCode, String drugName,
-            Integer dosage, String drugForm, Integer quantity,
-            Integer refillsRemaining) {
+    
+    public RefillDuePrescription(String prescriptionId, String drugId, String dosagePerDay,
+                                 Integer prescriptionCourse) {
         this.prescriptionId = prescriptionId;
-        this.drugCode = drugCode;
-        this.drugName = drugName;
-        this.dosage = dosage;
-        this.drugForm = drugForm;
-        this.quantity = quantity;
-        this.refillsRemaining = refillsRemaining;
+        this.drugId = drugId;
+        this.dosagePerDay = dosagePerDay;
+        this.prescriptionCourse = prescriptionCourse;
     }
-
-    // Getters and Setters
+    
     public String getPrescriptionId() {
         return prescriptionId;
     }
-
+    
     public void setPrescriptionId(String prescriptionId) {
         this.prescriptionId = prescriptionId;
     }
-
-    public String getDrugCode() {
-        return drugCode;
+    
+    public String getDrugId() {
+        return drugId;
     }
-
-    public void setDrugCode(String drugCode) {
-        this.drugCode = drugCode;
+    
+    public void setDrugId(String drugId) {
+        this.drugId = drugId;
     }
-
-    public String getDrugName() {
-        return drugName;
+    
+    public String getDosagePerDay() {
+        return dosagePerDay;
     }
-
-    public void setDrugName(String drugName) {
-        this.drugName = drugName;
+    
+    public void setDosagePerDay(String dosagePerDay) {
+        this.dosagePerDay = dosagePerDay;
     }
-
-    public Integer getDosage() {
-        return dosage;
+    
+    public Integer getPrescriptionCourse() {
+        return prescriptionCourse;
     }
-
-    public void setDosage(Integer dosage) {
-        this.dosage = dosage;
-    }
-
-    public String getDrugForm() {
-        return drugForm;
-    }
-
-    public void setDrugForm(String drugForm) {
-        this.drugForm = drugForm;
-    }
-
-    public Integer getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(Integer quantity) {
-        this.quantity = quantity;
-    }
-
-    public Integer getRefillsRemaining() {
-        return refillsRemaining;
-    }
-
-    public void setRefillsRemaining(Integer refillsRemaining) {
-        this.refillsRemaining = refillsRemaining;
+    
+    public void setPrescriptionCourse(Integer prescriptionCourse) {
+        this.prescriptionCourse = prescriptionCourse;
     }
 }

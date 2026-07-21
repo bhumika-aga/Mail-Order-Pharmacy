@@ -16,7 +16,7 @@ services:
     networks:
       - pharmacy-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8084/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -38,7 +38,7 @@ services:
     networks:
       - pharmacy-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8081/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -64,7 +64,7 @@ services:
     networks:
       - pharmacy-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8082/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -93,7 +93,7 @@ services:
     networks:
       - pharmacy-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8083/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -107,10 +107,10 @@ services:
       - "8085:8085"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - SERVICES_AUTH_URL=http://auth-microservice:8084
-      - SERVICES_DRUGS_URL=http://drugs-microservice:8081
-      - SERVICES_SUBSCRIPTION_URL=http://subscription-microservice:8082
-      - SERVICES_REFILL_URL=http://refill-microservice:8083
+      - AUTH_SERVICE_URL=http://auth-microservice:8084
+      - DRUGS_SERVICE_URL=http://drugs-microservice:8081
+      - SUBSCRIPTION_SERVICE_URL=http://subscription-microservice:8082
+      - REFILL_SERVICE_URL=http://refill-microservice:8083
     depends_on:
       - auth-microservice
       - drugs-microservice
@@ -119,7 +119,7 @@ services:
     networks:
       - pharmacy-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8085/actuator/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8085/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
