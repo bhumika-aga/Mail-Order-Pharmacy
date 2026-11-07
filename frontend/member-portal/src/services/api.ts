@@ -13,6 +13,7 @@ import {
   RefillStatusResponse,
   SignupRequest,
   SubscriptionRequest,
+  UpdateUserRequest,
   User,
 } from "../types";
 
@@ -100,38 +101,39 @@ export const authService = {
   getAllUsers: (): Promise<AxiosResponse<User[]>> => authApi.get("/users"),
 
   getUserById: (id: number): Promise<AxiosResponse<User>> =>
-    authApi.get(`/users/${id}`),
+    authApi.get(`/users/${encodeURIComponent(id)}`),
 
   updateUser: (
     id: number,
-    userData: SignupRequest,
-  ): Promise<AxiosResponse<User>> => authApi.put(`/users/${id}`, userData),
+    userData: UpdateUserRequest,
+  ): Promise<AxiosResponse<User>> =>
+    authApi.put(`/users/${encodeURIComponent(id)}`, userData),
 
   deleteUser: (id: number): Promise<AxiosResponse<MessageResponse>> =>
-    authApi.delete(`/users/${id}`),
+    authApi.delete(`/users/${encodeURIComponent(id)}`),
 
   checkUsernameAvailability: (
     username: string,
   ): Promise<AxiosResponse<MessageResponse>> =>
-    authApi.get(`/check-username/${username}`),
+    authApi.get(`/check-username/${encodeURIComponent(username)}`),
 
   checkEmailAvailability: (
     email: string,
   ): Promise<AxiosResponse<MessageResponse>> =>
-    authApi.get(`/check-email/${email}`),
+    authApi.get(`/check-email/${encodeURIComponent(email)}`),
 
   checkMemberIdAvailability: (
     memberId: string,
   ): Promise<AxiosResponse<MessageResponse>> =>
-    authApi.get(`/check-memberid/${memberId}`),
+    authApi.get(`/check-memberid/${encodeURIComponent(memberId)}`),
 };
 
 export const drugService = {
   searchById: (drugId: string): Promise<AxiosResponse<Drug>> =>
-    drugsApi.get(`/searchDrugsByID?drugId=${drugId}`),
+    drugsApi.get("/searchDrugsByID", { params: { drugId } }),
 
   searchByName: (drugName: string): Promise<AxiosResponse<Drug[]>> =>
-    drugsApi.get(`/searchDrugsByName?drugName=${drugName}`),
+    drugsApi.get("/searchDrugsByName", { params: { drugName } }),
 
   getDispatchableStock: (
     drugIds: string[],
@@ -142,7 +144,7 @@ export const drugService = {
   getAllValidDrugs: (): Promise<AxiosResponse<Drug[]>> => drugsApi.get("/all"),
 
   getDrugLocations: (drugId: string): Promise<AxiosResponse<DrugLocation[]>> =>
-    drugsApi.get(`/${drugId}/locations`),
+    drugsApi.get(`/${encodeURIComponent(drugId)}/locations`),
 };
 
 export const subscriptionService = {
@@ -154,7 +156,7 @@ export const subscriptionService = {
   unsubscribe: (
     subscriptionId: string,
   ): Promise<AxiosResponse<MessageResponse>> =>
-    subscriptionApi.post(`/unsubscribe?subscriptionId=${subscriptionId}`),
+    subscriptionApi.post("/unsubscribe", null, { params: { subscriptionId } }),
 
   getMySubscriptions: (): Promise<AxiosResponse<MemberSubscription[]>> =>
     subscriptionApi.get("/my-subscriptions"),
@@ -168,7 +170,7 @@ export const subscriptionService = {
   getSubscriptionById: (
     subscriptionId: string,
   ): Promise<AxiosResponse<MemberSubscription>> =>
-    subscriptionApi.get(`/${subscriptionId}`),
+    subscriptionApi.get(`/${encodeURIComponent(subscriptionId)}`),
 };
 
 export const refillService = {
@@ -179,7 +181,7 @@ export const refillService = {
     refillApi.get("/orders"),
 
   getRefillDues: (date: string): Promise<AxiosResponse<RefillDueResponse[]>> =>
-    refillApi.get(`/getRefillDuesAsOfDate?date=${date}`),
+    refillApi.get("/getRefillDuesAsOfDate", { params: { date } }),
 
   requestAdhocRefill: (
     request: AdhocRefillRequest,

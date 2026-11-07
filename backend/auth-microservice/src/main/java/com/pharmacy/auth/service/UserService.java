@@ -6,6 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,15 +41,23 @@ public class UserService {
         return userRepository.save(user);
     }
     
+    private static final SecureRandom RANDOM = new SecureRandom();
+
     private String generateUniqueMemberId() {
         String memberId;
         do {
-            // Generate MemberID in format: MEM + 6 digits (e.g., MEM001234)
-            int randomNum = (int) (Math.random() * 999999) + 1;
-            memberId = String.format("MEM%06d", randomNum);
+            // Format: MEM + 6 digits (e.g. MEM001234). SecureRandom, so IDs can't be predicted.
+            memberId = String.format("MEM%06d", RANDOM.nextInt(1, 1_000_000));
         } while (userRepository.existsByMemberId(memberId));
-        
+
         return memberId;
+    }
+
+    /** Whether {@code rawPassword} is the current password of user {@code id}. */
+    public boolean passwordMatches(Long id, String rawPassword) {
+        return rawPassword != null && userRepository.findById(id)
+                                          .map(user -> encoder.matches(rawPassword, user.getPassword()))
+                                          .orElse(false);
     }
     
     public List<User> getAllUsers() {
@@ -89,7 +98,8 @@ public class UserService {
     }
     
     @Transactional
-    public User updateUser(Long id, String username, String email, String memberId, String fullName) {
+    public User updateUser(Long id, String username, String email, String memberId, String fullName,
+                           String newPassword) {
         User user = userRepository.findById(id)
                         .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
         
@@ -117,7 +127,10 @@ public class UserService {
         if (fullName != null) {
             user.setFullName(fullName);
         }
-        
+        if (newPassword != null) {
+            user.setPassword(encoder.encode(newPassword));
+        }
+
         return userRepository.save(user);
     }
 }

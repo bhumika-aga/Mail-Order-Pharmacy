@@ -9,7 +9,10 @@ spring:
 # top-right dropdown. URLs default to local dev ports and are overridden by the
 # *_SERVICE_URL environment variables in deployed environments.
 springdoc:
+  api-docs:
+    enabled: true
   swagger-ui:
+    enabled: true
     path: /swagger-ui.html
     urls:
       - name: Auth Service

@@ -61,7 +61,20 @@ public class Drug {
         this.costPerPackage = costPerPackage;
         this.medicalComposition = medicalComposition;
     }
-    
+
+    /**
+     * The single expiry rule for this service: a drug may be dispatched only while
+     * its expiry date is still in the future, so it counts as expired ON its expiry
+     * date (matching the {@code expiryDate > today} catalogue queries).
+     */
+    public boolean isExpiredOn(LocalDate date) {
+        return !expiryDate.isAfter(date);
+    }
+
+    public boolean isUnexpiredOn(LocalDate date) {
+        return expiryDate.isAfter(date);
+    }
+
     public String getDrugId() {
         return drugId;
     }

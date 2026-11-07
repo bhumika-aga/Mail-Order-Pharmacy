@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -93,10 +94,24 @@ public class DrugController {
         return ResponseEntity.ok(drugService.isDispatchable(drugCode, location, quantity));
     }
     
+    // Stock changes are made only by other services (the refill service), using a
+    // short-lived SERVICE token; members cannot reserve or release stock directly.
+
     @PostMapping("/reserve")
-    @Operation(summary = "Reserve drug stock", description = "Atomically decrement available stock for a drug at a location")
+    @PreAuthorize("hasRole('SERVICE')")
+    @Operation(summary = "Reserve drug stock",
+        description = "Atomically decrement available stock for a drug at a location (internal: service token only)")
     public ResponseEntity<Boolean> reserveStock(@Valid @RequestBody StockReservationRequest request) {
         return ResponseEntity.ok(
             drugService.reserveStock(request.drugCode(), request.location(), request.quantity()));
+    }
+
+    @PostMapping("/release")
+    @PreAuthorize("hasRole('SERVICE')")
+    @Operation(summary = "Release reserved drug stock",
+        description = "Return previously reserved stock, e.g. when an order fails part-way (internal: service token only)")
+    public ResponseEntity<Boolean> releaseStock(@Valid @RequestBody StockReservationRequest request) {
+        return ResponseEntity.ok(
+            drugService.releaseStock(request.drugCode(), request.location(), request.quantity()));
     }
 }

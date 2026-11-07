@@ -5,11 +5,33 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 /**
- * Payload for updating a user's profile. Unlike {@link SignupRequest} it has no
- * password: the update endpoint never changes the password, so requiring one
- * would only force clients to send a dummy value.
+ * Payload for updating a user's profile. Unlike {@link SignupRequest} the password
+ * is optional: omit it (or leave it blank) to keep the current one. Members
+ * changing their own password must also send {@code currentPassword}.
  */
 public class UpdateUserRequest {
+    @Size(min = 6, max = 40, message = "Password must be between 6 and 40 characters")
+    private String password;
+
+    private String currentPassword;
+
+    public String getPassword() {
+        // A blank field means "unchanged"
+        return password == null || password.isBlank() ? null : password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password == null || password.isBlank() ? null : password;
+    }
+
+    public String getCurrentPassword() {
+        return currentPassword;
+    }
+
+    public void setCurrentPassword(String currentPassword) {
+        this.currentPassword = currentPassword;
+    }
+
     @NotBlank(message = "Username is required")
     @Size(min = 3, max = 20, message = "Username must be between 3 and 20 characters")
     private String username;

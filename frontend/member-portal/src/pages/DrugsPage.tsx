@@ -36,14 +36,18 @@ const DrugsPage: React.FC = () => {
   // Search by ID
   const { data: drugById, isLoading: loadingById } = useQuery({
     queryKey: ["drugs", "id", searchTerm],
-    queryFn: () => drugService.searchById(searchTerm).then((res) => res.data),
+    queryFn: () =>
+      drugService
+        .searchById(searchTerm.trim().toUpperCase())
+        .then((res) => res.data),
     enabled: searchType === "id" && searchTerm.length > 0,
   });
 
   // Search by name
   const { data: drugsByName, isLoading: loadingByName } = useQuery({
     queryKey: ["drugs", "name", searchTerm],
-    queryFn: () => drugService.searchByName(searchTerm).then((res) => res.data),
+    queryFn: () =>
+      drugService.searchByName(searchTerm.trim()).then((res) => res.data),
     enabled: searchType === "name" && searchTerm.length > 2,
   });
 
@@ -70,9 +74,12 @@ const DrugsPage: React.FC = () => {
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
-    if (value.startsWith("D") && value.length >= 4) {
+    const term = value.trim();
+    // Only a drug code (D + digits, e.g. D001) is looked up by ID; anything else,
+    // including names that happen to start with "D" (Doxycycline), is a name search.
+    if (/^d\d{3,}$/i.test(term)) {
       setSearchType("id");
-    } else if (value.length > 2) {
+    } else if (term.length > 2) {
       setSearchType("name");
     } else {
       setSearchType("all");

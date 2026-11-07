@@ -150,7 +150,7 @@ const LoginForm: React.FC = () => {
           <Divider sx={{ my: 2 }} />
 
           <Box
-            sx={{ mt: 2, p: 2, backgroundColor: "#f5f5f5", borderRadius: 1 }}
+            sx={{ mt: 2, p: 2, bgcolor: "action.hover", borderRadius: 1 }}
           >
             <Typography variant="body2" color="text.secondary" align="center">
               <strong>Demo Credentials:</strong>

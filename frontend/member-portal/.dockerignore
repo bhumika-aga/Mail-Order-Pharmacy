@@ -1,0 +1,10 @@
+# Host-built artifacts must not enter the image (node_modules contains
+# platform-specific native binaries; the image runs its own npm ci).
+node_modules
+dist
+coverage
+*.tsbuildinfo
+# Local secrets / environment files
+.env
+.env.*
+!.env.example

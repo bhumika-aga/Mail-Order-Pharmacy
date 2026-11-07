@@ -568,3 +568,6 @@ fabric.properties
 ### AndroidStudio Patch ###
 
 !/gradle/wrapper/gradle-wrapper.jar
+# Local environment overrides (see .env.example)
+.env.*
+!.env.example

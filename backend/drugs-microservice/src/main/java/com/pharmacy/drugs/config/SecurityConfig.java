@@ -28,7 +28,7 @@ public class SecurityConfig {
     /**
      * Browser origins allowed to call this API (comma-separated; env: APP_CORS_ALLOWED_ORIGINS).
      */
-    @Value("${app.cors.allowed-origins:http://localhost:5173,http://localhost:3000}")
+    @Value("${app.cors.allowed-origins:http://localhost:5173,http://localhost:3000,http://localhost:8085}")
     private List<String> allowedOrigins;
     
     public SecurityConfig(JwtAuthFilter jwtAuthFilter) {

@@ -1,5 +1,6 @@
 import { Add, Cancel, Visibility } from "@mui/icons-material";
 import {
+  Alert,
   Box,
   Button,
   Card,
@@ -23,7 +24,9 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useState } from "react";
 import LoadingSpinner from "../components/common/LoadingSpinner";
+import { LOCATIONS } from "../constants";
 import { subscriptionService } from "../services/api";
+import { apiErrorMessage } from "../services/errors";
 import { MemberSubscription, SubscriptionRequest } from "../types";
 
 const SubscriptionsPage: React.FC = () => {
@@ -120,7 +123,10 @@ const SubscriptionsPage: React.FC = () => {
         <Button
           variant="contained"
           startIcon={<Add />}
-          onClick={() => setOpenDialog(true)}
+          onClick={() => {
+            subscribeMutation.reset();
+            setOpenDialog(true);
+          }}
         >
           New Subscription
         </Button>
@@ -215,6 +221,14 @@ const SubscriptionsPage: React.FC = () => {
       >
         <DialogTitle>Create New Subscription</DialogTitle>
         <DialogContent>
+          {subscribeMutation.error && (
+            <Alert severity="error" sx={{ mt: 1 }}>
+              {apiErrorMessage(
+                subscribeMutation.error,
+                "The subscription could not be created. Please try again.",
+              )}
+            </Alert>
+          )}
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
@@ -294,7 +308,7 @@ const SubscriptionsPage: React.FC = () => {
                 onChange={(e) =>
                   setSubscriptionForm({
                     ...subscriptionForm,
-                    prescriptionCourse: parseInt(e.target.value),
+                    prescriptionCourse: Math.max(1, parseInt(e.target.value, 10) || 1),
                   })
                 }
               />
@@ -318,8 +332,10 @@ const SubscriptionsPage: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
+                select
                 fullWidth
-                label="Member Location"
+                required
+                label="Dispatch Location"
                 value={subscriptionForm.memberLocation}
                 onChange={(e) =>
                   setSubscriptionForm({
@@ -327,8 +343,13 @@ const SubscriptionsPage: React.FC = () => {
                     memberLocation: e.target.value,
                   })
                 }
-                placeholder="e.g., NYC, LAX, CHI"
-              />
+              >
+                {LOCATIONS.map((location) => (
+                  <MenuItem key={location} value={location}>
+                    {location}
+                  </MenuItem>
+                ))}
+              </TextField>
             </Grid>
             <Grid size={{ xs: 12 }}>
               <TextField

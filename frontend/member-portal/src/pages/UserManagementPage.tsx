@@ -28,7 +28,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useState } from "react";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 import { authService } from "../services/api";
-import { SignupRequest, User } from "../types";
+import { apiErrorMessage } from "../services/errors";
+import { SignupRequest, UpdateUserRequest, User } from "../types";
 
 const UserManagementPage: React.FC = () => {
   const [viewDialog, setViewDialog] = useState(false);
@@ -61,7 +62,7 @@ const UserManagementPage: React.FC = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: SignupRequest }) =>
+    mutationFn: ({ id, data }: { id: number; data: UpdateUserRequest }) =>
       authService.updateUser(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
@@ -116,11 +117,12 @@ const UserManagementPage: React.FC = () => {
 
   const submitEdit = () => {
     if (selectedUser) {
-      const updateData = {
+      // Admin edit: a blank password field leaves the password unchanged.
+      const updateData: UpdateUserRequest = {
         username: editForm.username,
         email: editForm.email,
         fullName: editForm.fullName,
-        password: editForm.password || "unchanged", // Don't update password if empty
+        ...(editForm.password ? { password: editForm.password } : {}),
       };
       updateMutation.mutate({ id: selectedUser.id, data: updateData });
     }
@@ -284,7 +286,7 @@ const UserManagementPage: React.FC = () => {
           <>
             {updateMutation.error && (
               <Alert severity="error" sx={{ mb: 2 }}>
-                Update failed. Please try again.
+                {apiErrorMessage(updateMutation.error, "Update failed. Please try again.")}
               </Alert>
             )}
             <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -361,7 +363,7 @@ const UserManagementPage: React.FC = () => {
           <>
             {addMutation.error && (
               <Alert severity="error" sx={{ mb: 2 }}>
-                Registration failed. Please try again.
+                {apiErrorMessage(addMutation.error, "Registration failed. Please try again.")}
               </Alert>
             )}
             <Grid container spacing={2} sx={{ mt: 1 }}>

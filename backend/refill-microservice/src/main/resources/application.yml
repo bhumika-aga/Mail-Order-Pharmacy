@@ -2,6 +2,9 @@ server:
   port: 8083
 
 spring:
+  autoconfigure:
+    # JWT-only service: no default in-memory user (and no generated password in the log)
+    exclude: org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
   application:
     name: refill-microservice
   datasource:
@@ -10,6 +13,8 @@ spring:
     username: sa
     password: password
   jpa:
+    # Don't hold a DB connection for the whole request (e.g. while calling other services)
+    open-in-view: false
     hibernate:
       ddl-auto: create-drop
     show-sql: true
@@ -44,10 +49,14 @@ logging:
     com.pharmacy.refill: DEBUG
     org.springframework.security: DEBUG
 
+# API docs are deliberately on in every environment: the Swagger aggregator
+# reads each service's /v3/api-docs.
 springdoc:
   api-docs:
+    enabled: true
     path: /v3/api-docs
   swagger-ui:
+    enabled: true
     path: /swagger-ui.html
 
 management:

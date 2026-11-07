@@ -3,6 +3,7 @@ package com.pharmacy.subscription.controller;
 import com.pharmacy.subscription.dto.SubscriptionRequest;
 import com.pharmacy.subscription.entity.MemberPrescription;
 import com.pharmacy.subscription.entity.MemberSubscription;
+import com.pharmacy.subscription.exception.ApiException;
 import com.pharmacy.subscription.service.SubscriptionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -11,6 +12,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -36,39 +39,34 @@ public class SubscriptionController {
                                              .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
     }
     
+    // Errors are raised as ApiException and rendered by ApiExceptionHandler.
+
     @PostMapping("/subscribe")
     @Operation(summary = "Create new subscription", description = "Create a new mail-order pharmacy subscription")
-    public ResponseEntity<?> subscribe(@Valid @RequestBody SubscriptionRequest request,
-                                       HttpServletRequest httpRequest) {
-        try {
-            String memberId = (String) httpRequest.getAttribute("memberId");
-            String token = httpRequest.getHeader("Authorization").replace("Bearer ", "");
-            
-            MemberSubscription subscription = subscriptionService.subscribe(request, memberId, token);
-            return ResponseEntity.ok(subscription);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public ResponseEntity<MemberSubscription> subscribe(@Valid @RequestBody SubscriptionRequest request,
+                                                        HttpServletRequest httpRequest) {
+        String memberId = requireMemberId(httpRequest);
+        // The security filter has already validated this bearer token.
+        String token = httpRequest.getHeader(HttpHeaders.AUTHORIZATION).substring("Bearer ".length());
+        return ResponseEntity.ok(subscriptionService.subscribe(request, memberId, token));
     }
-    
+
     @PostMapping("/unsubscribe")
-    @Operation(summary = "Cancel subscription", description = "Cancel an existing subscription")
-    public ResponseEntity<?> unsubscribe(
+    @Operation(summary = "Cancel subscription", description = "Cancel one of the authenticated member's subscriptions")
+    public ResponseEntity<Map<String, String>> unsubscribe(
         @Parameter(description = "Subscription ID to cancel", required = true) @RequestParam String subscriptionId,
         HttpServletRequest httpRequest) {
-        try {
-            String memberId = (String) httpRequest.getAttribute("memberId");
-            
-            boolean result = subscriptionService.unsubscribe(subscriptionId, memberId);
-            
-            if (result) {
-                return ResponseEntity.ok(Map.of("message", "Subscription cancelled successfully"));
-            } else {
-                return ResponseEntity.notFound().build();
-            }
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        subscriptionService.unsubscribe(subscriptionId, requireMemberId(httpRequest));
+        return ResponseEntity.ok(Map.of("message", "Subscription cancelled successfully"));
+    }
+
+    /** Admin accounts have no member ID, so they cannot hold subscriptions. */
+    private static String requireMemberId(HttpServletRequest request) {
+        String memberId = (String) request.getAttribute("memberId");
+        if (memberId == null) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "Only member accounts can manage subscriptions");
         }
+        return memberId;
     }
     
     @GetMapping("/my-subscriptions")

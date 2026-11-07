@@ -81,7 +81,9 @@ Subscription Service ──REST──▶ Drugs Service   (verify drug availabili
 - **Roles**: every self-registered account is a `MEMBER`. `ADMIN` is granted only in the database: `UPDATE users SET user_role = 'ADMIN' WHERE username = '...';`
 - **Members** see only their own data: profile, subscriptions, prescriptions, orders and refill dues. Another member's subscription returns 404.
 - **Admins** can list and delete users, edit any profile (including member ID), see all members' refill dues, and change refill order status.
-- **CORS** allows only the origins in `APP_CORS_ALLOWED_ORIGINS` (dev default: `http://localhost:5173`, `http://localhost:3000`); no credentialed CORS.
+- **CORS** allows only the origins in `APP_CORS_ALLOWED_ORIGINS` (dev default: `http://localhost:5173`, `http://localhost:3000`, and the Swagger aggregator `http://localhost:8085`); no credentialed CORS. In production, include both the frontend's and the Swagger aggregator's origins.
+- **Brute-force protection**: sign-in, sign-up and the availability checks are limited to 20 requests/minute per client address (`429` + `Retry-After`), and 5 failed sign-ins for the same username from the same address lock that combination for 15 minutes. Limits are in-memory, i.e. per service instance.
+- **Passwords** can be changed via `PUT /users/{id}` with `password`; members must also send `currentPassword`, admins can reset directly.
 - **JWT secret** comes only from the `JWT_SECRET` environment variable — there is no default. Services refuse to start without one, or if it is shorter than 64 bytes. Use the same value for all four services.
 
 ### Supabase Row Level Security (RLS)
@@ -108,19 +110,19 @@ Since the database is hosted on **Supabase**, all public tables are exposed via 
 - **Expiry validation**: Only drugs with `expiry_date` after today are treated as valid/dispatchable
 - **Multi-location stock**: Each drug has inventory across New York, Los Angeles, and Chicago
 - **Dispatchable stock**: Calculates availability by location, combining expiry and quantity checks
-- **Availability & reservation**: `availability` answers whether a quantity can be dispatched from a location; `reserve` atomically decrements stock (used by the refill service when confirming an order)
+- **Availability & reservation**: `availability` answers whether a quantity can be dispatched from a location; `reserve` decrements stock in a single conditional `UPDATE` (atomic, so concurrent orders can never oversell) and `release` returns it. Both are internal: only the refill service may call them, using a short-lived `SERVICE` token signed with the shared JWT secret
 
 ### 2. Subscription Management (Subscription Microservice)
 
 - **Subscribe**: Links a member to a drug via a prescription, setting a refill frequency (WEEKLY/MONTHLY)
 - **Unsubscribe**: Sets subscription status to INACTIVE (soft delete preserving history)
 - **Drug verification**: Before creating a subscription, the service calls the Drugs Service to verify the drug is available at the member's location
-- **Refill due calculation**: Determines which subscriptions are due for refill based on subscription date + frequency
+- **Refill due calculation**: Refills are scheduled every week/month from the subscription date. "Due as of date D" lists active subscriptions whose next scheduled refill (on or after today) falls on or before D, so today's date shows refills due today and a later date looks ahead
 
 ### 3. Refill Processing (Refill Microservice)
 
 - **Scheduled refills**: System queries active subscriptions due as of a given date
-- **Adhoc refills**: User manually requests a refill — the system validates drug availability, reserves stock, creates order line items, and confirms the order
+- **Adhoc refills**: User manually requests a refill — each line must name one of the member's own prescriptions for that drug; the system checks stock for every line, reserves it line by line (releasing everything already reserved if any line or the save fails), and confirms the order
 - **Order lifecycle**: `PENDING` → `CONFIRMED` → `IN_PROGRESS` → `SHIPPED` → `DELIVERED`
 - **Tracking**: Tracking numbers are auto-generated when an order is shipped
 
@@ -225,7 +227,8 @@ All other endpoints below require a valid JWT.
 | `GET`  | `/{drugId}/locations`                         | Stock rows for a drug across locations        |
 | `POST` | `/getDispatchableDrugStock`                   | Stock availability for drug IDs at a location |
 | `GET`  | `/availability?drugCode=&location=&quantity=` | Can this quantity be dispatched? (bool)       |
-| `POST` | `/reserve`                                    | Atomically decrement stock (bool)             |
+| `POST` | `/reserve`                                    | Atomically decrement stock (bool) — internal, `SERVICE` token only |
+| `POST` | `/release`                                    | Return reserved stock (bool) — internal, `SERVICE` token only      |
 
 ### Subscription Service (`/api/subscriptions`)
 
@@ -236,7 +239,7 @@ All other endpoints below require a valid JWT.
 | `GET`  | `/active`              | Active subscriptions only |
 | `POST` | `/unsubscribe`         | Cancel subscription       |
 | `GET`  | `/{subscriptionId}`    | One of the member's subscriptions (admin: any) |
-| `GET`  | `/refillDues?dueDate=` | Member's refills due as of date (admin: all members) |
+| `GET`  | `/refillDues?dueDate=` | Member's subscriptions whose next refill falls on or before the date (admin: all members) |
 
 ### Refill Service (`/api/refill`)
 
@@ -313,6 +316,7 @@ ALTER TABLE public.refill_order_line_items ENABLE ROW LEVEL SECURITY;
 
 ```bash
 # Build and start all services (reads JWT_SECRET from .env — see Quick Start)
+# Member portal: http://localhost:3000 · API docs: http://localhost:8085
 docker compose up --build
 
 # Individual service builds

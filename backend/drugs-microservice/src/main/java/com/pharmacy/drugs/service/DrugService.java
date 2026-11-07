@@ -31,8 +31,13 @@ public class DrugService {
         return drugRepository.findById(drugId);
     }
     
+    /** Case-insensitive name search over unexpired drugs; the input is matched literally. */
     public List<Drug> searchDrugsByName(String drugName) {
-        return drugRepository.findByDrugNameContainingIgnoreCaseAndValidExpiry(drugName, LocalDate.now());
+        String literal = drugName.trim()
+                             .replace("\\", "\\\\")
+                             .replace("%", "\\%")
+                             .replace("_", "\\_");
+        return drugRepository.searchValidDrugsByName("%" + literal + "%", LocalDate.now());
     }
     
     public List<DrugStockResponse> getDispatchableDrugStock(DrugStockRequest request) {
@@ -49,8 +54,7 @@ public class DrugService {
         
         if (drugOpt.isPresent()) {
             Drug drug = drugOpt.get();
-            boolean isExpired = drug.getExpiryDate().isBefore(LocalDate.now());
-            boolean isAvailable = drugLocation.getQuantityAvailable() > 0 && !isExpired;
+            boolean isAvailable = drugLocation.getQuantityAvailable() > 0 && drug.isUnexpiredOn(LocalDate.now());
             
             return new DrugStockResponse(
                 drug.getDrugId(),
@@ -83,14 +87,14 @@ public class DrugService {
      * dispatched from the given location.
      */
     public boolean isDispatchable(String drugId, String location, int quantity) {
-        if (quantity <= 0 || isValidDrug(drugId)) {
+        if (quantity <= 0 || isExpiredOrUnknown(drugId)) {
             return false;
         }
         return drugLocationRepository.findById(new DrugLocationId(drugId, location))
                    .map(loc -> loc.getQuantityAvailable() >= quantity)
                    .orElse(false);
     }
-    
+
     /**
      * Atomically reserves stock by decrementing the available quantity for a
      * drug at a location. Returns false (without mutating) if the drug is
@@ -98,22 +102,35 @@ public class DrugService {
      */
     @Transactional
     public boolean reserveStock(String drugId, String location, int quantity) {
-        if (quantity <= 0 || isValidDrug(drugId)) {
+        if (quantity <= 0 || isExpiredOrUnknown(drugId)) {
             return false;
         }
-        return drugLocationRepository.findById(new DrugLocationId(drugId, location))
-                   .filter(loc -> loc.getQuantityAvailable() >= quantity)
-                   .map(loc -> {
-                       loc.setQuantityAvailable(loc.getQuantityAvailable() - quantity);
-                       drugLocationRepository.save(loc);
-                       return true;
-                   })
-                   .orElse(false);
+        // Check-and-decrement happens in one UPDATE statement, so it is atomic.
+        return drugLocationRepository.decrementStock(drugId, location, quantity) == 1;
     }
-    
-    private boolean isValidDrug(String drugId) {
+
+    /**
+     * Returns previously reserved stock, e.g. when a later line of the same
+     * order failed. Returns false if there is no stock row for the drug/location.
+     */
+    @Transactional
+    public boolean releaseStock(String drugId, String location, int quantity) {
+        if (quantity <= 0) {
+            return false;
+        }
+        return drugLocationRepository.incrementStock(drugId, location, quantity) == 1;
+    }
+
+    /**
+     * True when the drug does not exist or has expired. A drug expiring today
+     * counts as expired, matching the {@code expiryDate > today} catalogue queries.
+     * (Named so callers need no negation: an inverted check here once let expired
+     * stock through while blocking every valid drug.)
+     */
+    boolean isExpiredOrUnknown(String drugId) {
+        LocalDate today = LocalDate.now();
         return drugRepository.findById(drugId)
-                   .map(drug -> drug.getExpiryDate().isAfter(LocalDate.now()))
-                   .orElse(false);
+                   .map(drug -> drug.isExpiredOn(today))
+                   .orElse(true);
     }
 }

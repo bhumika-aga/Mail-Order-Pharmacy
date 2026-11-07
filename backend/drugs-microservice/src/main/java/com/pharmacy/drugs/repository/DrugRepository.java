@@ -15,7 +15,13 @@ public interface DrugRepository extends JpaRepository<Drug, String> {
     @Query("SELECT d FROM Drug d WHERE d.expiryDate > :currentDate")
     List<Drug> findValidDrugs(@Param("currentDate") LocalDate currentDate);
     
-    @Query("SELECT d FROM Drug d WHERE d.drugName LIKE %:drugName% AND d.expiryDate > :currentDate")
-    List<Drug> findByDrugNameContainingIgnoreCaseAndValidExpiry(@Param("drugName") String drugName,
-                                                                @Param("currentDate") LocalDate currentDate);
+    /**
+     * Case-insensitive "contains" search over unexpired drugs. {@code pattern} must
+     * already be a LIKE pattern with {@code %}, {@code _} and {@code \} escaped by
+     * the caller (see DrugService), so user input is matched literally.
+     */
+    @Query("SELECT d FROM Drug d WHERE LOWER(d.drugName) LIKE LOWER(:pattern) ESCAPE '\\' "
+               + "AND d.expiryDate > :currentDate ORDER BY d.drugName")
+    List<Drug> searchValidDrugsByName(@Param("pattern") String pattern,
+                                      @Param("currentDate") LocalDate currentDate);
 }

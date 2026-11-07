@@ -1,5 +1,8 @@
 server:
   port: ${PORT}
+  # Behind the hosting proxy: take the client address from X-Forwarded-For,
+  # so sign-in rate limits apply per user, not per proxy.
+  forward-headers-strategy: framework
 
 spring:
   datasource:
@@ -12,13 +15,14 @@ spring:
       minimum-idle: 1
       data-source-properties:
         sslmode: require
-        # Required for Supabase transaction pooler (PgBouncer): disables
-        # server-side prepared statements so pooled connections can be reused.
+        # Disables server-side prepared statements so the Supabase connection
+        # pooler (PgBouncer) can safely hand connections between clients.
         prepareThreshold: 0
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    # SQL logging off in production (queries touch member/prescription data)
+    show-sql: false
     defer-datasource-initialization: true
     properties:
       hibernate:
@@ -39,12 +43,12 @@ management:
         include: health,info
   endpoint:
     health:
-      show-details: always
+      # Public endpoint: report UP/DOWN only, not database/disk details
+      show-details: never
 
 logging:
   level:
     com.pharmacy: INFO
-    org.springframework.security: DEBUG
 
 # Browser origins allowed to call this API, e.g. https://mediflow.example.com
 app:

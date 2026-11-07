@@ -31,7 +31,25 @@ public class JwtUtils {
         }
         this.signingKey = Keys.hmacShaKeyFor(secretBytes);
     }
-    
+
+    /** Lifetime of the internal service token; it is minted per call, so keep it short. */
+    private static final long SERVICE_TOKEN_TTL_MS = 60_000;
+
+    /**
+     * A short-lived token with role SERVICE, for internal calls that members must
+     * not be able to make themselves (reserving and releasing drug stock).
+     */
+    public String generateServiceToken() {
+        long now = System.currentTimeMillis();
+        return Jwts.builder()
+                   .subject("refill-service")
+                   .claim("role", "SERVICE")
+                   .issuedAt(new java.util.Date(now))
+                   .expiration(new java.util.Date(now + SERVICE_TOKEN_TTL_MS))
+                   .signWith(signingKey, Jwts.SIG.HS512)
+                   .compact();
+    }
+
     public String getUserNameFromJwtToken(String token) {
         return getClaimFromToken(token, Claims::getSubject);
     }

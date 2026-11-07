@@ -1,5 +1,7 @@
 package com.pharmacy.auth.config;
 
+import com.pharmacy.auth.security.AuthRateLimitFilter;
+import com.pharmacy.auth.security.FixedWindowRateLimiter;
 import com.pharmacy.auth.security.JwtAuthTokenFilter;
 import com.pharmacy.auth.security.JwtUtils;
 import com.pharmacy.auth.service.UserDetailsServiceImpl;
@@ -24,6 +26,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.time.Clock;
+import java.time.Duration;
 import java.util.List;
 
 @Configuration
@@ -33,7 +37,7 @@ public class WebSecurityConfig {
     /**
      * Browser origins allowed to call this API (comma-separated; env: APP_CORS_ALLOWED_ORIGINS).
      */
-    @Value("${app.cors.allowed-origins:http://localhost:5173,http://localhost:3000}")
+    @Value("${app.cors.allowed-origins:http://localhost:5173,http://localhost:3000,http://localhost:8085}")
     private List<String> allowedOrigins;
     
     @Bean
@@ -51,8 +55,16 @@ public class WebSecurityConfig {
         return new BCryptPasswordEncoder();
     }
     
+    /** Per-client-address limit on sign-in, sign-up and availability checks. */
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthTokenFilter authenticationJwtTokenFilter) {
+    public AuthRateLimitFilter authRateLimitFilter(
+        Clock clock, @Value("${app.auth.rate-limit.requests-per-minute:20}") int requestsPerMinute) {
+        return new AuthRateLimitFilter(new FixedWindowRateLimiter(requestsPerMinute, Duration.ofMinutes(1), clock));
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthTokenFilter authenticationJwtTokenFilter,
+                                           AuthRateLimitFilter authRateLimitFilter) {
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -73,8 +85,9 @@ public class WebSecurityConfig {
             // Missing or invalid credentials -> 401 (role failures stay 403)
             .exceptionHandling(ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));
         
+        http.addFilterBefore(authRateLimitFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(authenticationJwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
-        
+
         // For H2 console
         http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
         

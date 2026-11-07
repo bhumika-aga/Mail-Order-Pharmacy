@@ -1,4 +1,7 @@
-import { refillService } from "@/services/api";
+import { LOCATIONS } from "@/constants";
+import { useAuth } from "@/hooks/useAuth";
+import { refillService, subscriptionService } from "@/services/api";
+import { apiErrorMessage } from "@/services/errors";
 import {
   AdhocRefillPrescriptionRequest,
   AdhocRefillRequest,
@@ -16,6 +19,7 @@ import {
 } from "@mui/icons-material";
 import type { ChipProps } from "@mui/material";
 import {
+  Alert,
   Box,
   Button,
   Card,
@@ -28,6 +32,7 @@ import {
   DialogTitle,
   Grid,
   IconButton,
+  MenuItem,
   Tab,
   Tabs,
   TextField,
@@ -37,6 +42,7 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
 import React, { useState } from "react";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 
@@ -61,8 +67,9 @@ const RefillsPage: React.FC = () => {
   const [detailsDialog, setDetailsDialog] = useState(false);
   const [selectedRefill, setSelectedRefill] =
     useState<RefillStatusResponse | null>(null);
-  const [adhocForm, setAdhocForm] = useState<AdhocRefillRequest>({
-    memberId: "",
+  const { user } = useAuth();
+  // The member ID is taken from the signed-in user when the request is sent.
+  const [adhocForm, setAdhocForm] = useState<Omit<AdhocRefillRequest, "memberId">>({
     memberLocation: "",
     prescriptions: [
       {
@@ -88,16 +95,25 @@ const RefillsPage: React.FC = () => {
   });
 
   // Get refill dues for selected date
+  // Local calendar date: toISOString() would convert to UTC and, east of UTC,
+  // send the previous day.
+  const selectedDay = format(selectedDate, "yyyy-MM-dd");
+
+  // The member's own prescriptions, offered in the adhoc refill form
+  const { data: prescriptions } = useQuery({
+    queryKey: ["prescriptions"],
+    queryFn: () => subscriptionService.getPrescriptions().then((res) => res.data),
+    enabled: adhocDialog,
+  });
+
   const {
     data: refillDues,
     isLoading: loadingDues,
     error: duesError,
   } = useQuery({
-    queryKey: ["refillDues", selectedDate?.toISOString().split("T")[0]],
+    queryKey: ["refillDues", selectedDay],
     queryFn: () =>
-      refillService
-        .getRefillDues(selectedDate.toISOString().split("T")[0])
-        .then((res) => res.data),
+      refillService.getRefillDues(selectedDay).then((res) => res.data),
     enabled: !!selectedDate,
     retry: 2,
   });
@@ -115,7 +131,6 @@ const RefillsPage: React.FC = () => {
 
   const resetAdhocForm = () => {
     setAdhocForm({
-      memberId: "",
       memberLocation: "",
       prescriptions: [
         {
@@ -128,7 +143,28 @@ const RefillsPage: React.FC = () => {
   };
 
   const handleRequestAdhoc = () => {
-    adhocRefillMutation.mutate(adhocForm);
+    if (!user?.memberId) return;
+    adhocRefillMutation.mutate({ ...adhocForm, memberId: user.memberId });
+  };
+
+  const adhocFormComplete =
+    !!adhocForm.memberLocation &&
+    adhocForm.prescriptions.every(
+      (p) => p.prescriptionId && p.drugCode && p.quantity >= 1,
+    );
+
+  // Choosing a prescription also sets the drug it covers.
+  const selectPrescription = (index: number, prescriptionId: string) => {
+    const prescription = prescriptions?.find(
+      (p) => p.prescriptionId === prescriptionId,
+    );
+    const newRequests = [...adhocForm.prescriptions];
+    newRequests[index] = {
+      ...newRequests[index],
+      prescriptionId,
+      drugCode: prescription?.drugId ?? "",
+    };
+    setAdhocForm({ ...adhocForm, prescriptions: newRequests });
   };
 
   const handleViewDetails = (refill: RefillStatusResponse) => {
@@ -218,7 +254,10 @@ const RefillsPage: React.FC = () => {
           <Button
             variant="contained"
             startIcon={<Add />}
-            onClick={() => setAdhocDialog(true)}
+            onClick={() => {
+              adhocRefillMutation.reset();
+              setAdhocDialog(true);
+            }}
           >
             Request Adhoc Refill
           </Button>
@@ -527,22 +566,30 @@ const RefillsPage: React.FC = () => {
         >
           <DialogTitle>Request Adhoc Refill</DialogTitle>
           <DialogContent>
+            {adhocRefillMutation.error && (
+              <Alert severity="error" sx={{ mt: 1 }}>
+                {apiErrorMessage(
+                  adhocRefillMutation.error,
+                  "The refill could not be requested. Please try again.",
+                )}
+              </Alert>
+            )}
             <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Member ID"
-                  value={adhocForm.memberId}
-                  onChange={(e) =>
-                    setAdhocForm({ ...adhocForm, memberId: e.target.value })
-                  }
-                  placeholder="e.g., MEM001"
+                  value={user?.memberId ?? ""}
+                  disabled
+                  helperText="Your member ID"
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
+                  select
                   fullWidth
-                  label="Member Location"
+                  required
+                  label="Dispatch Location"
                   value={adhocForm.memberLocation}
                   onChange={(e) =>
                     setAdhocForm({
@@ -550,8 +597,13 @@ const RefillsPage: React.FC = () => {
                       memberLocation: e.target.value,
                     })
                   }
-                  placeholder="e.g., NYC, LAX, CHI"
-                />
+                >
+                  {LOCATIONS.map((location) => (
+                    <MenuItem key={location} value={location}>
+                      {location}
+                    </MenuItem>
+                  ))}
+                </TextField>
               </Grid>
 
               <Grid size={{ xs: 12 }}>
@@ -572,32 +624,37 @@ const RefillsPage: React.FC = () => {
                     <Grid container spacing={2}>
                       <Grid size={{ xs: 12, sm: 4 }}>
                         <TextField
+                          select
                           fullWidth
-                          label="Prescription ID"
+                          required
+                          label="Prescription"
                           value={request.prescriptionId}
                           onChange={(e) =>
-                            updatePrescriptionRequest(
-                              index,
-                              "prescriptionId",
-                              e.target.value,
-                            )
+                            selectPrescription(index, e.target.value)
                           }
-                          placeholder="e.g., PRES001"
-                        />
+                          helperText={
+                            prescriptions && prescriptions.length === 0
+                              ? "You have no prescriptions yet"
+                              : undefined
+                          }
+                        >
+                          {(prescriptions ?? []).map((p) => (
+                            <MenuItem
+                              key={p.prescriptionId}
+                              value={p.prescriptionId}
+                            >
+                              {p.prescriptionId}
+                            </MenuItem>
+                          ))}
+                        </TextField>
                       </Grid>
                       <Grid size={{ xs: 12, sm: 4 }}>
                         <TextField
                           fullWidth
                           label="Drug Code"
                           value={request.drugCode}
-                          onChange={(e) =>
-                            updatePrescriptionRequest(
-                              index,
-                              "drugCode",
-                              e.target.value,
-                            )
-                          }
-                          placeholder="e.g., D001"
+                          disabled
+                          helperText="Set by the prescription"
                         />
                       </Grid>
                       <Grid size={{ xs: 12, sm: 4 }}>
@@ -610,7 +667,7 @@ const RefillsPage: React.FC = () => {
                             updatePrescriptionRequest(
                               index,
                               "quantity",
-                              parseInt(e.target.value),
+                              Math.max(1, parseInt(e.target.value, 10) || 1),
                             )
                           }
                           slotProps={{ htmlInput: { min: 1 } }}
@@ -646,7 +703,7 @@ const RefillsPage: React.FC = () => {
             <Button
               onClick={handleRequestAdhoc}
               variant="contained"
-              disabled={adhocRefillMutation.isPending}
+              disabled={adhocRefillMutation.isPending || !adhocFormComplete}
             >
               {adhocRefillMutation.isPending
                 ? "Requesting..."

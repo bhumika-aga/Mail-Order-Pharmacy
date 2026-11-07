@@ -70,12 +70,12 @@ const Dashboard: React.FC = () => {
       action: () => navigate("/drugs"),
     },
     {
-      title: "Health Analytics",
-      value: "View",
+      title: "Total Refill Orders",
+      value: Array.isArray(refillOrders) ? refillOrders.length : 0,
       icon: <TrendingUp sx={{ fontSize: 32 }} />,
       color: "#8b5cf6",
       bgColor: isDarkMode ? "rgba(139, 92, 246, 0.1)" : "#f5f3ff",
-      action: () => navigate("/dashboard"),
+      action: () => navigate("/refills"),
     },
   ];
 

@@ -1,153 +1,112 @@
-version: "3.8"
+# Local stack: all services on in-memory H2 with seed data (the "docker" profile).
+#   cp .env.example .env    # then set JWT_SECRET
+#   docker compose up --build
+# Member portal: http://localhost:3000 · API docs: http://localhost:8085
+
+x-backend-env: &backend-env
+  SPRING_PROFILES_ACTIVE: docker
+  JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env (see .env.example)}
+  JWT_EXPIRATION: "86400000"
+
+x-healthcheck: &healthcheck
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 40s
 
 services:
   auth-microservice:
-    build:
-      context: ./backend/auth-microservice
-      dockerfile: Dockerfile
+    build: ./backend/auth-microservice
     ports:
       - "8084:8084"
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - "JWT_SECRET=${JWT_SECRET:?Set JWT_SECRET in .env (see .env.example)}"
-      - JWT_EXPIRATION=86400000
-    volumes:
-      - ./data/auth:/app/data
-    networks:
-      - pharmacy-network
+      <<: *backend-env
+    networks: [ pharmacy-network ]
     healthcheck:
+      <<: *healthcheck
       test: [ "CMD", "curl", "-f", "http://localhost:8084/actuator/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
 
   drugs-microservice:
-    build:
-      context: ./backend/drugs-microservice
-      dockerfile: Dockerfile
+    build: ./backend/drugs-microservice
     ports:
       - "8081:8081"
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - "JWT_SECRET=${JWT_SECRET:?Set JWT_SECRET in .env (see .env.example)}"
-      - JWT_EXPIRATION=86400000
-      - AUTH_SERVICE_URL=http://auth-microservice:8084
-    volumes:
-      - ./data/drugs:/app/data
-    networks:
-      - pharmacy-network
+      <<: *backend-env
+    networks: [ pharmacy-network ]
     healthcheck:
+      <<: *healthcheck
       test: [ "CMD", "curl", "-f", "http://localhost:8081/actuator/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
 
   subscription-microservice:
-    build:
-      context: ./backend/subscription-microservice
-      dockerfile: Dockerfile
+    build: ./backend/subscription-microservice
     ports:
       - "8082:8082"
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - "JWT_SECRET=${JWT_SECRET:?Set JWT_SECRET in .env (see .env.example)}"
-      - JWT_EXPIRATION=86400000
-      - AUTH_SERVICE_URL=http://auth-microservice:8084
-      - SERVICES_DRUGS_URL=http://drugs-microservice:8081
-      - DRUGS_SERVICE_URL=http://drugs-microservice:8081
-    volumes:
-      - ./data/subscription:/app/data
+      <<: *backend-env
+      # services.drugs.url (container-to-container)
+      SERVICES_DRUGS_URL: http://drugs-microservice:8081
     depends_on:
-      - drugs-microservice
-    networks:
-      - pharmacy-network
+      drugs-microservice:
+        condition: service_healthy
+    networks: [ pharmacy-network ]
     healthcheck:
+      <<: *healthcheck
       test: [ "CMD", "curl", "-f", "http://localhost:8082/actuator/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
 
   refill-microservice:
-    build:
-      context: ./backend/refill-microservice
-      dockerfile: Dockerfile
+    build: ./backend/refill-microservice
     ports:
       - "8083:8083"
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - "JWT_SECRET=${JWT_SECRET:?Set JWT_SECRET in .env (see .env.example)}"
-      - JWT_EXPIRATION=86400000
-      - AUTH_SERVICE_URL=http://auth-microservice:8084
-      - SERVICES_SUBSCRIPTION_URL=http://subscription-microservice:8082
-      - SERVICES_DRUGS_URL=http://drugs-microservice:8081
-      - SUBSCRIPTION_SERVICE_URL=http://subscription-microservice:8082
-      - DRUGS_SERVICE_URL=http://drugs-microservice:8081
-    volumes:
-      - ./data/refill:/app/data
+      <<: *backend-env
+      # drugs.service.url / subscription.service.url (container-to-container)
+      DRUGS_SERVICE_URL: http://drugs-microservice:8081
+      SUBSCRIPTION_SERVICE_URL: http://subscription-microservice:8082
     depends_on:
-      - subscription-microservice
-      - drugs-microservice
-    networks:
-      - pharmacy-network
+      drugs-microservice:
+        condition: service_healthy
+      subscription-microservice:
+        condition: service_healthy
+    networks: [ pharmacy-network ]
     healthcheck:
+      <<: *healthcheck
       test: [ "CMD", "curl", "-f", "http://localhost:8083/actuator/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
 
   swagger-aggregator:
-    build:
-      context: ./backend/swagger-aggregator
-      dockerfile: Dockerfile
+    build: ./backend/swagger-aggregator
     ports:
       - "8085:8085"
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - AUTH_SERVICE_URL=http://auth-microservice:8084
-      - DRUGS_SERVICE_URL=http://drugs-microservice:8081
-      - SUBSCRIPTION_SERVICE_URL=http://subscription-microservice:8082
-      - REFILL_SERVICE_URL=http://refill-microservice:8083
-    depends_on:
-      - auth-microservice
-      - drugs-microservice
-      - subscription-microservice
-      - refill-microservice
-    networks:
-      - pharmacy-network
+      # Swagger UI runs in your browser, so these must be reachable from the host,
+      # not container names.
+      AUTH_SERVICE_URL: http://localhost:8084
+      DRUGS_SERVICE_URL: http://localhost:8081
+      SUBSCRIPTION_SERVICE_URL: http://localhost:8082
+      REFILL_SERVICE_URL: http://localhost:8083
+    networks: [ pharmacy-network ]
     healthcheck:
+      <<: *healthcheck
       test: [ "CMD", "curl", "-f", "http://localhost:8085/actuator/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
 
   member-portal:
     build:
       context: ./frontend/member-portal
-      dockerfile: Dockerfile
+      # Baked into the bundle; the browser calls the services via the host ports.
+      args:
+        VITE_AUTH_SERVICE_URL: http://localhost:8084
+        VITE_DRUGS_SERVICE_URL: http://localhost:8081
+        VITE_SUBSCRIPTION_SERVICE_URL: http://localhost:8082
+        VITE_REFILL_SERVICE_URL: http://localhost:8083
+        VITE_SWAGGER_URL: http://localhost:8085
     ports:
-      - "3000:3000"
-    environment:
-      - REACT_APP_API_BASE_URL=http://localhost
+      - "3000:8080"
     depends_on:
       - auth-microservice
       - drugs-microservice
       - subscription-microservice
       - refill-microservice
-    networks:
-      - pharmacy-network
+    networks: [ pharmacy-network ]
 
 networks:
   pharmacy-network:
     driver: bridge
-
-volumes:
-  auth-data:
-  drugs-data:
-  subscription-data:
-  refill-data:
-  postgres_data:

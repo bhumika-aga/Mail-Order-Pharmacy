@@ -28,6 +28,16 @@ export interface SignupRequest {
   memberId?: string; // Optional since it's auto-generated
 }
 
+/** Profile update. Omit password to keep it; members changing their own must send currentPassword. */
+export interface UpdateUserRequest {
+  username: string;
+  email: string;
+  fullName: string;
+  memberId?: string;
+  password?: string;
+  currentPassword?: string;
+}
+
 export interface MessageResponse {
   message: string;
 }

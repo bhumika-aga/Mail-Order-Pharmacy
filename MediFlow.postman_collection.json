@@ -600,7 +600,8 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"drugCode\": \"D001\",\n  \"location\": \"New York\",\n  \"quantity\": 5\n}"
-            }
+            },
+            "description": "Internal endpoint: only the refill service may reserve stock, using a short-lived SERVICE token. With a member or admin token this returns 403 (expected). Stock is reserved for members by Refill → Request Adhoc Refill."
           },
           "response": [
             {
