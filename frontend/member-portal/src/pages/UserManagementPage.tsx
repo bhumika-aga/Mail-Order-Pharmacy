@@ -141,10 +141,12 @@ const UserManagementPage: React.FC = () => {
   return (
     <Container maxWidth="lg">
       <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={3}
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 3,
+        }}
       >
         <Typography variant="h4" component="h1">
           User Management
@@ -230,33 +232,33 @@ const UserManagementPage: React.FC = () => {
         <DialogContent>
           {selectedUser && (
             <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Typography>
                   <strong>ID:</strong> {selectedUser.id}
                 </Typography>
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Typography>
                   <strong>Username:</strong> {selectedUser.username}
                 </Typography>
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Typography>
                   <strong>Email:</strong> {selectedUser.email}
                 </Typography>
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Typography>
                   <strong>Member ID:</strong> {selectedUser.memberId}
                 </Typography>
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Typography>
                   <strong>Created:</strong>{" "}
                   {new Date(selectedUser.createdAt).toLocaleString()}
                 </Typography>
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Typography>
                   <strong>Updated:</strong>{" "}
                   {new Date(selectedUser.updatedAt).toLocaleString()}
@@ -286,7 +288,7 @@ const UserManagementPage: React.FC = () => {
               </Alert>
             )}
             <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   label="Username"
@@ -297,7 +299,7 @@ const UserManagementPage: React.FC = () => {
                   required
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   label="Email"
@@ -309,7 +311,7 @@ const UserManagementPage: React.FC = () => {
                   required
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   label="Full Name"
@@ -320,7 +322,7 @@ const UserManagementPage: React.FC = () => {
                   required
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   label="New Password (optional)"
@@ -363,7 +365,7 @@ const UserManagementPage: React.FC = () => {
               </Alert>
             )}
             <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   label="Username"
@@ -374,7 +376,7 @@ const UserManagementPage: React.FC = () => {
                   required
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   label="Email"
@@ -386,7 +388,7 @@ const UserManagementPage: React.FC = () => {
                   required
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   label="Full Name"
@@ -397,7 +399,7 @@ const UserManagementPage: React.FC = () => {
                   required
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   label="Password"

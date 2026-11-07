@@ -16,7 +16,6 @@ spring:
         # server-side prepared statements so pooled connections can be reused.
         prepareThreshold: 0
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
     show-sql: true
@@ -46,3 +45,8 @@ logging:
   level:
     com.pharmacy: INFO
     org.springframework.security: DEBUG
+
+# Browser origins allowed to call this API, e.g. https://mediflow.example.com
+app:
+  cors:
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS}

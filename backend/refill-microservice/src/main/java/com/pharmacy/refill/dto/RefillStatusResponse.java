@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public class RefillStatusResponse {
+    
     private String refillOrderId;
     private String memberId;
     private LocalDateTime orderDate;

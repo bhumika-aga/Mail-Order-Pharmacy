@@ -3,8 +3,11 @@ package com.pharmacy.auth.config;
 import com.pharmacy.auth.security.JwtAuthTokenFilter;
 import com.pharmacy.auth.security.JwtUtils;
 import com.pharmacy.auth.service.UserDetailsServiceImpl;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -15,17 +18,23 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration
-@EnableMethodSecurity()
+@EnableMethodSecurity
 public class WebSecurityConfig {
+    
+    /**
+     * Browser origins allowed to call this API (comma-separated; env: APP_CORS_ALLOWED_ORIGINS).
+     */
+    @Value("${app.cors.allowed-origins:http://localhost:5173,http://localhost:3000}")
+    private List<String> allowedOrigins;
     
     @Bean
     public JwtAuthTokenFilter authenticationJwtTokenFilter(JwtUtils jwtUtils, UserDetailsServiceImpl userDetailsService) {
@@ -33,7 +42,7 @@ public class WebSecurityConfig {
     }
     
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) {
         return authConfig.getAuthenticationManager();
     }
     
@@ -43,18 +52,26 @@ public class WebSecurityConfig {
     }
     
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthTokenFilter authenticationJwtTokenFilter)
-        throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthTokenFilter authenticationJwtTokenFilter) {
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                                               .requestMatchers("/api/auth/**").permitAll()
-                                               .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                                               // Public authentication endpoints
+                                               .requestMatchers(HttpMethod.POST,
+                                                   "/api/auth/signin", "/api/auth/signup", "/api/auth/validate").permitAll()
+                                               .requestMatchers(HttpMethod.GET,
+                                                   "/api/auth/check-username/**", "/api/auth/check-email/**",
+                                                   "/api/auth/check-memberid/**").permitAll()
+                                               // Docs, health and error rendering
+                                               .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                                               .requestMatchers("/actuator/health/**", "/actuator/info").permitAll()
+                                               .requestMatchers("/error").permitAll()
+                                               // H2 console exists only in the dev profile
                                                .requestMatchers("/h2-console/**").permitAll()
-                                               .requestMatchers("/actuator/**").permitAll()
-                                               .requestMatchers("/**").permitAll()
-                                               .anyRequest().authenticated());
+                                               .anyRequest().authenticated())
+            // Missing or invalid credentials -> 401 (role failures stay 403)
+            .exceptionHandling(ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));
         
         http.addFilterBefore(authenticationJwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
         
@@ -67,10 +84,12 @@ public class WebSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("*"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
+        configuration.setAllowedOrigins(allowedOrigins);
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        // Auth uses a bearer header, not cookies, so credentialed CORS is not needed.
+        configuration.setAllowCredentials(false);
+        configuration.setMaxAge(3600L);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

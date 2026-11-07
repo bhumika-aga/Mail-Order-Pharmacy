@@ -1,15 +1,10 @@
 import { createTheme } from "@mui/material/styles";
-import React, { createContext, useContext, useEffect, useState } from "react";
-
-type ThemeMode = "light" | "dark";
-
-interface ThemeContextType {
-  mode: ThemeMode;
-  toggleTheme: () => void;
-  theme: any;
-}
-
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+import React, { useEffect, useState } from "react";
+import {
+  ThemeContext,
+  type ThemeContextType,
+  type ThemeMode,
+} from "./themeModeContext";
 
 const getDesignTokens = (mode: ThemeMode) => ({
   palette: {
@@ -377,12 +372,4 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
       {children}
     </ThemeContext.Provider>
   );
-};
-
-export const useTheme = (): ThemeContextType => {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error("useTheme must be used within a ThemeProvider");
-  }
-  return context;
 };

@@ -1,28 +1,25 @@
-# Use OpenJDK 17 as base image
-FROM eclipse-temurin:17-jdk-jammy
+# Build swagger-aggregator from the repository root:
+#   docker build -f Dockerfile.swagger -t swagger-aggregator .
 
-# Set working directory
-WORKDIR /app
+# ---- Build stage: compile with the official Maven image ----
+FROM maven:3.9-eclipse-temurin-21 AS builder
+WORKDIR /build
 
-# Copy Maven wrapper and pom.xml
-COPY backend/swagger-aggregator/mvnw .
-COPY backend/swagger-aggregator/.mvn .mvn
+# Resolve dependencies first so they are cached between source changes
 COPY backend/swagger-aggregator/pom.xml .
+RUN mvn -B dependency:go-offline
 
-# Make mvnw executable
-RUN chmod +x ./mvnw
-
-# Download dependencies
-RUN ./mvnw dependency:go-offline -B
-
-# Copy source code
 COPY backend/swagger-aggregator/src src
+RUN mvn -B clean package -DskipTests
 
-# Build the application
-RUN ./mvnw clean package -DskipTests
+# ---- Runtime stage: slim JRE, non-root user ----
+FROM eclipse-temurin:21-jre-jammy
+WORKDIR /app
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
+COPY --from=builder --chown=appuser:appgroup /build/target/swagger-aggregator-*.jar app.jar
+USER appuser
 
-# Expose port
-EXPOSE $PORT
-
-# Run the application
-CMD java -Dserver.port=$PORT -jar target/swagger-aggregator-1.0.0.jar
+# Most hosting platforms inject PORT; fall back to the service's default port.
+ENV PORT=8085
+EXPOSE 8085
+CMD ["sh", "-c", "exec java -Dserver.port=$PORT -jar /app/app.jar"]

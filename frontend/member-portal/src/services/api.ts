@@ -1,8 +1,10 @@
-import axios, { AxiosResponse } from 'axios';
+import axios, { AxiosResponse } from "axios";
 import {
   AdhocRefillRequest,
+  AdhocRefillResponse,
   AuthResponse,
   Drug,
+  DrugLocation,
   DrugStockResponse,
   MemberPrescription,
   MemberSubscription,
@@ -11,13 +13,17 @@ import {
   RefillStatusResponse,
   SignupRequest,
   SubscriptionRequest,
-  User
-} from '../types';
+  User,
+} from "../types";
 
-const AUTH_SERVICE_URL = import.meta.env.VITE_AUTH_SERVICE_URL || 'http://localhost:8084';
-const DRUGS_SERVICE_URL = import.meta.env.VITE_DRUGS_SERVICE_URL || 'http://localhost:8081';
-const SUBSCRIPTION_SERVICE_URL = import.meta.env.VITE_SUBSCRIPTION_SERVICE_URL || 'http://localhost:8082';
-const REFILL_SERVICE_URL = import.meta.env.VITE_REFILL_SERVICE_URL || 'http://localhost:8083';
+const AUTH_SERVICE_URL =
+  import.meta.env.VITE_AUTH_SERVICE_URL || "http://localhost:8084";
+const DRUGS_SERVICE_URL =
+  import.meta.env.VITE_DRUGS_SERVICE_URL || "http://localhost:8081";
+const SUBSCRIPTION_SERVICE_URL =
+  import.meta.env.VITE_SUBSCRIPTION_SERVICE_URL || "http://localhost:8082";
+const REFILL_SERVICE_URL =
+  import.meta.env.VITE_REFILL_SERVICE_URL || "http://localhost:8083";
 
 const authApi = axios.create({
   baseURL: `${AUTH_SERVICE_URL}/api/auth`,
@@ -35,50 +41,88 @@ const refillApi = axios.create({
   baseURL: `${REFILL_SERVICE_URL}/api/refill`,
 });
 
+const apiClients = [authApi, drugsApi, subscriptionApi, refillApi];
+
 export const setAuthToken = (token: string) => {
   const bearerToken = `Bearer ${token}`;
-  drugsApi.defaults.headers.common['Authorization'] = bearerToken;
-  subscriptionApi.defaults.headers.common['Authorization'] = bearerToken;
-  refillApi.defaults.headers.common['Authorization'] = bearerToken;
+  apiClients.forEach((client) => {
+    client.defaults.headers.common["Authorization"] = bearerToken;
+  });
 };
 
 export const clearAuthToken = () => {
-  delete drugsApi.defaults.headers.common['Authorization'];
-  delete subscriptionApi.defaults.headers.common['Authorization'];
-  delete refillApi.defaults.headers.common['Authorization'];
+  apiClients.forEach((client) => {
+    delete client.defaults.headers.common["Authorization"];
+  });
 };
 
+// Every API now requires a valid JWT. When the session expires (401), hand off to the
+// registered handler (the auth provider logs the user out) instead of leaving pages
+// silently failing. Sign-in and token validation handle their own 401s.
+let unauthorizedHandler: (() => void) | null = null;
+
+export const setUnauthorizedHandler = (handler: (() => void) | null) => {
+  unauthorizedHandler = handler;
+};
+
+apiClients.forEach((client) => {
+  client.interceptors.response.use(undefined, (error) => {
+    const url: string = error?.config?.url ?? "";
+    const isAuthCall = url.includes("/signin") || url.includes("/validate");
+    if (error?.response?.status === 401 && !isAuthCall) {
+      unauthorizedHandler?.();
+    }
+    return Promise.reject(error);
+  });
+});
+
 export const authService = {
-  login: (username: string, password: string): Promise<AxiosResponse<AuthResponse>> =>
-    authApi.post('/signin', { username, password }),
+  login: (
+    username: string,
+    password: string,
+  ): Promise<AxiosResponse<AuthResponse>> =>
+    authApi.post("/signin", { username, password }),
 
   validateToken: (token: string): Promise<AxiosResponse<AuthResponse>> =>
-    authApi.post('/validate', {}, {
-      headers: { Authorization: `Bearer ${token}` }
-    }),
+    authApi.post(
+      "/validate",
+      {},
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    ),
 
-  register: (signupData: SignupRequest): Promise<AxiosResponse<MessageResponse>> =>
-    authApi.post('/signup', signupData),
+  register: (
+    signupData: SignupRequest,
+  ): Promise<AxiosResponse<MessageResponse>> =>
+    authApi.post("/signup", signupData),
 
-  getAllUsers: (): Promise<AxiosResponse<User[]>> =>
-    authApi.get('/users'),
+  getAllUsers: (): Promise<AxiosResponse<User[]>> => authApi.get("/users"),
 
   getUserById: (id: number): Promise<AxiosResponse<User>> =>
     authApi.get(`/users/${id}`),
 
-  updateUser: (id: number, userData: SignupRequest): Promise<AxiosResponse<User>> =>
-    authApi.put(`/users/${id}`, userData),
+  updateUser: (
+    id: number,
+    userData: SignupRequest,
+  ): Promise<AxiosResponse<User>> => authApi.put(`/users/${id}`, userData),
 
   deleteUser: (id: number): Promise<AxiosResponse<MessageResponse>> =>
     authApi.delete(`/users/${id}`),
 
-  checkUsernameAvailability: (username: string): Promise<AxiosResponse<MessageResponse>> =>
+  checkUsernameAvailability: (
+    username: string,
+  ): Promise<AxiosResponse<MessageResponse>> =>
     authApi.get(`/check-username/${username}`),
 
-  checkEmailAvailability: (email: string): Promise<AxiosResponse<MessageResponse>> =>
+  checkEmailAvailability: (
+    email: string,
+  ): Promise<AxiosResponse<MessageResponse>> =>
     authApi.get(`/check-email/${email}`),
 
-  checkMemberIdAvailability: (memberId: string): Promise<AxiosResponse<MessageResponse>> =>
+  checkMemberIdAvailability: (
+    memberId: string,
+  ): Promise<AxiosResponse<MessageResponse>> =>
     authApi.get(`/check-memberid/${memberId}`),
 };
 
@@ -89,50 +133,56 @@ export const drugService = {
   searchByName: (drugName: string): Promise<AxiosResponse<Drug[]>> =>
     drugsApi.get(`/searchDrugsByName?drugName=${drugName}`),
 
-  getDispatchableStock: (drugIds: string[], location: string): Promise<AxiosResponse<DrugStockResponse[]>> =>
-    drugsApi.post('/getDispatchableDrugStock', { drugIds, location }),
+  getDispatchableStock: (
+    drugIds: string[],
+    location: string,
+  ): Promise<AxiosResponse<DrugStockResponse[]>> =>
+    drugsApi.post("/getDispatchableDrugStock", { drugIds, location }),
 
-  getAllValidDrugs: (): Promise<AxiosResponse<Drug[]>> =>
-    drugsApi.get('/all'),
+  getAllValidDrugs: (): Promise<AxiosResponse<Drug[]>> => drugsApi.get("/all"),
 
-  getDrugLocations: (drugId: string): Promise<AxiosResponse<any[]>> =>
+  getDrugLocations: (drugId: string): Promise<AxiosResponse<DrugLocation[]>> =>
     drugsApi.get(`/${drugId}/locations`),
 };
 
 export const subscriptionService = {
-  subscribe: (request: SubscriptionRequest): Promise<AxiosResponse<MemberSubscription>> =>
-    subscriptionApi.post('/subscribe', request),
+  subscribe: (
+    request: SubscriptionRequest,
+  ): Promise<AxiosResponse<MemberSubscription>> =>
+    subscriptionApi.post("/subscribe", request),
 
-  unsubscribe: (subscriptionId: string): Promise<AxiosResponse<any>> =>
+  unsubscribe: (
+    subscriptionId: string,
+  ): Promise<AxiosResponse<MessageResponse>> =>
     subscriptionApi.post(`/unsubscribe?subscriptionId=${subscriptionId}`),
 
   getMySubscriptions: (): Promise<AxiosResponse<MemberSubscription[]>> =>
-    subscriptionApi.get('/my-subscriptions'),
+    subscriptionApi.get("/my-subscriptions"),
 
   getActiveSubscriptions: (): Promise<AxiosResponse<MemberSubscription[]>> =>
-    subscriptionApi.get('/active'),
+    subscriptionApi.get("/active"),
 
   getPrescriptions: (): Promise<AxiosResponse<MemberPrescription[]>> =>
-    subscriptionApi.get('/prescriptions'),
+    subscriptionApi.get("/prescriptions"),
 
-  getSubscriptionById: (subscriptionId: string): Promise<AxiosResponse<MemberSubscription>> =>
+  getSubscriptionById: (
+    subscriptionId: string,
+  ): Promise<AxiosResponse<MemberSubscription>> =>
     subscriptionApi.get(`/${subscriptionId}`),
 };
 
 export const refillService = {
   getRefillStatus: (): Promise<AxiosResponse<RefillStatusResponse>> =>
-    refillApi.get('/viewRefillStatus'),
+    refillApi.get("/viewRefillStatus"),
 
   getAllRefillOrders: (): Promise<AxiosResponse<RefillStatusResponse[]>> =>
-    refillApi.get('/orders'),
+    refillApi.get("/orders"),
 
   getRefillDues: (date: string): Promise<AxiosResponse<RefillDueResponse[]>> =>
     refillApi.get(`/getRefillDuesAsOfDate?date=${date}`),
 
-  requestAdhocRefill: (request: AdhocRefillRequest): Promise<AxiosResponse<any>> =>
-    refillApi.post('/requestAdhocRefill', request),
-
-  getOrders: (): Promise<AxiosResponse<any[]>> =>
-    refillApi.get('/orders'),
+  requestAdhocRefill: (
+    request: AdhocRefillRequest,
+  ): Promise<AxiosResponse<AdhocRefillResponse>> =>
+    refillApi.post("/requestAdhocRefill", request),
 };
-

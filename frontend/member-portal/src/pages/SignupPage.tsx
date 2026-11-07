@@ -145,14 +145,14 @@ const SignupPage: React.FC = () => {
     if (!validation.message) return null;
 
     return validation.isValid ? (
-      <Box display="flex" alignItems="center" gap={0.5} mt={0.5}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.5 }}>
         <CheckCircle color="success" fontSize="small" />
         <Typography variant="caption" color="success.main">
           {validation.message}
         </Typography>
       </Box>
     ) : (
-      <Box display="flex" alignItems="center" gap={0.5} mt={0.5}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.5 }}>
         <Error color="error" fontSize="small" />
         <Typography variant="caption" color="error">
           {validation.message}
@@ -164,21 +164,25 @@ const SignupPage: React.FC = () => {
   return (
     <Container maxWidth="sm">
       <Box
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        justifyContent="center"
-        minHeight="100vh"
-        py={4}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "100vh",
+          py: 4,
+        }}
       >
         <Card sx={{ width: "100%", maxWidth: 500 }}>
           <CardContent sx={{ p: 4 }}>
             <>
               <Box
-                display="flex"
-                flexDirection="column"
-                alignItems="center"
-                mb={3}
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  mb: 3,
+                }}
               >
                 <PersonAdd
                   sx={{ fontSize: 48, color: "primary.main", mb: 2 }}
@@ -189,7 +193,7 @@ const SignupPage: React.FC = () => {
                 <Typography
                   variant="body2"
                   color="text.secondary"
-                  textAlign="center"
+                  sx={{ textAlign: "center" }}
                 >
                   Join the Mail-Order Pharmacy system
                 </Typography>
@@ -203,7 +207,7 @@ const SignupPage: React.FC = () => {
 
               <Box component="form" onSubmit={handleSubmit}>
                 <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextField
                       fullWidth
                       label="Username"
@@ -218,12 +222,12 @@ const SignupPage: React.FC = () => {
                         !!fieldValidation.username.message
                       }
                       helperText="3-20 characters"
-                      inputProps={{ minLength: 3, maxLength: 20 }}
+                      slotProps={{ htmlInput: { minLength: 3, maxLength: 20 } }}
                     />
                     {getFieldStatus("username")}
                   </Grid>
 
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextField
                       fullWidth
                       label="Full Name"
@@ -233,11 +237,13 @@ const SignupPage: React.FC = () => {
                       }
                       required
                       helperText="2-100 characters"
-                      inputProps={{ minLength: 2, maxLength: 100 }}
+                      slotProps={{
+                        htmlInput: { minLength: 2, maxLength: 100 },
+                      }}
                     />
                   </Grid>
 
-                  <Grid item xs={12}>
+                  <Grid size={{ xs: 12 }}>
                     <TextField
                       fullWidth
                       label="Email"
@@ -257,7 +263,7 @@ const SignupPage: React.FC = () => {
                     {getFieldStatus("email")}
                   </Grid>
 
-                  <Grid item xs={12}>
+                  <Grid size={{ xs: 12 }}>
                     <TextField
                       fullWidth
                       label="Password"
@@ -268,22 +274,24 @@ const SignupPage: React.FC = () => {
                       }
                       required
                       helperText="Minimum 6 characters"
-                      inputProps={{ minLength: 6, maxLength: 40 }}
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton
-                              onClick={() => setShowPassword(!showPassword)}
-                              edge="end"
-                            >
-                              {showPassword ? (
-                                <VisibilityOff />
-                              ) : (
-                                <Visibility />
-                              )}
-                            </IconButton>
-                          </InputAdornment>
-                        ),
+                      slotProps={{
+                        htmlInput: { minLength: 6, maxLength: 40 },
+                        input: {
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton
+                                onClick={() => setShowPassword(!showPassword)}
+                                edge="end"
+                              >
+                                {showPassword ? (
+                                  <VisibilityOff />
+                                ) : (
+                                  <Visibility />
+                                )}
+                              </IconButton>
+                            </InputAdornment>
+                          ),
+                        },
                       }}
                     />
                   </Grid>
@@ -302,7 +310,7 @@ const SignupPage: React.FC = () => {
                     : "Create Account"}
                 </Button>
 
-                <Box textAlign="center">
+                <Box sx={{ textAlign: "center" }}>
                   <Typography variant="body2" color="text.secondary">
                     Already have an account?{" "}
                     <Link component={RouterLink} to="/login">

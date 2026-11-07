@@ -1,5 +1,5 @@
 # Multi-stage build for React frontend
-FROM node:18-alpine AS builder
+FROM node:24-alpine AS builder
 
 # Set working directory
 WORKDIR /app
@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build
 
 # Production stage with Nginx
-FROM nginx:1.25-alpine
+FROM nginx:1.30-alpine
 
 # Add labels for better container management
 LABEL maintainer="pharmacy-team"

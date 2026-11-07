@@ -1,28 +1,25 @@
-# Use OpenJDK 17 as base image
-FROM eclipse-temurin:17-jdk-jammy
+# Build auth-microservice from the repository root:
+#   docker build -f Dockerfile.auth -t auth-microservice .
 
-# Set working directory
-WORKDIR /app
+# ---- Build stage: compile with the official Maven image ----
+FROM maven:3.9-eclipse-temurin-21 AS builder
+WORKDIR /build
 
-# Copy Maven wrapper and pom.xml
-COPY backend/auth-microservice/mvnw .
-COPY backend/auth-microservice/.mvn .mvn
+# Resolve dependencies first so they are cached between source changes
 COPY backend/auth-microservice/pom.xml .
+RUN mvn -B dependency:go-offline
 
-# Make mvnw executable
-RUN chmod +x ./mvnw
-
-# Download dependencies
-RUN ./mvnw dependency:go-offline -B
-
-# Copy source code
 COPY backend/auth-microservice/src src
+RUN mvn -B clean package -DskipTests
 
-# Build the application
-RUN ./mvnw clean package -DskipTests
+# ---- Runtime stage: slim JRE, non-root user ----
+FROM eclipse-temurin:21-jre-jammy
+WORKDIR /app
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
+COPY --from=builder --chown=appuser:appgroup /build/target/auth-microservice-*.jar app.jar
+USER appuser
 
-# Expose port
-EXPOSE $PORT
-
-# Run the application
-CMD java -Dserver.port=$PORT -jar target/auth-microservice-1.0.0.jar
+# Most hosting platforms inject PORT; fall back to the service's default port.
+ENV PORT=8084
+EXPOSE 8084
+CMD ["sh", "-c", "exec java -Dserver.port=$PORT -jar /app/app.jar"]

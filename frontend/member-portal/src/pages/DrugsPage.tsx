@@ -105,18 +105,20 @@ const DrugsPage: React.FC = () => {
       </Typography>
 
       {/* Search Box */}
-      <Box mb={3}>
+      <Box sx={{ mb: 3 }}>
         <TextField
           fullWidth
           placeholder="Search by drug name or enter drug ID (e.g., D001)"
           value={searchTerm}
           onChange={(e) => handleSearch(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search />
-              </InputAdornment>
-            ),
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search />
+                </InputAdornment>
+              ),
+            },
           }}
         />
         <Typography
@@ -136,19 +138,21 @@ const DrugsPage: React.FC = () => {
       <Grid container spacing={3}>
         {drugsToDisplay.length > 0 ? (
           drugsToDisplay.map((drug) => (
-            <Grid item xs={12} md={6} lg={4} key={drug.drugId}>
+            <Grid key={drug.drugId} size={{ xs: 12, md: 6, lg: 4 }}>
               <Card>
                 <CardContent>
                   <Box
-                    display="flex"
-                    justifyContent="space-between"
-                    alignItems="start"
-                    mb={2}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "start",
+                      mb: 2,
+                    }}
                   >
                     <Typography variant="h6" component="h2">
                       {drug.drugName}
                     </Typography>
-                    <Box display="flex" gap={0.5}>
+                    <Box sx={{ display: "flex", gap: 0.5 }}>
                       {isExpired(drug.expiryDate) ? (
                         <Chip label="Expired" color="error" size="small" />
                       ) : isExpiringSoon(drug.expiryDate) ? (
@@ -180,7 +184,7 @@ const DrugsPage: React.FC = () => {
                     {new Date(drug.expiryDate).toLocaleDateString()}
                   </Typography>
 
-                  <Box mt={2}>
+                  <Box sx={{ mt: 2 }}>
                     <Button
                       variant="outlined"
                       size="small"
@@ -196,11 +200,11 @@ const DrugsPage: React.FC = () => {
             </Grid>
           ))
         ) : !isLoading ? (
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Typography
               variant="body1"
               color="text.secondary"
-              textAlign="center"
+              sx={{ textAlign: "center" }}
             >
               {searchTerm
                 ? `No drugs found matching "${searchTerm}"`
@@ -222,7 +226,7 @@ const DrugsPage: React.FC = () => {
           {selectedDrug && (
             <Box sx={{ mt: 2 }}>
               <Grid container spacing={3}>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="h6" gutterBottom>
                     {selectedDrug.drugName}
                   </Typography>
@@ -241,7 +245,7 @@ const DrugsPage: React.FC = () => {
                     {selectedDrug.unitsPerPackage}
                   </Typography>
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography>
                     <strong>Manufactured Date:</strong>{" "}
                     {new Date(
@@ -252,7 +256,7 @@ const DrugsPage: React.FC = () => {
                     <strong>Expiry Date:</strong>{" "}
                     {new Date(selectedDrug.expiryDate).toLocaleDateString()}
                   </Typography>
-                  <Box mt={1}>
+                  <Box sx={{ mt: 1 }}>
                     {isExpired(selectedDrug.expiryDate) ? (
                       <Chip icon={<Warning />} label="Expired" color="error" />
                     ) : isExpiringSoon(selectedDrug.expiryDate) ? (
@@ -270,7 +274,7 @@ const DrugsPage: React.FC = () => {
                     )}
                   </Box>
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
                     Medical Composition
                   </Typography>

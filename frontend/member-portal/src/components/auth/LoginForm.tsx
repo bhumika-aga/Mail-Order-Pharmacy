@@ -10,7 +10,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link as RouterLink, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
@@ -24,20 +24,17 @@ const LoginForm: React.FC = () => {
   const { login } = useAuth();
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string>("");
   const location = useLocation();
+  // Message handed over by the signup page via navigation state
+  const [successMessage, setSuccessMessage] = useState<string>(
+    () => (location.state as { message?: string } | null)?.message ?? "",
+  );
 
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<LoginFormData>();
-
-  useEffect(() => {
-    if (location.state?.message) {
-      setSuccessMessage(location.state.message);
-    }
-  }, [location.state]);
 
   const onSubmit = async (data: LoginFormData) => {
     setLoading(true);
@@ -46,7 +43,7 @@ const LoginForm: React.FC = () => {
 
     try {
       await login(data.username, data.password);
-    } catch (err) {
+    } catch {
       setError("Invalid username or password");
     } finally {
       setLoading(false);
@@ -140,7 +137,7 @@ const LoginForm: React.FC = () => {
               {loading ? <CircularProgress size={24} /> : "Sign In"}
             </Button>
 
-            <Box textAlign="center" sx={{ mb: 2 }}>
+            <Box sx={{ textAlign: "center", mb: 2 }}>
               <Typography variant="body2" color="text.secondary">
                 Don't have an account?{" "}
                 <Link component={RouterLink} to="/signup">

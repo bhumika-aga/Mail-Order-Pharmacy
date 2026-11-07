@@ -5,12 +5,34 @@
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "auth_url", "value": "http://localhost:8084" },
-    { "key": "drugs_url", "value": "http://localhost:8081" },
-    { "key": "sub_url", "value": "http://localhost:8082" },
-    { "key": "refill_url", "value": "http://localhost:8083" },
-    { "key": "token", "value": "" },
-    { "key": "memberId", "value": "" }
+    {
+      "key": "auth_url",
+      "value": "http://localhost:8084"
+    },
+    {
+      "key": "drugs_url",
+      "value": "http://localhost:8081"
+    },
+    {
+      "key": "sub_url",
+      "value": "http://localhost:8082"
+    },
+    {
+      "key": "refill_url",
+      "value": "http://localhost:8083"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "admin_token",
+      "value": ""
+    },
+    {
+      "key": "memberId",
+      "value": ""
+    }
   ],
   "item": [
     {
@@ -20,11 +42,22 @@
           "name": "Sign Up",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{auth_url}}/api/auth/signup",
-              "host": ["{{auth_url}}"],
-              "path": ["api", "auth", "signup"]
+              "host": [
+                "{{auth_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "signup"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -36,7 +69,9 @@
               "name": "201 Registered",
               "originalRequest": {
                 "method": "POST",
-                "url": { "raw": "{{auth_url}}/api/auth/signup" }
+                "url": {
+                  "raw": "{{auth_url}}/api/auth/signup"
+                }
               },
               "status": "OK",
               "code": 200,
@@ -62,11 +97,22 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{auth_url}}/api/auth/signin",
-              "host": ["{{auth_url}}"],
-              "path": ["api", "auth", "signin"]
+              "host": [
+                "{{auth_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "signin"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -78,7 +124,9 @@
               "name": "200 JWT issued",
               "originalRequest": {
                 "method": "POST",
-                "url": { "raw": "{{auth_url}}/api/auth/signin" }
+                "url": {
+                  "raw": "{{auth_url}}/api/auth/signin"
+                }
               },
               "status": "OK",
               "code": 200,
@@ -87,14 +135,67 @@
           ]
         },
         {
+          "name": "Sign In (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.collectionVariables.set('admin_token', res.token);",
+                  "pm.test('admin token issued', () => pm.expect(res.role).to.eql('ADMIN'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{auth_url}}/api/auth/signin",
+              "host": [
+                "{{auth_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "signin"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"password\"\n}"
+            },
+            "description": "Signs in as the seeded dev admin and stores the JWT in `admin_token`, used by the admin-only requests (List Users, Delete User, Update Refill Order Status)."
+          },
+          "response": []
+        },
+        {
           "name": "Validate Token",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{auth_url}}/api/auth/validate",
-              "host": ["{{auth_url}}"],
-              "path": ["api", "auth", "validate"]
+              "host": [
+                "{{auth_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "validate"
+              ]
             }
           }
         },
@@ -102,23 +203,47 @@
           "name": "List Users",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
             "url": {
               "raw": "{{auth_url}}/api/auth/users",
-              "host": ["{{auth_url}}"],
-              "path": ["api", "auth", "users"]
-            }
+              "host": [
+                "{{auth_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "users"
+              ]
+            },
+            "description": "Admin only: run **Auth → Sign In (Admin)** first."
           }
         },
         {
           "name": "Get User By Id",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{auth_url}}/api/auth/users/1",
-              "host": ["{{auth_url}}"],
-              "path": ["api", "auth", "users", "1"]
+              "host": [
+                "{{auth_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "users",
+                "1"
+              ]
             }
           }
         },
@@ -127,13 +252,26 @@
           "request": {
             "method": "PUT",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "url": {
               "raw": "{{auth_url}}/api/auth/users/1",
-              "host": ["{{auth_url}}"],
-              "path": ["api", "auth", "users", "1"]
+              "host": [
+                "{{auth_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "users",
+                "1"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -145,23 +283,48 @@
           "name": "Delete User",
           "request": {
             "method": "DELETE",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
             "url": {
               "raw": "{{auth_url}}/api/auth/users/99",
-              "host": ["{{auth_url}}"],
-              "path": ["api", "auth", "users", "99"]
-            }
+              "host": [
+                "{{auth_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "users",
+                "99"
+              ]
+            },
+            "description": "Admin only: run **Auth → Sign In (Admin)** first."
           }
         },
         {
           "name": "Check Username Availability",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{auth_url}}/api/auth/check-username/member1",
-              "host": ["{{auth_url}}"],
-              "path": ["api", "auth", "check-username", "member1"]
+              "host": [
+                "{{auth_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "check-username",
+                "member1"
+              ]
             }
           }
         },
@@ -169,11 +332,23 @@
           "name": "Check Email Availability",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{auth_url}}/api/auth/check-email/member1@pharmacy.com",
-              "host": ["{{auth_url}}"],
-              "path": ["api", "auth", "check-email", "member1@pharmacy.com"]
+              "host": [
+                "{{auth_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "check-email",
+                "member1@pharmacy.com"
+              ]
             }
           }
         }
@@ -186,11 +361,22 @@
           "name": "All Valid Drugs",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{drugs_url}}/api/drugs/all",
-              "host": ["{{drugs_url}}"],
-              "path": ["api", "drugs", "all"]
+              "host": [
+                "{{drugs_url}}"
+              ],
+              "path": [
+                "api",
+                "drugs",
+                "all"
+              ]
             }
           }
         },
@@ -198,12 +384,28 @@
           "name": "Search Drug By ID",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{drugs_url}}/api/drugs/searchDrugsByID?drugId=D001",
-              "host": ["{{drugs_url}}"],
-              "path": ["api", "drugs", "searchDrugsByID"],
-              "query": [{ "key": "drugId", "value": "D001" }]
+              "host": [
+                "{{drugs_url}}"
+              ],
+              "path": [
+                "api",
+                "drugs",
+                "searchDrugsByID"
+              ],
+              "query": [
+                {
+                  "key": "drugId",
+                  "value": "D001"
+                }
+              ]
             }
           },
           "response": [
@@ -225,12 +427,28 @@
           "name": "Search Drugs By Name",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{drugs_url}}/api/drugs/searchDrugsByName?drugName=Paracetamol",
-              "host": ["{{drugs_url}}"],
-              "path": ["api", "drugs", "searchDrugsByName"],
-              "query": [{ "key": "drugName", "value": "Paracetamol" }]
+              "host": [
+                "{{drugs_url}}"
+              ],
+              "path": [
+                "api",
+                "drugs",
+                "searchDrugsByName"
+              ],
+              "query": [
+                {
+                  "key": "drugName",
+                  "value": "Paracetamol"
+                }
+              ]
             }
           }
         },
@@ -239,13 +457,25 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "url": {
               "raw": "{{drugs_url}}/api/drugs/getDispatchableDrugStock",
-              "host": ["{{drugs_url}}"],
-              "path": ["api", "drugs", "getDispatchableDrugStock"]
+              "host": [
+                "{{drugs_url}}"
+              ],
+              "path": [
+                "api",
+                "drugs",
+                "getDispatchableDrugStock"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -271,11 +501,23 @@
           "name": "Drug Locations",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{drugs_url}}/api/drugs/D001/locations",
-              "host": ["{{drugs_url}}"],
-              "path": ["api", "drugs", "D001", "locations"]
+              "host": [
+                "{{drugs_url}}"
+              ],
+              "path": [
+                "api",
+                "drugs",
+                "D001",
+                "locations"
+              ]
             }
           }
         },
@@ -283,15 +525,35 @@
           "name": "Check Availability",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{drugs_url}}/api/drugs/availability?drugCode=D001&location=New York&quantity=10",
-              "host": ["{{drugs_url}}"],
-              "path": ["api", "drugs", "availability"],
+              "host": [
+                "{{drugs_url}}"
+              ],
+              "path": [
+                "api",
+                "drugs",
+                "availability"
+              ],
               "query": [
-                { "key": "drugCode", "value": "D001" },
-                { "key": "location", "value": "New York" },
-                { "key": "quantity", "value": "10" }
+                {
+                  "key": "drugCode",
+                  "value": "D001"
+                },
+                {
+                  "key": "location",
+                  "value": "New York"
+                },
+                {
+                  "key": "quantity",
+                  "value": "10"
+                }
               ]
             }
           },
@@ -315,13 +577,25 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "url": {
               "raw": "{{drugs_url}}/api/drugs/reserve",
-              "host": ["{{drugs_url}}"],
-              "path": ["api", "drugs", "reserve"]
+              "host": [
+                "{{drugs_url}}"
+              ],
+              "path": [
+                "api",
+                "drugs",
+                "reserve"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -333,7 +607,9 @@
               "name": "200 true",
               "originalRequest": {
                 "method": "POST",
-                "url": { "raw": "{{drugs_url}}/api/drugs/reserve" }
+                "url": {
+                  "raw": "{{drugs_url}}/api/drugs/reserve"
+                }
               },
               "status": "OK",
               "code": 200,
@@ -351,13 +627,25 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "url": {
               "raw": "{{sub_url}}/api/subscriptions/subscribe",
-              "host": ["{{sub_url}}"],
-              "path": ["api", "subscriptions", "subscribe"]
+              "host": [
+                "{{sub_url}}"
+              ],
+              "path": [
+                "api",
+                "subscriptions",
+                "subscribe"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -369,7 +657,9 @@
               "name": "200 Subscription created",
               "originalRequest": {
                 "method": "POST",
-                "url": { "raw": "{{sub_url}}/api/subscriptions/subscribe" }
+                "url": {
+                  "raw": "{{sub_url}}/api/subscriptions/subscribe"
+                }
               },
               "status": "OK",
               "code": 200,
@@ -381,11 +671,22 @@
           "name": "My Subscriptions",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{sub_url}}/api/subscriptions/my-subscriptions",
-              "host": ["{{sub_url}}"],
-              "path": ["api", "subscriptions", "my-subscriptions"]
+              "host": [
+                "{{sub_url}}"
+              ],
+              "path": [
+                "api",
+                "subscriptions",
+                "my-subscriptions"
+              ]
             }
           }
         },
@@ -393,11 +694,22 @@
           "name": "Active Subscriptions",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{sub_url}}/api/subscriptions/active",
-              "host": ["{{sub_url}}"],
-              "path": ["api", "subscriptions", "active"]
+              "host": [
+                "{{sub_url}}"
+              ],
+              "path": [
+                "api",
+                "subscriptions",
+                "active"
+              ]
             }
           }
         },
@@ -405,11 +717,22 @@
           "name": "Member Prescriptions",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{sub_url}}/api/subscriptions/prescriptions",
-              "host": ["{{sub_url}}"],
-              "path": ["api", "subscriptions", "prescriptions"]
+              "host": [
+                "{{sub_url}}"
+              ],
+              "path": [
+                "api",
+                "subscriptions",
+                "prescriptions"
+              ]
             }
           }
         },
@@ -417,11 +740,22 @@
           "name": "Subscription By Id",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{sub_url}}/api/subscriptions/SUB001",
-              "host": ["{{sub_url}}"],
-              "path": ["api", "subscriptions", "SUB001"]
+              "host": [
+                "{{sub_url}}"
+              ],
+              "path": [
+                "api",
+                "subscriptions",
+                "SUB001"
+              ]
             }
           }
         },
@@ -429,12 +763,28 @@
           "name": "Refill Dues (as of date)",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{sub_url}}/api/subscriptions/refillDues?dueDate=2026-09-01",
-              "host": ["{{sub_url}}"],
-              "path": ["api", "subscriptions", "refillDues"],
-              "query": [{ "key": "dueDate", "value": "2026-09-01" }]
+              "host": [
+                "{{sub_url}}"
+              ],
+              "path": [
+                "api",
+                "subscriptions",
+                "refillDues"
+              ],
+              "query": [
+                {
+                  "key": "dueDate",
+                  "value": "2026-09-01"
+                }
+              ]
             }
           }
         },
@@ -442,12 +792,28 @@
           "name": "Unsubscribe",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{sub_url}}/api/subscriptions/unsubscribe?subscriptionId=SUB001",
-              "host": ["{{sub_url}}"],
-              "path": ["api", "subscriptions", "unsubscribe"],
-              "query": [{ "key": "subscriptionId", "value": "SUB001" }]
+              "host": [
+                "{{sub_url}}"
+              ],
+              "path": [
+                "api",
+                "subscriptions",
+                "unsubscribe"
+              ],
+              "query": [
+                {
+                  "key": "subscriptionId",
+                  "value": "SUB001"
+                }
+              ]
             }
           }
         }
@@ -460,11 +826,22 @@
           "name": "View Refill Status (latest)",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{refill_url}}/api/refill/viewRefillStatus",
-              "host": ["{{refill_url}}"],
-              "path": ["api", "refill", "viewRefillStatus"]
+              "host": [
+                "{{refill_url}}"
+              ],
+              "path": [
+                "api",
+                "refill",
+                "viewRefillStatus"
+              ]
             }
           },
           "response": [
@@ -472,7 +849,9 @@
               "name": "200 Latest order",
               "originalRequest": {
                 "method": "GET",
-                "url": { "raw": "{{refill_url}}/api/refill/viewRefillStatus" }
+                "url": {
+                  "raw": "{{refill_url}}/api/refill/viewRefillStatus"
+                }
               },
               "status": "OK",
               "code": 200,
@@ -484,11 +863,22 @@
           "name": "All Refill Orders",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{refill_url}}/api/refill/orders",
-              "host": ["{{refill_url}}"],
-              "path": ["api", "refill", "orders"]
+              "host": [
+                "{{refill_url}}"
+              ],
+              "path": [
+                "api",
+                "refill",
+                "orders"
+              ]
             }
           }
         },
@@ -497,13 +887,25 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "url": {
               "raw": "{{refill_url}}/api/refill/requestAdhocRefill",
-              "host": ["{{refill_url}}"],
-              "path": ["api", "refill", "requestAdhocRefill"]
+              "host": [
+                "{{refill_url}}"
+              ],
+              "path": [
+                "api",
+                "refill",
+                "requestAdhocRefill"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -515,7 +917,9 @@
               "name": "201 Created",
               "originalRequest": {
                 "method": "POST",
-                "url": { "raw": "{{refill_url}}/api/refill/requestAdhocRefill" }
+                "url": {
+                  "raw": "{{refill_url}}/api/refill/requestAdhocRefill"
+                }
               },
               "status": "Created",
               "code": 201,
@@ -525,7 +929,9 @@
               "name": "400 Stock Unavailable",
               "originalRequest": {
                 "method": "POST",
-                "url": { "raw": "{{refill_url}}/api/refill/requestAdhocRefill" }
+                "url": {
+                  "raw": "{{refill_url}}/api/refill/requestAdhocRefill"
+                }
               },
               "status": "Bad Request",
               "code": 400,
@@ -535,7 +941,9 @@
               "name": "403 Access Denied",
               "originalRequest": {
                 "method": "POST",
-                "url": { "raw": "{{refill_url}}/api/refill/requestAdhocRefill" }
+                "url": {
+                  "raw": "{{refill_url}}/api/refill/requestAdhocRefill"
+                }
               },
               "status": "Forbidden",
               "code": 403,
@@ -547,12 +955,28 @@
           "name": "Get Refill Dues As Of Date",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{refill_url}}/api/refill/getRefillDuesAsOfDate?date=2026-09-01",
-              "host": ["{{refill_url}}"],
-              "path": ["api", "refill", "getRefillDuesAsOfDate"],
-              "query": [{ "key": "date", "value": "2026-09-01" }]
+              "host": [
+                "{{refill_url}}"
+              ],
+              "path": [
+                "api",
+                "refill",
+                "getRefillDuesAsOfDate"
+              ],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2026-09-01"
+                }
+              ]
             }
           }
         },
@@ -560,13 +984,32 @@
           "name": "Update Refill Order Status",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
             "url": {
               "raw": "{{refill_url}}/api/refill/orders/REF005/status?status=SHIPPED",
-              "host": ["{{refill_url}}"],
-              "path": ["api", "refill", "orders", "REF005", "status"],
-              "query": [{ "key": "status", "value": "SHIPPED" }]
-            }
+              "host": [
+                "{{refill_url}}"
+              ],
+              "path": [
+                "api",
+                "refill",
+                "orders",
+                "REF005",
+                "status"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "SHIPPED"
+                }
+              ]
+            },
+            "description": "Admin only: run **Auth → Sign In (Admin)** first."
           },
           "response": [
             {

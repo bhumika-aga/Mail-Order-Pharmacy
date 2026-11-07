@@ -9,6 +9,7 @@ import jakarta.validation.constraints.PositiveOrZero;
 @Table(name = "drug_locations")
 @IdClass(DrugLocationId.class)
 public class DrugLocation {
+    
     @Id
     @Column(name = "drug_id")
     private String drugId;

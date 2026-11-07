@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -28,6 +29,11 @@ public class SubscriptionController {
     
     public SubscriptionController(SubscriptionService subscriptionService) {
         this.subscriptionService = subscriptionService;
+    }
+    
+    private static boolean isAdmin(Authentication authentication) {
+        return authentication != null && authentication.getAuthorities().stream()
+                                             .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
     }
     
     @PostMapping("/subscribe")
@@ -90,19 +96,30 @@ public class SubscriptionController {
     }
     
     @GetMapping("/{subscriptionId}")
-    @Operation(summary = "Get subscription details", description = "Get details of a specific subscription")
+    @Operation(summary = "Get subscription details",
+        description = "Get details of one of the authenticated member's subscriptions (admins can read any)")
     public ResponseEntity<MemberSubscription> getSubscriptionById(
-        @Parameter(description = "Subscription ID", required = true) @PathVariable String subscriptionId) {
+        @Parameter(description = "Subscription ID", required = true) @PathVariable String subscriptionId,
+        HttpServletRequest request, Authentication authentication) {
+        String memberId = (String) request.getAttribute("memberId");
+        boolean admin = isAdmin(authentication);
+        // Another member's subscription is reported as not found, so IDs can't be probed.
         return subscriptionService.getSubscriptionById(subscriptionId)
+                   .filter(subscription -> admin || subscription.getMemberId().equals(memberId))
                    .map(ResponseEntity::ok)
                    .orElse(ResponseEntity.notFound().build());
     }
     
     @GetMapping("/refillDues")
-    @Operation(summary = "Get refill dues", description = "Get subscriptions that are due for refill as of the specified date")
+    @Operation(summary = "Get refill dues",
+        description = "Get the authenticated member's subscriptions that are due for refill as of the specified date (admins see all members)")
     public ResponseEntity<List<Map<String, Object>>> getRefillDues(
-        @Parameter(description = "Due date in YYYY-MM-DD format") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dueDate) {
-        List<Map<String, Object>> refillDues = subscriptionService.getRefillDues(dueDate);
-        return ResponseEntity.ok(refillDues);
+        @Parameter(description = "Due date in YYYY-MM-DD format") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dueDate,
+        HttpServletRequest request, Authentication authentication) {
+        String memberFilter = isAdmin(authentication) ? null : (String) request.getAttribute("memberId");
+        if (memberFilter == null && !isAdmin(authentication)) {
+            return ResponseEntity.ok(List.of());
+        }
+        return ResponseEntity.ok(subscriptionService.getRefillDues(dueDate, memberFilter));
     }
 }

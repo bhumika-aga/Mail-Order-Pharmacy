@@ -106,7 +106,7 @@ const Dashboard: React.FC = () => {
 
       <Grid container spacing={3} sx={{ mt: 2 }}>
         {dashboardCards.map((card, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
+          <Grid key={index} size={{ xs: 12, sm: 6, md: 3 }}>
             <Card
               sx={{
                 cursor: "pointer",
@@ -173,7 +173,7 @@ const Dashboard: React.FC = () => {
       </Grid>
 
       <Grid container spacing={3} sx={{ mt: 4 }}>
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Paper sx={{ p: 3, height: "fit-content" }}>
             <Typography
               variant="h6"
@@ -221,7 +221,7 @@ const Dashboard: React.FC = () => {
           </Paper>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Paper sx={{ p: 3, height: "fit-content" }}>
             <Typography
               variant="h6"

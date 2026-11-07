@@ -1,13 +1,13 @@
 package com.pharmacy.drugs.config;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
+import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.module.SimpleModule;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -19,13 +19,15 @@ import java.math.RoundingMode;
 public class JacksonConfig {
     
     @Bean
-    Jackson2ObjectMapperBuilderCustomizer moneyScaleCustomizer() {
-        return builder -> builder.serializerByType(BigDecimal.class, new JsonSerializer<BigDecimal>() {
-            @Override
-            public void serialize(BigDecimal value, JsonGenerator gen, SerializerProvider serializers)
-                throws IOException {
-                gen.writeNumber(value.setScale(2, RoundingMode.HALF_UP));
-            }
-        });
+    JsonMapperBuilderCustomizer moneyScaleCustomizer() {
+        SimpleModule moneyModule = new SimpleModule("money-scale")
+                                       .addSerializer(BigDecimal.class, new ValueSerializer<BigDecimal>() {
+                                           @Override
+                                           public void serialize(BigDecimal value, JsonGenerator gen,
+                                                                 SerializationContext ctxt) {
+                                               gen.writeNumber(value.setScale(2, RoundingMode.HALF_UP));
+                                           }
+                                       });
+        return builder -> builder.addModule(moneyModule);
     }
 }

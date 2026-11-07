@@ -1,10 +1,16 @@
 {
   "compilerOptions": {
     "composite": true,
+    // Build output (from `tsc -b`) must never land next to vite.config.ts:
+    // Vite would load a stale vite.config.js in preference to the .ts file.
+    "outDir": "./node_modules/.tmp/tsconfig.node",
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
     "skipLibCheck": true,
     "module": "ESNext",
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true
   },
-  "include": ["vite.config.ts"]
+  "include": [
+    "vite.config.ts"
+  ]
 }

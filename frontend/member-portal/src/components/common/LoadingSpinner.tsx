@@ -9,13 +9,15 @@ interface LoadingSpinnerProps {
 const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ size, color }) => {
   return (
     <Box
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      minHeight="200px"
       role="status"
       aria-live="polite"
       aria-label="Loading content"
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "200px",
+      }}
     >
       <CircularProgress size={size} color={color} />
     </Box>

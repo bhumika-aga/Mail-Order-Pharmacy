@@ -1,30 +1,34 @@
 package com.pharmacy.auth.controller;
 
-import com.pharmacy.auth.dto.JwtResponse;
-import com.pharmacy.auth.dto.LoginRequest;
-import com.pharmacy.auth.dto.MessageResponse;
-import com.pharmacy.auth.dto.SignupRequest;
+import com.pharmacy.auth.dto.*;
 import com.pharmacy.auth.entity.User;
 import com.pharmacy.auth.security.JwtUtils;
 import com.pharmacy.auth.service.UserDetailsImpl;
 import com.pharmacy.auth.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/auth")
 @Tag(name = "Authentication", description = "Authentication management APIs")
 public class AuthController {
+    
+    /**
+     * Only an admin, or the user themselves, may read or update a user record.
+     */
+    private static final String SELF_OR_ADMIN = "hasRole('ADMIN') or #id == authentication.principal.id";
     
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
@@ -42,31 +46,29 @@ public class AuthController {
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
         
-        SecurityContextHolder.getContext().setAuthentication(authentication);
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        String jwt = jwtUtils.generateJwtToken(userDetails, userDetails.getMemberId());
+        String role = userDetails.getRole().name();
+        String jwt = jwtUtils.generateToken(userDetails.getUsername(), userDetails.getMemberId(), role);
         
         return ResponseEntity.ok(new JwtResponse(jwt,
             userDetails.getUsername(),
             userDetails.getMemberId(),
+            role,
             jwtUtils.getExpirationTime()));
     }
     
     @PostMapping("/validate")
     @Operation(summary = "Validate JWT token", description = "Validate JWT token and return user info")
     public ResponseEntity<?> validateToken(@RequestHeader("Authorization") String token) {
-        try {
-            String jwt = token.replace("Bearer ", "");
-            if (jwtUtils.validateJwtToken(jwt)) {
-                String username = jwtUtils.getUserNameFromJwtToken(jwt);
-                String memberId = jwtUtils.getMemberIdFromJwtToken(jwt);
-                
-                return ResponseEntity.ok(new JwtResponse(jwt, username, memberId, jwtUtils.getExpirationTime()));
-            }
-            return ResponseEntity.badRequest().body("Invalid token");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Token validation failed: " + e.getMessage());
+        String jwt = token.startsWith("Bearer ") ? token.substring(7) : token;
+        if (!jwtUtils.validateJwtToken(jwt)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("Invalid token"));
         }
+        return ResponseEntity.ok(new JwtResponse(jwt,
+            jwtUtils.getUserNameFromJwtToken(jwt),
+            jwtUtils.getMemberIdFromJwtToken(jwt),
+            jwtUtils.getRoleFromJwtToken(jwt),
+            jwtUtils.getExpirationTime()));
     }
     
     @PostMapping("/signup")
@@ -82,62 +84,61 @@ public class AuthController {
             return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                       .body(new MessageResponse("Error: Registration failed! " + e.getMessage()));
         }
     }
     
     @GetMapping("/users")
+    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Get all users", description = "Get list of all registered users (Admin only)")
     public ResponseEntity<List<User>> getAllUsers() {
-        try {
-            List<User> users = userService.getAllUsers();
-            return ResponseEntity.ok(users);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
+        return ResponseEntity.ok(userService.getAllUsers());
     }
     
     @GetMapping("/users/{id}")
-    @Operation(summary = "Get user by ID", description = "Get user details by ID")
+    @PreAuthorize(SELF_OR_ADMIN)
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Get user by ID", description = "Get user details by ID (own record, or any record for admins)")
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
-        try {
-            return userService.getUserById(id)
-                       .map(ResponseEntity::ok)
-                       .orElse(ResponseEntity.notFound().build());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: " + e.getMessage()));
-        }
+        return userService.getUserById(id)
+                   .<ResponseEntity<?>>map(ResponseEntity::ok)
+                   .orElse(ResponseEntity.notFound().build());
     }
     
     @PutMapping("/users/{id}")
-    @Operation(summary = "Update user", description = "Update user information")
-    public ResponseEntity<?> updateUser(@PathVariable Long id, @Valid @RequestBody SignupRequest updateRequest) {
+    @PreAuthorize(SELF_OR_ADMIN)
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Update user",
+        description = "Update user information (own record, or any record for admins). Only admins can change a member ID.")
+    public ResponseEntity<?> updateUser(@PathVariable Long id,
+                                        @Valid @RequestBody UpdateUserRequest updateRequest,
+                                        @AuthenticationPrincipal UserDetailsImpl currentUser) {
+        // A member re-pointing their own member ID could take over another member's
+        // prescriptions and orders, so only admins may change it.
+        String memberId = currentUser.isAdmin() ? updateRequest.getMemberId() : null;
         try {
             User updatedUser = userService.updateUser(
                 id,
                 updateRequest.getUsername(),
                 updateRequest.getEmail(),
-                updateRequest.getMemberId(),
+                memberId,
                 updateRequest.getFullName());
             return ResponseEntity.ok(updatedUser);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Update failed! " + e.getMessage()));
         }
     }
     
     @DeleteMapping("/users/{id}")
-    @Operation(summary = "Delete user", description = "Delete user by ID")
+    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Delete user", description = "Delete user by ID (Admin only)")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
-        try {
-            userService.deleteUser(id);
-            return ResponseEntity.ok(new MessageResponse("User deleted successfully!"));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: " + e.getMessage()));
+        if (userService.getUserById(id).isEmpty()) {
+            return ResponseEntity.notFound().build();
         }
+        userService.deleteUser(id);
+        return ResponseEntity.ok(new MessageResponse("User deleted successfully!"));
     }
     
     @GetMapping("/check-username/{username}")

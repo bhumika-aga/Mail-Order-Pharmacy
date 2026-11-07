@@ -101,9 +101,16 @@ public class SubscriptionService {
         return prescriptionRepository.findByMemberId(memberId);
     }
     
-    public List<Map<String, Object>> getRefillDues(LocalDate dueDate) {
-        List<MemberSubscription> activeSubscriptions = subscriptionRepository.findBySubscriptionStatus(
-            MemberSubscription.SubscriptionStatus.ACTIVE);
+    /**
+     * Refill dues as of {@code dueDate}. A null {@code memberId} returns dues for
+     * every member (admin view); otherwise only that member's subscriptions.
+     */
+    public List<Map<String, Object>> getRefillDues(LocalDate dueDate, String memberId) {
+        List<MemberSubscription> activeSubscriptions = memberId == null
+                                                           ? subscriptionRepository.findBySubscriptionStatus(
+            MemberSubscription.SubscriptionStatus.ACTIVE)
+                                                           : subscriptionRepository.findByMemberIdAndSubscriptionStatus(
+            memberId, MemberSubscription.SubscriptionStatus.ACTIVE);
         
         return activeSubscriptions.stream()
                    .filter(subscription -> isRefillDue(subscription, dueDate))

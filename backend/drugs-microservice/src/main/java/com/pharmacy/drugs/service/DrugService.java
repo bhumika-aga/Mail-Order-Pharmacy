@@ -27,7 +27,6 @@ public class DrugService {
         this.drugLocationRepository = drugLocationRepository;
     }
     
-    
     public Optional<Drug> searchDrugById(String drugId) {
         return drugRepository.findById(drugId);
     }

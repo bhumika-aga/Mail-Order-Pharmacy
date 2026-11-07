@@ -20,7 +20,7 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -43,7 +43,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { label: "Drugs", path: "/drugs" },
     { label: "Subscriptions", path: "/subscriptions" },
     { label: "Refills", path: "/refills" },
-    { label: "Users", path: "/users" },
+    // User management is admin-only (the API rejects members with 403)
+    ...(isAdmin ? [{ label: "Users", path: "/users" }] : []),
   ];
 
   return (

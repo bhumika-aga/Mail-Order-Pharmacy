@@ -19,6 +19,7 @@ import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -39,7 +40,6 @@ public class RefillController {
         this.jwtUtils = jwtUtils;
     }
     
-    
     @GetMapping("/viewRefillStatus")
     @Operation(summary = "Get latest refill status", description = "Retrieve the latest refill order status for the authenticated member")
     @ApiResponses(value = {
@@ -52,9 +52,11 @@ public class RefillController {
             String cleanToken = token.replace("Bearer ", "");
             String memberId = jwtUtils.getMemberIdFromJwtToken(cleanToken);
             
+            // The token is already authenticated; an account without a member ID
+            // (an admin) simply has no refill orders of its own.
             if (memberId == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                           .body(Map.of("error", "Invalid token", "message", "Member ID not found in token"));
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                           .body(Map.of("error", "Not Found", "message", "No refill orders found for this account"));
             }
             
             RefillStatusResponse response = refillService.getLatestRefillStatus(cleanToken, memberId);
@@ -115,8 +117,9 @@ public class RefillController {
             String tokenMemberId = jwtUtils.getMemberIdFromJwtToken(cleanToken);
             
             if (tokenMemberId == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                           .body(Map.of("error", "Invalid token", "message", "Member ID not found in token"));
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                           .body(Map.of("error", "Access Denied", "message",
+                               "Only member accounts can request refills"));
             }
             
             // Validate that the request is for the authenticated member
@@ -154,8 +157,8 @@ public class RefillController {
             String memberId = jwtUtils.getMemberIdFromJwtToken(cleanToken);
             
             if (memberId == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                           .body(Map.of("error", "Invalid token", "message", "Member ID not found in token"));
+                // Admin accounts have no member ID and therefore no orders of their own
+                return ResponseEntity.ok(List.of());
             }
             
             List<RefillStatusResponse> response = refillService.getAllRefillOrdersForMember(memberId);
@@ -168,11 +171,13 @@ public class RefillController {
     }
     
     @PutMapping("/orders/{refillOrderId}/status")
-    @Operation(summary = "Update refill order status", description = "Update the status of a refill order (Admin operation)")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Update refill order status", description = "Update the status of a refill order (Admin only)")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully updated order status", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RefillStatusResponse.class))),
         @ApiResponse(responseCode = "404", description = "Refill order not found", content = @Content(mediaType = "application/json")),
-        @ApiResponse(responseCode = "401", description = "Unauthorized access", content = @Content(mediaType = "application/json"))
+        @ApiResponse(responseCode = "401", description = "Unauthorized access", content = @Content(mediaType = "application/json")),
+        @ApiResponse(responseCode = "403", description = "Caller is not an admin", content = @Content(mediaType = "application/json"))
     })
     public ResponseEntity<?> updateRefillOrderStatus(
         @RequestHeader("Authorization") String token,

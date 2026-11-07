@@ -107,10 +107,12 @@ const SubscriptionsPage: React.FC = () => {
   return (
     <Container maxWidth="lg">
       <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={3}
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 3,
+        }}
       >
         <Typography variant="h4" component="h1">
           My Subscriptions
@@ -127,14 +129,19 @@ const SubscriptionsPage: React.FC = () => {
       <Grid container spacing={3}>
         {Array.isArray(subscriptions) && subscriptions.length > 0 ? (
           subscriptions.map((subscription) => (
-            <Grid item xs={12} md={6} lg={4} key={subscription.subscriptionId}>
+            <Grid
+              key={subscription.subscriptionId}
+              size={{ xs: 12, md: 6, lg: 4 }}
+            >
               <Card>
                 <CardContent>
                   <Box
-                    display="flex"
-                    justifyContent="space-between"
-                    alignItems="start"
-                    mb={2}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "start",
+                      mb: 2,
+                    }}
                   >
                     <Typography variant="h6" component="h2">
                       Subscription #{subscription.subscriptionId}
@@ -186,11 +193,11 @@ const SubscriptionsPage: React.FC = () => {
             </Grid>
           ))
         ) : (
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Typography
               variant="body1"
               color="text.secondary"
-              textAlign="center"
+              sx={{ textAlign: "center" }}
             >
               No subscriptions found. Create your first subscription to get
               started.
@@ -209,7 +216,7 @@ const SubscriptionsPage: React.FC = () => {
         <DialogTitle>Create New Subscription</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
                 label="Insurance Policy Number"
@@ -222,7 +229,7 @@ const SubscriptionsPage: React.FC = () => {
                 }
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
                 label="Insurance Provider"
@@ -235,7 +242,7 @@ const SubscriptionsPage: React.FC = () => {
                 }
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
                 label="Prescription Date"
@@ -247,10 +254,10 @@ const SubscriptionsPage: React.FC = () => {
                     prescriptionDate: e.target.value,
                   })
                 }
-                InputLabelProps={{ shrink: true }}
+                slotProps={{ inputLabel: { shrink: true } }}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
                 label="Drug ID"
@@ -264,7 +271,7 @@ const SubscriptionsPage: React.FC = () => {
                 placeholder="e.g., D001"
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
                 label="Dosage Per Day"
@@ -278,7 +285,7 @@ const SubscriptionsPage: React.FC = () => {
                 placeholder="e.g., 1 tablet twice daily"
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
                 label="Prescription Course (days)"
@@ -292,7 +299,7 @@ const SubscriptionsPage: React.FC = () => {
                 }
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <FormControl fullWidth>
                 <InputLabel>Refill Frequency</InputLabel>
                 <Select
@@ -309,7 +316,7 @@ const SubscriptionsPage: React.FC = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
                 label="Member Location"
@@ -323,7 +330,7 @@ const SubscriptionsPage: React.FC = () => {
                 placeholder="e.g., NYC, LAX, CHI"
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
                 label="Doctor Details"
@@ -387,7 +394,7 @@ const SubscriptionsPage: React.FC = () => {
                 ).toLocaleDateString()}
               </Typography>
               {selectedSubscription.prescription && (
-                <Box mt={2}>
+                <Box sx={{ mt: 2 }}>
                   <Typography variant="h6" gutterBottom>
                     Prescription Details
                   </Typography>

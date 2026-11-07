@@ -2,10 +2,10 @@
 
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.10-6DB33F?logo=springboot)](https://spring.io/projects/spring-boot)
-[![React](https://img.shields.io/badge/React-18.2.0-61DAFB?logo=react)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-4.9.5-3178C6?logo=typescript)](https://www.typescriptlang.org/)
-[![Java](https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk)](https://openjdk.org/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.2-6DB33F?logo=springboot)](https://spring.io/projects/spring-boot)
+[![React](https://img.shields.io/badge/React-19.3-61DAFB?logo=react)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript)](https://www.typescriptlang.org/)
+[![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk)](https://openjdk.org/)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase)](https://supabase.com/)
 
 A comprehensive mail-order pharmacy management system built with a **Microservices Architecture**. The platform streamlines prescription refills, drug inventory management, and customer subscriptions through automated workflows and intelligent drug discovery.
@@ -42,14 +42,14 @@ MediFlow follows the **Microservices Architecture** pattern — each business ca
 
 ### Key Architectural Decisions
 
-| Decision                  | Approach                                                  | Rationale                                                                              |
-| ------------------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| **Service Communication** | Synchronous REST over HTTP                                | Simple, well-understood, adequate for the request/response pattern                     |
-| **Authentication**        | Stateless JWT (HS512) with shared secret                  | Each service validates tokens independently — no central auth dependency at runtime    |
-| **Database Strategy**     | Database-per-service (logical)                            | Loose coupling: each service owns its tables; H2 for dev, PostgreSQL/Supabase for prod |
-| **DDL Management**        | Hibernate `ddl-auto: update` (prod) / `create-drop` (dev) | Dev gets clean state on each restart; prod preserves data and schema                   |
+| Decision                  | Approach                                                           | Rationale                                                                                                                       |
+| ------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| **Service Communication** | Synchronous REST over HTTP                                         | Simple, well-understood, adequate for the request/response pattern                                                              |
+| **Authentication**        | Stateless JWT (HS512) with shared secret                           | Each service validates tokens independently — no central auth dependency at runtime                                             |
+| **Database Strategy**     | Database-per-service (logical)                                     | Loose coupling: each service owns its tables; H2 for dev, PostgreSQL/Supabase for prod                                          |
+| **DDL Management**        | Hibernate `ddl-auto: update` (prod) / `create-drop` (dev)          | Dev gets clean state on each restart; prod preserves data and schema                                                            |
 | **API Documentation**     | OpenAPI 3.0 via springdoc; a thin Swagger UI host aggregates specs | Each service self-documents; one Swagger UI switches between all service specs via `springdoc.swagger-ui.urls` (no custom code) |
-| **Row Level Security**    | Supabase RLS enabled on all tables                        | Prevents direct API access to data via Supabase's PostgREST layer                      |
+| **Row Level Security**    | Supabase RLS enabled on all tables                                 | Prevents direct API access to data via Supabase's PostgREST layer                                                               |
 
 ### Inter-Service Communication Flow
 
@@ -71,9 +71,18 @@ Subscription Service ──REST──▶ Drugs Service   (verify drug availabili
 ### JWT Authentication Flow
 
 1. **Signup** — User registers with username, email, password, fullName. Password is hashed with **BCrypt**. A unique **Member ID** (`MEM` + 6 digits) is auto-generated.
-2. **Signin** — Credentials are validated. An **HS512-signed JWT** is issued containing the username (`sub`) and member ID as claims. Token expires in 15 minutes.
+2. **Signin** — Credentials are validated. An **HS512-signed JWT** is issued containing the username (`sub`), member ID and role as claims. Token expires in 15 minutes.
 3. **Request Auth** — Frontend sends `Authorization: Bearer <token>` header with every request.
-4. **Token Validation** — Each microservice has its own `JwtAuthFilter` that validates the JWT signature using a shared secret key, extracts the username and member ID, and sets the Spring Security context.
+4. **Token Validation** — Each microservice has its own `JwtAuthFilter` that validates the JWT signature using a shared secret key, extracts the username, member ID and role, and sets the Spring Security context.
+
+### Access Control
+
+- **Every API call requires a valid JWT** except sign-in, sign-up, token validation, the username/email availability checks, API docs and `/actuator/health`. Missing or invalid tokens get **401**; insufficient role gets **403**.
+- **Roles**: every self-registered account is a `MEMBER`. `ADMIN` is granted only in the database: `UPDATE users SET user_role = 'ADMIN' WHERE username = '...';`
+- **Members** see only their own data: profile, subscriptions, prescriptions, orders and refill dues. Another member's subscription returns 404.
+- **Admins** can list and delete users, edit any profile (including member ID), see all members' refill dues, and change refill order status.
+- **CORS** allows only the origins in `APP_CORS_ALLOWED_ORIGINS` (dev default: `http://localhost:5173`, `http://localhost:3000`); no credentialed CORS.
+- **JWT secret** comes only from the `JWT_SECRET` environment variable — there is no default. Services refuse to start without one, or if it is shorter than 64 bytes. Use the same value for all four services.
 
 ### Supabase Row Level Security (RLS)
 
@@ -127,9 +136,9 @@ Since the database is hosted on **Supabase**, all public tables are exposed via 
 
 ### Prerequisites
 
-- **Java 17+** (JDK)
+- **Java 21+** (JDK)
 - **Maven 3.6+**
-- **Node.js 18+** with npm
+- **Node.js 20.19+** with npm
 
 ### Local Development
 
@@ -142,7 +151,14 @@ cd Mail-Order-Pharmacy
 
 #### 2. Start Backend Services
 
-Open 4 separate terminals:
+Every service needs the same `JWT_SECRET`. Create it once:
+
+```bash
+cp .env.example .env
+echo "JWT_SECRET=$(openssl rand -base64 64 | tr -d '\n')" >> .env
+```
+
+Open 4 separate terminals and load it in each (`set -a; source .env; set +a` from the repo root), then:
 
 ```bash
 # Terminal 1: Auth Service (port 8084)
@@ -158,7 +174,7 @@ cd backend/subscription-microservice && mvn spring-boot:run
 cd backend/refill-microservice && mvn spring-boot:run
 ```
 
-All services use **H2 in-memory database** for development — no external DB setup required. Seed data is loaded automatically from `data.sql` files.
+All services use **H2 in-memory database** for development — no external DB setup required. Seed data is loaded automatically from `data.sql` files, including the logins `member1` / `member2` / `member3` and an `admin` account, all with password `password`.
 
 #### 3. Start Frontend
 
@@ -187,27 +203,29 @@ npm run dev
 
 | Method   | Endpoint                     | Description                    |
 | -------- | ---------------------------- | ------------------------------ |
-| `POST`   | `/signin`                    | Authenticate user, returns JWT |
-| `POST`   | `/signup`                    | Register new user              |
-| `POST`   | `/validate`                  | Validate JWT token             |
-| `GET`    | `/users`                     | List all users                 |
-| `GET`    | `/users/{id}`                | Get user by ID                 |
-| `PUT`    | `/users/{id}`                | Update user                    |
-| `DELETE` | `/users/{id}`                | Delete user                    |
-| `GET`    | `/check-username/{username}` | Check username availability    |
-| `GET`    | `/check-email/{email}`       | Check email availability       |
+| `POST`   | `/signin`                    | Authenticate user, returns JWT (public) |
+| `POST`   | `/signup`                    | Register new user (public)              |
+| `POST`   | `/validate`                  | Validate JWT token (public)             |
+| `GET`    | `/users`                     | List all users (admin)                  |
+| `GET`    | `/users/{id}`                | Get user by ID (self or admin)          |
+| `PUT`    | `/users/{id}`                | Update user (self or admin)             |
+| `DELETE` | `/users/{id}`                | Delete user (admin)                     |
+| `GET`    | `/check-username/{username}` | Check username availability (public)    |
+| `GET`    | `/check-email/{email}`       | Check email availability (public)       |
+
+All other endpoints below require a valid JWT.
 
 ### Drugs Service (`/api/drugs`)
 
-| Method | Endpoint                                        | Description                             |
-| ------ | ----------------------------------------------- | --------------------------------------- |
-| `GET`  | `/searchDrugsByID?drugId=`                      | Search by drug ID                       |
-| `GET`  | `/searchDrugsByName?drugName=`                  | Search by name (fuzzy, non-expired)     |
-| `GET`  | `/all`                                          | All valid (non-expired) drugs           |
-| `GET`  | `/{drugId}/locations`                           | Stock rows for a drug across locations  |
-| `POST` | `/getDispatchableDrugStock`                     | Stock availability for drug IDs at a location |
-| `GET`  | `/availability?drugCode=&location=&quantity=`   | Can this quantity be dispatched? (bool) |
-| `POST` | `/reserve`                                      | Atomically decrement stock (bool)       |
+| Method | Endpoint                                      | Description                                   |
+| ------ | --------------------------------------------- | --------------------------------------------- |
+| `GET`  | `/searchDrugsByID?drugId=`                    | Search by drug ID                             |
+| `GET`  | `/searchDrugsByName?drugName=`                | Search by name (fuzzy, non-expired)           |
+| `GET`  | `/all`                                        | All valid (non-expired) drugs                 |
+| `GET`  | `/{drugId}/locations`                         | Stock rows for a drug across locations        |
+| `POST` | `/getDispatchableDrugStock`                   | Stock availability for drug IDs at a location |
+| `GET`  | `/availability?drugCode=&location=&quantity=` | Can this quantity be dispatched? (bool)       |
+| `POST` | `/reserve`                                    | Atomically decrement stock (bool)             |
 
 ### Subscription Service (`/api/subscriptions`)
 
@@ -217,17 +235,18 @@ npm run dev
 | `GET`  | `/my-subscriptions`    | User's subscriptions      |
 | `GET`  | `/active`              | Active subscriptions only |
 | `POST` | `/unsubscribe`         | Cancel subscription       |
-| `GET`  | `/refillDues?dueDate=` | Refills due as of date    |
+| `GET`  | `/{subscriptionId}`    | One of the member's subscriptions (admin: any) |
+| `GET`  | `/refillDues?dueDate=` | Member's refills due as of date (admin: all members) |
 
 ### Refill Service (`/api/refill`)
 
-| Method | Endpoint                          | Description                                     |
-| ------ | --------------------------------- | ----------------------------------------------- |
-| `GET`  | `/viewRefillStatus`               | Latest refill status                            |
-| `GET`  | `/orders`                         | All orders for member                           |
-| `POST` | `/requestAdhocRefill`             | Create adhoc refill order                       |
-| `GET`  | `/getRefillDuesAsOfDate?date=`    | Due refills (delegates to subscription service) |
-| `PUT`  | `/orders/{id}/status?status=`     | Update order status (auto-sets tracking on SHIPPED) |
+| Method | Endpoint                       | Description                                         |
+| ------ | ------------------------------ | --------------------------------------------------- |
+| `GET`  | `/viewRefillStatus`            | Latest refill status                                |
+| `GET`  | `/orders`                      | All orders for member                               |
+| `POST` | `/requestAdhocRefill`          | Create adhoc refill order                           |
+| `GET`  | `/getRefillDuesAsOfDate?date=` | Due refills (delegates to subscription service)     |
+| `PUT`  | `/orders/{id}/status?status=`  | Update order status, admin only (auto-sets tracking on SHIPPED) |
 
 ---
 
@@ -293,33 +312,21 @@ ALTER TABLE public.refill_order_line_items ENABLE ROW LEVEL SECURITY;
 ## 🐳 Docker Deployment
 
 ```bash
-# Build and start all services
+# Build and start all services (reads JWT_SECRET from .env — see Quick Start)
 docker compose up --build
 
 # Individual service builds
 docker build -f Dockerfile.auth -t auth-service .
-docker build -f Dockerfile.drugs -t drugs-service .
-docker build -f Dockerfile.subscription -t subscription-service .
-docker build -f Dockerfile.refill -t refill-service .
-docker build -f Dockerfile.swagger -t swagger-service .
+docker build -f Dockerfile.auth.drugs -t drugs-service .
+docker build -f Dockerfile.auth.subscription -t subscription-service .
+docker build -f Dockerfile.auth.refill -t refill-service .
+docker build -f Dockerfile.auth.swagger -t swagger-service .
 ```
 
 Docker images use **multi-stage builds** for optimized image sizes (~150MB each):
 
 1. **Build stage**: Maven compiles the JAR with dependencies
 2. **Runtime stage**: Lightweight JRE runs the JAR as a non-root user
-
----
-
-## 🚢 Render.com Deployment
-
-The project includes `render.yaml` for infrastructure-as-code deployment. Each service is configured with:
-
-- Health check endpoints (`/actuator/health`)
-- Environment variables for database URLs, JWT secrets, and inter-service URLs
-- PostgreSQL database provisioning via Supabase
-
-See [render-manual-deployment.md](render-manual-deployment.md) for step-by-step instructions.
 
 ---
 
@@ -343,10 +350,11 @@ npm run build
 
 Import `MediFlow.postman_collection.json`. Run **Auth → Sign In** first — its test
 script captures the JWT into the `token` collection variable that every other request
-reuses. The `*_url` variables default to the local dev ports; override them to target a
-deployed environment. Seed logins are `member1` / `member2` / `member3`, all with
-password `password`. The collection ships with captured example responses for the
-happy path plus the 400/403/404 error cases.
+reuses. For the admin-only requests (List Users, Delete User, Update Refill Order Status),
+run **Auth → Sign In (Admin)**, which stores `admin_token`. The `*_url` variables default to
+the local dev ports; override them to target a deployed environment. Seed logins are
+`member1` / `member2` / `member3` and `admin`, all with password `password`. The collection
+ships with captured example responses for the happy path plus the 400/403/404 error cases.
 
 ---
 
@@ -366,13 +374,11 @@ Mail-Order-Pharmacy/
 │   └── enable_rls.sql                  # RLS migration for Supabase
 ├── MediFlow.postman_collection.json    # Postman API collection (full flow)
 ├── Dockerfile.* (5 files)              # Multi-stage Docker builds
-├── docker-compose.yml                  # Local Docker orchestration
-├── render.yaml                         # Render.com deployment config
-└── render-manual-deployment.md         # Deployment guide
+└── docker-compose.yml                  # Local Docker orchestration
 ```
 
 ---
 
-**Tech Stack**: Spring Boot 3.5 • React 18 • TypeScript • Java 17 • Maven • Vite • H2/PostgreSQL • Supabase • Docker
+**Tech Stack**: Spring Boot 4.1 • React 19 • TypeScript 6 • Java 21 • Maven • Vite 8 • H2/PostgreSQL • Supabase • Docker
 
 **Architecture**: Microservices • REST APIs • JWT Auth • Database per Service • Row Level Security

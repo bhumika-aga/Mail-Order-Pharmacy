@@ -10,7 +10,6 @@ spring:
     username: sa
     password: password
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: create-drop
     show-sql: true
@@ -28,7 +27,7 @@ spring:
       mode: always
 
 jwt:
-  secret: pharmacySecretKeyForJWTTokenGenerationWithSufficientLengthForHS512Algorithm2024OnRender
+  secret: ${JWT_SECRET}
   expiration: 900000
 
 logging:
@@ -51,7 +50,6 @@ spring:
     url: ${DATABASE_URL}
     driver-class-name: org.postgresql.Driver
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
     show-sql: true
@@ -77,7 +75,6 @@ spring:
     username: sa
     password: password
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: create-drop
     show-sql: true

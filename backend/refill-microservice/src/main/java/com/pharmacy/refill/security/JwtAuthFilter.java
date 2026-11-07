@@ -7,11 +7,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.List;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
@@ -25,41 +27,36 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        
-        String authHeader = request.getHeader("Authorization");
-        String token = null;
-        String username = null;
-        String memberId = null;
-        
-        // Check if Authorization header exists and starts with Bearer
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
-            
-            try {
-                username = jwtUtils.getUserNameFromJwtToken(token);
-                memberId = jwtUtils.getMemberIdFromJwtToken(token);
-            } catch (Exception e) {
-                logger.warn("Cannot set user authentication: " + e.getMessage());
-            }
-        }
-        
-        // If token is valid and no authentication is set in context
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            if (jwtUtils.validateJwtToken(token)) {
-                // Create authentication token
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    username,
-                    null,
-                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+        try {
+            String jwt = parseJwt(request);
+            if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
+                String username = jwtUtils.getUserNameFromJwtToken(jwt);
+                String memberId = jwtUtils.getMemberIdFromJwtToken(jwt);
+                String role = jwtUtils.getRoleFromJwtToken(jwt);
                 
-                // Add member ID as details
-                authToken.setDetails(memberId);
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                    username, null, List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 
-                // Set authentication in security context
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                request.setAttribute("memberId", memberId);
+                request.setAttribute("username", username);
+                
+                SecurityContextHolder.getContext().setAuthentication(authentication);
             }
+        } catch (Exception e) {
+            logger.error("Cannot set user authentication", e);
         }
         
         filterChain.doFilter(request, response);
+    }
+    
+    private String parseJwt(HttpServletRequest request) {
+        String headerAuth = request.getHeader("Authorization");
+        
+        if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
+            return headerAuth.substring(7);
+        }
+        
+        return null;
     }
 }

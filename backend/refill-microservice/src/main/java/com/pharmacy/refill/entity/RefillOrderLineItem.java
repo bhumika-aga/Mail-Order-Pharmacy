@@ -11,6 +11,7 @@ import java.math.RoundingMode;
 @Entity
 @Table(name = "refill_order_line_items")
 public class RefillOrderLineItem {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "line_item_id")

@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 public class DrugLocationId implements Serializable {
+    
     private String drugId;
     private String location;
     

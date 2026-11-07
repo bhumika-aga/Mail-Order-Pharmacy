@@ -1,5 +1,9 @@
 import { refillService } from "@/services/api";
-import { AdhocRefillRequest, RefillStatusResponse } from "@/types";
+import {
+  AdhocRefillPrescriptionRequest,
+  AdhocRefillRequest,
+  RefillStatusResponse,
+} from "@/types";
 import {
   Add,
   Assignment,
@@ -10,6 +14,7 @@ import {
   Pending,
   Schedule,
 } from "@mui/icons-material";
+import type { ChipProps } from "@mui/material";
 import {
   Box,
   Button,
@@ -146,10 +151,12 @@ const RefillsPage: React.FC = () => {
     setAdhocForm({ ...adhocForm, prescriptions: newRequests });
   };
 
-  const updatePrescriptionRequest = (
+  const updatePrescriptionRequest = <
+    K extends keyof AdhocRefillPrescriptionRequest,
+  >(
     index: number,
-    field: string,
-    value: any,
+    field: K,
+    value: AdhocRefillPrescriptionRequest[K],
   ) => {
     const newRequests = [...adhocForm.prescriptions];
     newRequests[index] = { ...newRequests[index], [field]: value };
@@ -175,7 +182,7 @@ const RefillsPage: React.FC = () => {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string): ChipProps["color"] => {
     switch (status) {
       case "DELIVERED":
         return "success";
@@ -198,10 +205,12 @@ const RefillsPage: React.FC = () => {
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Container maxWidth="lg">
         <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          mb={3}
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 3,
+          }}
         >
           <Typography variant="h4" component="h1">
             Refill Management
@@ -231,17 +240,24 @@ const RefillsPage: React.FC = () => {
             <LoadingSpinner />
           ) : refillStatus ? (
             <Grid container spacing={3}>
-              <Grid item xs={12} md={8}>
+              <Grid size={{ xs: 12, md: 8 }}>
                 <Card>
                   <CardContent>
-                    <Box display="flex" alignItems="center" gap={2} mb={2}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 2,
+                        mb: 2,
+                      }}
+                    >
                       {getStatusIcon(refillStatus.orderStatus)}
                       <Typography variant="h6">
                         Refill Order #{refillStatus.refillOrderId}
                       </Typography>
                       <Chip
                         label={refillStatus.orderStatus}
-                        color={getStatusColor(refillStatus.orderStatus) as any}
+                        color={getStatusColor(refillStatus.orderStatus)}
                         size="small"
                       />
                       <Chip
@@ -252,7 +268,7 @@ const RefillsPage: React.FC = () => {
                       />
                     </Box>
                     <Grid container spacing={2}>
-                      <Grid item xs={12} sm={6}>
+                      <Grid size={{ xs: 12, sm: 6 }}>
                         <Typography color="text.secondary" gutterBottom>
                           <strong>Order Date:</strong>{" "}
                           {new Date(
@@ -270,7 +286,7 @@ const RefillsPage: React.FC = () => {
                           </Typography>
                         )}
                       </Grid>
-                      <Grid item xs={12} sm={6}>
+                      <Grid size={{ xs: 12, sm: 6 }}>
                         <Typography color="text.secondary" gutterBottom>
                           <strong>Total Amount:</strong> ₹
                           {refillStatus.totalAmount?.toFixed(2) || "N/A"}
@@ -291,7 +307,7 @@ const RefillsPage: React.FC = () => {
                         )}
                       </Grid>
                     </Grid>
-                    <Box mt={2}>
+                    <Box sx={{ mt: 2 }}>
                       <Button
                         variant="outlined"
                         startIcon={<Info />}
@@ -319,22 +335,27 @@ const RefillsPage: React.FC = () => {
             <Grid container spacing={3}>
               {Array.isArray(allRefills) && allRefills.length > 0 ? (
                 allRefills.map((refill) => (
-                  <Grid item xs={12} md={6} lg={4} key={refill.refillOrderId}>
+                  <Grid
+                    key={refill.refillOrderId}
+                    size={{ xs: 12, md: 6, lg: 4 }}
+                  >
                     <Card>
                       <CardContent>
                         <Box
-                          display="flex"
-                          justifyContent="space-between"
-                          alignItems="center"
-                          mb={2}
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            mb: 2,
+                          }}
                         >
                           <Typography variant="h6">
                             #{refill.refillOrderId}
                           </Typography>
-                          <Box display="flex" gap={0.5}>
+                          <Box sx={{ display: "flex", gap: 0.5 }}>
                             <Chip
                               label={refill.orderStatus}
-                              color={getStatusColor(refill.orderStatus) as any}
+                              color={getStatusColor(refill.orderStatus)}
                               size="small"
                             />
                             <Chip
@@ -360,7 +381,7 @@ const RefillsPage: React.FC = () => {
                           <strong>Items:</strong>{" "}
                           {refill.lineItems?.length || 0}
                         </Typography>
-                        <Box mt={2}>
+                        <Box sx={{ mt: 2 }}>
                           <IconButton
                             size="small"
                             onClick={() => handleViewDetails(refill)}
@@ -374,11 +395,11 @@ const RefillsPage: React.FC = () => {
                   </Grid>
                 ))
               ) : (
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography
                     variant="body1"
                     color="text.secondary"
-                    textAlign="center"
+                    sx={{ textAlign: "center" }}
                   >
                     No refill orders found.
                   </Typography>
@@ -390,7 +411,7 @@ const RefillsPage: React.FC = () => {
 
         {/* Due Refills Tab */}
         <TabPanel value={tabValue} index={2}>
-          <Box mb={3}>
+          <Box sx={{ mb: 3 }}>
             <DatePicker
               label="Select Date"
               value={selectedDate}
@@ -401,14 +422,14 @@ const RefillsPage: React.FC = () => {
           {loadingDues ? (
             <LoadingSpinner />
           ) : duesError ? (
-            <Box textAlign="center" py={4}>
+            <Box sx={{ textAlign: "center", py: 4 }}>
               <Typography variant="body1" color="error">
                 Error loading refill dues:{" "}
                 {duesError instanceof Error
                   ? duesError.message
                   : "Unknown error"}
               </Typography>
-              <Typography variant="body2" color="text.secondary" mt={1}>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                 Please try selecting a different date or refresh the page.
               </Typography>
             </Box>
@@ -417,15 +438,19 @@ const RefillsPage: React.FC = () => {
               {Array.isArray(refillDues) && refillDues.length > 0 ? (
                 refillDues.map((due, index) => (
                   <Grid
-                    item
-                    xs={12}
-                    md={6}
-                    lg={4}
                     key={`${due.subscriptionId}-${index}`}
+                    size={{ xs: 12, md: 6, lg: 4 }}
                   >
                     <Card>
                       <CardContent>
-                        <Box display="flex" alignItems="center" gap={1} mb={2}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                            mb: 2,
+                          }}
+                        >
                           <CalendarToday color="warning" />
                           <Typography variant="h6">Due Refill</Typography>
                           <Chip
@@ -449,7 +474,7 @@ const RefillsPage: React.FC = () => {
                         </Typography>
 
                         {due.prescriptions && due.prescriptions.length > 0 && (
-                          <Box mt={2}>
+                          <Box sx={{ mt: 2 }}>
                             <Typography variant="subtitle2" gutterBottom>
                               Prescriptions:
                             </Typography>
@@ -479,11 +504,11 @@ const RefillsPage: React.FC = () => {
                   </Grid>
                 ))
               ) : (
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography
                     variant="body1"
                     color="text.secondary"
-                    textAlign="center"
+                    sx={{ textAlign: "center" }}
                   >
                     No refills due for {selectedDate.toLocaleDateString()}.
                   </Typography>
@@ -503,7 +528,7 @@ const RefillsPage: React.FC = () => {
           <DialogTitle>Request Adhoc Refill</DialogTitle>
           <DialogContent>
             <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Member ID"
@@ -514,7 +539,7 @@ const RefillsPage: React.FC = () => {
                   placeholder="e.g., MEM001"
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Member Location"
@@ -529,7 +554,7 @@ const RefillsPage: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Typography variant="h6" gutterBottom>
                   Prescription Requests
                 </Typography>
@@ -545,7 +570,7 @@ const RefillsPage: React.FC = () => {
                     }}
                   >
                     <Grid container spacing={2}>
-                      <Grid item xs={12} sm={4}>
+                      <Grid size={{ xs: 12, sm: 4 }}>
                         <TextField
                           fullWidth
                           label="Prescription ID"
@@ -560,7 +585,7 @@ const RefillsPage: React.FC = () => {
                           placeholder="e.g., PRES001"
                         />
                       </Grid>
-                      <Grid item xs={12} sm={4}>
+                      <Grid size={{ xs: 12, sm: 4 }}>
                         <TextField
                           fullWidth
                           label="Drug Code"
@@ -575,7 +600,7 @@ const RefillsPage: React.FC = () => {
                           placeholder="e.g., D001"
                         />
                       </Grid>
-                      <Grid item xs={12} sm={4}>
+                      <Grid size={{ xs: 12, sm: 4 }}>
                         <TextField
                           fullWidth
                           label="Quantity"
@@ -588,11 +613,11 @@ const RefillsPage: React.FC = () => {
                               parseInt(e.target.value),
                             )
                           }
-                          inputProps={{ min: 1 }}
+                          slotProps={{ htmlInput: { min: 1 } }}
                         />
                       </Grid>
                       {adhocForm.prescriptions.length > 1 && (
-                        <Grid item xs={12}>
+                        <Grid size={{ xs: 12 }}>
                           <Button
                             variant="outlined"
                             color="error"
@@ -645,7 +670,7 @@ const RefillsPage: React.FC = () => {
                   Refill Order #{selectedRefill.refillOrderId}
                 </Typography>
                 <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     {selectedRefill.subscriptionId && (
                       <Typography>
                         <strong>Subscription ID:</strong>{" "}
@@ -663,7 +688,7 @@ const RefillsPage: React.FC = () => {
                       <strong>Location:</strong> {selectedRefill.memberLocation}
                     </Typography>
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <Typography>
                       <strong>Order Type:</strong> {selectedRefill.orderType}
                     </Typography>
@@ -671,7 +696,7 @@ const RefillsPage: React.FC = () => {
                       <strong>Total Amount:</strong> ₹
                       {selectedRefill.totalAmount?.toFixed(2) || "N/A"}
                     </Typography>
-                    <Box display="flex" alignItems="center" gap={1}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       {getStatusIcon(selectedRefill.orderStatus)}
                       <Typography>
                         <strong>Status:</strong> {selectedRefill.orderStatus}
@@ -696,7 +721,7 @@ const RefillsPage: React.FC = () => {
 
                 {selectedRefill.lineItems &&
                 selectedRefill.lineItems.length > 0 ? (
-                  <Box mt={3}>
+                  <Box sx={{ mt: 3 }}>
                     <Typography variant="h6" gutterBottom>
                       Prescription Line Items
                     </Typography>
@@ -711,7 +736,7 @@ const RefillsPage: React.FC = () => {
                         }}
                       >
                         <Grid container spacing={1}>
-                          <Grid item xs={12} sm={6}>
+                          <Grid size={{ xs: 12, sm: 6 }}>
                             <Typography variant="body2">
                               <strong>Drug:</strong> {item.drugName}
                             </Typography>
@@ -723,7 +748,7 @@ const RefillsPage: React.FC = () => {
                               {item.prescriptionId}
                             </Typography>
                           </Grid>
-                          <Grid item xs={12} sm={6}>
+                          <Grid size={{ xs: 12, sm: 6 }}>
                             <Typography variant="body2">
                               <strong>Quantity:</strong> {item.quantity}
                             </Typography>
@@ -741,7 +766,7 @@ const RefillsPage: React.FC = () => {
                     ))}
                   </Box>
                 ) : (
-                  <Box mt={2}>
+                  <Box sx={{ mt: 2 }}>
                     <Typography variant="body2" color="text.secondary">
                       No detailed line items available for this refill order.
                     </Typography>

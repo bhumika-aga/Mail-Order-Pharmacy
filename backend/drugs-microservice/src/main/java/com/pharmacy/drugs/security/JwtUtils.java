@@ -1,21 +1,35 @@
 package com.pharmacy.drugs.security;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.function.Function;
 
 @Component
 public class JwtUtils {
     
-    @Value("${jwt.secret:pharmacySecretKeyForJWTTokenGeneration}")
-    private String jwtSecret;
+    /**
+     * HS512 needs a key of at least 512 bits. The secret comes only from the
+     * JWT_SECRET environment variable and must match the auth service's.
+     */
+    static final int MIN_SECRET_BYTES = 64;
     
-    private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
+    private final SecretKey signingKey;
+    
+    public JwtUtils(@Value("${jwt.secret}") String jwtSecret) {
+        byte[] secretBytes = jwtSecret == null ? new byte[0] : jwtSecret.getBytes(StandardCharsets.UTF_8);
+        if (secretBytes.length < MIN_SECRET_BYTES) {
+            throw new IllegalStateException("JWT_SECRET must be set and at least " + MIN_SECRET_BYTES
+                                                + " bytes long (generate one with: openssl rand -base64 64)");
+        }
+        this.signingKey = Keys.hmacShaKeyFor(secretBytes);
     }
     
     public String getUserNameFromJwtToken(String token) {
@@ -26,29 +40,34 @@ public class JwtUtils {
         return getClaimFromToken(token, claims -> claims.get("memberId", String.class));
     }
     
+    /**
+     * Role claim; tokens issued before roles existed have none and count as MEMBER.
+     */
+    public String getRoleFromJwtToken(String token) {
+        String role = getClaimFromToken(token, claims -> claims.get("role", String.class));
+        return role == null ? "MEMBER" : role;
+    }
+    
     public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = getAllClaimsFromToken(token);
-        return claimsResolver.apply(claims);
+        return claimsResolver.apply(getAllClaimsFromToken(token));
     }
     
     private Claims getAllClaimsFromToken(String token) {
-        return Jwts.parserBuilder()
-                   .setSigningKey(getSigningKey())
+        return Jwts.parser()
+                   .verifyWith(signingKey)
                    .build()
-                   .parseClaimsJws(token)
-                   .getBody();
+                   .parseSignedClaims(token)
+                   .getPayload();
     }
     
     public Boolean validateJwtToken(String authToken) {
         try {
-            Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(authToken);
+            getAllClaimsFromToken(authToken);
             return true;
-        } catch (MalformedJwtException e) {
-            System.err.println("Invalid JWT token: " + e.getMessage());
         } catch (ExpiredJwtException e) {
             System.err.println("JWT token is expired: " + e.getMessage());
-        } catch (UnsupportedJwtException e) {
-            System.err.println("JWT token is unsupported: " + e.getMessage());
+        } catch (JwtException e) {
+            System.err.println("Invalid JWT token: " + e.getMessage());
         } catch (IllegalArgumentException e) {
             System.err.println("JWT claims string is empty: " + e.getMessage());
         }

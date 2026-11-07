@@ -13,6 +13,7 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "member_prescriptions")
 public class MemberPrescription {
+    
     @Id
     @Column(name = "prescription_id")
     private String prescriptionId;

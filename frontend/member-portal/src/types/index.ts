@@ -1,9 +1,12 @@
+export type Role = "MEMBER" | "ADMIN";
+
 export interface User {
   id: number;
   username: string;
   email: string;
   memberId: string;
   fullName: string;
+  role?: Role;
   createdAt: string;
   updatedAt: string;
 }
@@ -13,6 +16,7 @@ export interface AuthResponse {
   type: string;
   username: string;
   memberId: string;
+  role: Role;
   expirationTime: number;
 }
 
@@ -71,9 +75,9 @@ export interface MemberSubscription {
   memberId: string;
   subscriptionDate: string;
   prescriptionId: string;
-  refillFrequency: 'WEEKLY' | 'MONTHLY';
+  refillFrequency: "WEEKLY" | "MONTHLY";
   memberLocation: string;
-  subscriptionStatus: 'ACTIVE' | 'INACTIVE';
+  subscriptionStatus: "ACTIVE" | "INACTIVE";
   prescription?: MemberPrescription;
 }
 
@@ -85,7 +89,7 @@ export interface SubscriptionRequest {
   dosagePerDay: string;
   prescriptionCourse: number;
   doctorDetails: string;
-  refillFrequency: 'WEEKLY' | 'MONTHLY';
+  refillFrequency: "WEEKLY" | "MONTHLY";
   memberLocation: string;
 }
 
@@ -94,7 +98,7 @@ export interface RefillOrder {
   subscriptionId: string;
   refillDate: string;
   quantity: number;
-  paymentStatus: 'PAID' | 'PENDING';
+  paymentStatus: "PAID" | "PENDING";
 }
 
 export interface RefillOrderLineItem {
@@ -118,8 +122,14 @@ export interface RefillStatusResponse {
   memberId: string;
   orderDate: string;
   memberLocation: string;
-  orderStatus: 'PENDING' | 'CONFIRMED' | 'IN_PROGRESS' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
-  orderType: 'SCHEDULED' | 'ADHOC';
+  orderStatus:
+    | "PENDING"
+    | "CONFIRMED"
+    | "IN_PROGRESS"
+    | "SHIPPED"
+    | "DELIVERED"
+    | "CANCELLED";
+  orderType: "SCHEDULED" | "ADHOC";
   subscriptionId: string | null;
   deliveryDate: string | null;
   trackingNumber: string | null;
@@ -139,6 +149,16 @@ export interface AdhocRefillRequest {
   prescriptions: AdhocRefillPrescriptionRequest[];
 }
 
+export interface AdhocRefillResponse {
+  refillOrderId: string;
+  memberId: string;
+  orderDate: string;
+  memberLocation: string;
+  orderStatus: string;
+  message: string;
+  totalAmount: number;
+}
+
 export interface RefillDuePrescription {
   prescriptionId: string;
   drugId: string;
@@ -153,13 +173,4 @@ export interface RefillDueResponse {
   dueDate: string;
   refillFrequency: string;
   prescriptions: RefillDuePrescription[];
-}
-
-// Re-export AxiosResponse from axios for testing
-export interface AxiosResponse<T = any> {
-  data: T;
-  status: number;
-  statusText: string;
-  headers: any;
-  config: any;
 }

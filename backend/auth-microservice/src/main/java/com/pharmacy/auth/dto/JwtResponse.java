@@ -6,12 +6,22 @@ public class JwtResponse {
     private String username;
     private String memberId;
     private Long expirationTime;
+    private String role;
     
-    public JwtResponse(String token, String username, String memberId, Long expirationTime) {
+    public JwtResponse(String token, String username, String memberId, String role, Long expirationTime) {
         this.token = token;
         this.username = username;
         this.memberId = memberId;
+        this.role = role;
         this.expirationTime = expirationTime;
+    }
+    
+    public String getRole() {
+        return role;
+    }
+    
+    public void setRole(String role) {
+        this.role = role;
     }
     
     public String getToken() {

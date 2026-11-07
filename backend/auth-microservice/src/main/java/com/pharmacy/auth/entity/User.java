@@ -1,5 +1,6 @@
 package com.pharmacy.auth.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -22,11 +23,17 @@ public class User {
     @NotBlank(message = "Email is required")
     private String email;
     
+    // BCrypt hash: never serialized into API responses.
+    @JsonIgnore
     @NotBlank(message = "Password is required")
     private String password;
     
     @Column(name = "member_id", unique = true)
     private String memberId;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_role", length = 20)
+    private Role role = Role.MEMBER;
     
     @NotBlank(message = "Full name is required")
     @Column(name = "full_name")
@@ -58,6 +65,18 @@ public class User {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+    
+    /**
+     * Rows created before the role column existed have a null role; they are
+     * treated as ordinary members.
+     */
+    public Role getRole() {
+        return role == null ? Role.MEMBER : role;
+    }
+    
+    public void setRole(Role role) {
+        this.role = role;
     }
     
     public Long getId() {

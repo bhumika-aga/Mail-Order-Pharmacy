@@ -11,8 +11,10 @@ import {
 import LoginForm from "./components/auth/LoginForm";
 import Layout from "./components/common/Layout";
 import LoadingSpinner from "./components/common/LoadingSpinner";
-import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
-import { AuthProvider, useAuth } from "./hooks/useAuth";
+import { AuthProvider } from "./contexts/AuthProvider";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import { useTheme } from "./contexts/themeModeContext";
+import { useAuth } from "./hooks/useAuth";
 import Dashboard from "./pages/Dashboard";
 
 // Lazy load pages
@@ -40,9 +42,7 @@ const ThemedApp: React.FC = () => {
     <MuiThemeProvider theme={theme}>
       <CssBaseline />
       <AuthProvider>
-        <Router
-          future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        >
+        <Router>
           <AppRoutes />
         </Router>
       </AuthProvider>
@@ -67,7 +67,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
 };
 
 const AppRoutes: React.FC = () => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, isAdmin, loading } = useAuth();
 
   if (loading) {
     return <LoadingSpinner />;
@@ -133,9 +133,13 @@ const AppRoutes: React.FC = () => {
         path="/users"
         element={
           <ProtectedRoute>
-            <React.Suspense fallback={<LoadingSpinner />}>
-              <UserManagementPage />
-            </React.Suspense>
+            {isAdmin ? (
+              <React.Suspense fallback={<LoadingSpinner />}>
+                <UserManagementPage />
+              </React.Suspense>
+            ) : (
+              <Navigate to="/dashboard" />
+            )}
           </ProtectedRoute>
         }
       />
