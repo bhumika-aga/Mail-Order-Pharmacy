@@ -10,24 +10,22 @@ import java.util.concurrent.ConcurrentHashMap;
  * instance; several instances would need a shared store (e.g. Redis).
  */
 public class FixedWindowRateLimiter {
-
-    private record Window(long startMillis, int count) {
-    }
-
+    
     private static final int CLEANUP_THRESHOLD = 10_000;
-
     private final int limit;
     private final long windowMillis;
     private final Clock clock;
     private final ConcurrentHashMap<String, Window> windows = new ConcurrentHashMap<>();
-
+    
     public FixedWindowRateLimiter(int limit, Duration window, Clock clock) {
         this.limit = limit;
         this.windowMillis = window.toMillis();
         this.clock = clock;
     }
-
-    /** Records one event for {@code key}; returns false if the key is over its limit. */
+    
+    /**
+     * Records one event for {@code key}; returns false if the key is over its limit.
+     */
     public boolean tryAcquire(String key) {
         long now = clock.millis();
         if (windows.size() > CLEANUP_THRESHOLD) {
@@ -39,8 +37,10 @@ public class FixedWindowRateLimiter {
                                                      : new Window(current.startMillis(), current.count() + 1));
         return window.count() <= limit;
     }
-
-    /** Seconds until {@code key}'s current window ends (for a Retry-After header). */
+    
+    /**
+     * Seconds until {@code key}'s current window ends (for a Retry-After header).
+     */
     public long secondsUntilReset(String key) {
         Window window = windows.get(key);
         if (window == null) {
@@ -48,5 +48,8 @@ public class FixedWindowRateLimiter {
         }
         long remaining = window.startMillis() + windowMillis - clock.millis();
         return Math.max(1, (remaining + 999) / 1000);
+    }
+    
+    private record Window(long startMillis, int count) {
     }
 }

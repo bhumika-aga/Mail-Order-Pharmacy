@@ -1,3 +1,5 @@
+-- Development/demo seed data (H2). Loaded by Flyway only in the default (dev)
+-- and docker profiles; production loads db/migration only.
 -- Insert refill orders
 INSERT INTO refill_orders (refill_order_id, member_id, order_date, member_location, order_status, order_type,
                            subscription_id, delivery_date, tracking_number)

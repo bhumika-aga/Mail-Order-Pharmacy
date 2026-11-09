@@ -5,10 +5,10 @@ import java.io.Serializable;
 import java.util.Objects;
 
 public class DrugLocationId implements Serializable {
-
+    
     @Serial
     private static final long serialVersionUID = 1L;
-
+    
     private String drugId;
     private String location;
     

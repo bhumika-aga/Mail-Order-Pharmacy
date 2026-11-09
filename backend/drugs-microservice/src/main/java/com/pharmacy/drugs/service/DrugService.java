@@ -31,7 +31,9 @@ public class DrugService {
         return drugRepository.findById(drugId);
     }
     
-    /** Case-insensitive name search over unexpired drugs; the input is matched literally. */
+    /**
+     * Case-insensitive name search over unexpired drugs; the input is matched literally.
+     */
     public List<Drug> searchDrugsByName(String drugName) {
         String literal = drugName.trim()
                              .replace("\\", "\\\\")
@@ -94,7 +96,7 @@ public class DrugService {
                    .map(loc -> loc.getQuantityAvailable() >= quantity)
                    .orElse(false);
     }
-
+    
     /**
      * Atomically reserves stock by decrementing the available quantity for a
      * drug at a location. Returns false (without mutating) if the drug is
@@ -108,7 +110,7 @@ public class DrugService {
         // Check-and-decrement happens in one UPDATE statement, so it is atomic.
         return drugLocationRepository.decrementStock(drugId, location, quantity) == 1;
     }
-
+    
     /**
      * Returns previously reserved stock, e.g. when a later line of the same
      * order failed. Returns false if there is no stock row for the drug/location.
@@ -120,7 +122,7 @@ public class DrugService {
         }
         return drugLocationRepository.incrementStock(drugId, location, quantity) == 1;
     }
-
+    
     /**
      * True when the drug does not exist or has expired. A drug expiring today
      * counts as expired, matching the {@code expiryDate > today} catalogue queries.

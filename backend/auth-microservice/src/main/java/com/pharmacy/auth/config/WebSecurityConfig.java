@@ -55,13 +55,15 @@ public class WebSecurityConfig {
         return new BCryptPasswordEncoder();
     }
     
-    /** Per-client-address limit on sign-in, sign-up and availability checks. */
+    /**
+     * Per-client-address limit on sign-in, sign-up and availability checks.
+     */
     @Bean
     public AuthRateLimitFilter authRateLimitFilter(
         Clock clock, @Value("${app.auth.rate-limit.requests-per-minute:20}") int requestsPerMinute) {
         return new AuthRateLimitFilter(new FixedWindowRateLimiter(requestsPerMinute, Duration.ofMinutes(1), clock));
     }
-
+    
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthTokenFilter authenticationJwtTokenFilter,
                                            AuthRateLimitFilter authRateLimitFilter) {
@@ -87,7 +89,7 @@ public class WebSecurityConfig {
         
         http.addFilterBefore(authRateLimitFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(authenticationJwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
-
+        
         // For H2 console
         http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
         

@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "users")
 public class User {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,7 +24,6 @@ public class User {
     @NotBlank(message = "Email is required")
     private String email;
     
-    // BCrypt hash: never serialized into API responses.
     @JsonIgnore
     @NotBlank(message = "Password is required")
     private String password;
@@ -32,7 +32,7 @@ public class User {
     private String memberId;
     
     @Enumerated(EnumType.STRING)
-    @Column(name = "user_role", length = 20)
+    @Column(name = "user_role", columnDefinition = "VARCHAR(20)")
     private Role role = Role.MEMBER;
     
     @NotBlank(message = "Full name is required")

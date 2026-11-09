@@ -1,3 +1,5 @@
+-- Development/demo seed data (H2). Loaded by Flyway only in the default (dev)
+-- and docker profiles; production loads db/migration only.
 -- Insert member prescriptions
 INSERT INTO member_prescriptions (prescription_id, member_id, insurance_policy_number, insurance_provider,
                                   prescription_date, drug_id, dosage_per_day, prescription_course, doctor_details)

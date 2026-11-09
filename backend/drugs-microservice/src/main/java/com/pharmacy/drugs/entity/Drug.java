@@ -14,6 +14,7 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "drugs")
 public class Drug {
+    
     @Id
     @Column(name = "drug_id")
     private String drugId;
@@ -61,7 +62,7 @@ public class Drug {
         this.costPerPackage = costPerPackage;
         this.medicalComposition = medicalComposition;
     }
-
+    
     /**
      * The single expiry rule for this service: a drug may be dispatched only while
      * its expiry date is still in the future, so it counts as expired ON its expiry
@@ -70,11 +71,11 @@ public class Drug {
     public boolean isExpiredOn(LocalDate date) {
         return !expiryDate.isAfter(date);
     }
-
+    
     public boolean isUnexpiredOn(LocalDate date) {
         return expiryDate.isAfter(date);
     }
-
+    
     public String getDrugId() {
         return drugId;
     }

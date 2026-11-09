@@ -1,0 +1,123 @@
+package com.pharmacy.subscription;
+
+import io.zonky.test.db.postgres.embedded.EmbeddedPostgres;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.Statement;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+/**
+ * Starts the service with its real <b>prod</b> profile against a real PostgreSQL
+ * (embedded, no install needed) and checks that the Flyway migrations both build a
+ * fresh database and adopt the existing production schema (all services share one
+ * database whose tables Hibernate created before Flyway) without losing data,
+ * after which Hibernate's schema validation must pass.
+ */
+class PostgresMigrationTest {
+    
+    private static final String HISTORY_TABLE = "flyway_history_subscription";
+    private static EmbeddedPostgres postgres;
+    private static int databaseCounter;
+    
+    @BeforeAll
+    static void startPostgres() throws Exception {
+        postgres = EmbeddedPostgres.start();
+    }
+    
+    @AfterAll
+    static void stopPostgres() throws Exception {
+        postgres.close();
+    }
+    
+    private static ConfigurableApplicationContext startProd(String jdbcUrl) {
+        // Command-line arguments outrank the profile's YAML (e.g. sslmode=require).
+        return new SpringApplicationBuilder(SubscriptionMicroserviceApplication.class).run(
+            "--spring.profiles.active=prod",
+            "--PORT=0",
+            "--DATABASE_URL=" + jdbcUrl,
+            "--DATABASE_USERNAME=postgres",
+            "--DATABASE_PASSWORD=postgres",
+            "--spring.datasource.hikari.data-source-properties.sslmode=disable",
+            "--JWT_SECRET=test-secret-0123456789-0123456789-0123456789-0123456789-0123456789",
+            "--JWT_EXPIRATION=900000",
+            "--APP_CORS_ALLOWED_ORIGINS=http://localhost:5173",
+            "--AUTH_SERVICE_URL=http://localhost:8084",
+            "--DRUGS_SERVICE_URL=http://localhost:8081",
+            "--SUBSCRIPTION_SERVICE_URL=http://localhost:8082");
+    }
+    
+    /**
+     * A new, empty database on the embedded server, optionally pre-loaded with {@code sql}.
+     */
+    private static String newDatabase(String sql) throws Exception {
+        String name = "db_" + (++databaseCounter);
+        try (Connection c = postgres.getPostgresDatabase().getConnection(); Statement st = c.createStatement()) {
+            st.execute("CREATE DATABASE " + name);
+        }
+        String url = postgres.getJdbcUrl("postgres", name);
+        if (!sql.isBlank()) {
+            try (Connection c = java.sql.DriverManager.getConnection(url, "postgres", "postgres");
+                 Statement st = c.createStatement()) {
+                st.execute(sql);
+            }
+        }
+        return url;
+    }
+    
+    private static List<String> tables(JdbcTemplate jdbc) {
+        return jdbc.queryForList(
+            "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'", String.class);
+    }
+    
+    private static List<String> appliedVersions(JdbcTemplate jdbc) {
+        return jdbc.queryForList("SELECT version FROM " + HISTORY_TABLE
+                                     + " WHERE success AND version IS NOT NULL ORDER BY installed_rank", String.class);
+    }
+    
+    /**
+     * Production must never receive the dev seed data (db/seed).
+     */
+    private static void assertNoSeedData(JdbcTemplate jdbc) {
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM " + HISTORY_TABLE
+                                           + " WHERE script LIKE '%seed%'", Integer.class)).isZero();
+    }
+    
+    @Test
+    void migratesAFreshDatabase() throws Exception {
+        try (ConfigurableApplicationContext app = startProd(newDatabase(""))) {
+            JdbcTemplate jdbc = new JdbcTemplate(app.getBean(DataSource.class));
+            assertThat(tables(jdbc)).contains("member_prescriptions", "member_subscriptions");
+            assertThat(appliedVersions(jdbc)).containsExactly("1");
+            assertNoSeedData(jdbc);
+        }
+    }
+    
+    @Test
+    void adoptsTheExistingSharedProductionSchemaWithoutLosingData() throws Exception {
+        String sql = """
+            -- another service's table in the same (shared) database
+            create table other_service_table (id integer primary key);
+            create table member_prescriptions (prescription_course integer not null, prescription_date date not null, doctor_details TEXT not null, dosage_per_day varchar(255) not null, drug_id varchar(255) not null, insurance_policy_number varchar(255) not null, insurance_provider varchar(255) not null, member_id varchar(255) not null, prescription_id varchar(255) not null, primary key (prescription_id));
+            create table member_subscriptions (subscription_date date not null, member_id varchar(255) not null, member_location varchar(255) not null, prescription_id varchar(255) not null, refill_frequency VARCHAR(50) not null check ((refill_frequency in ('WEEKLY','MONTHLY'))), subscription_id varchar(255) not null, subscription_status VARCHAR(50) not null check ((subscription_status in ('ACTIVE','INACTIVE'))), primary key (subscription_id));
+            alter table if exists member_subscriptions add constraint FK45tsphrk4y6jh0k2kb978ywh foreign key (prescription_id) references member_prescriptions;
+            insert into member_prescriptions values (30, '2026-01-01', 'Dr X', '1 daily', 'D001', 'POL1', 'Ins', 'MEM001', 'PRESX');
+            insert into member_subscriptions values ('2026-01-01', 'MEM001', 'New York', 'PRESX', 'MONTHLY', 'SUBX', 'ACTIVE');
+            """;
+        try (ConfigurableApplicationContext app = startProd(newDatabase(sql))) {
+            JdbcTemplate jdbc = new JdbcTemplate(app.getBean(DataSource.class));
+            assertThat(jdbc.queryForObject("SELECT count(*) FROM member_subscriptions WHERE subscription_id = 'SUBX'", Integer.class)).isEqualTo(1);
+            // baseline at 0 for the existing schema, then every migration runs (as a no-op where applied)
+            assertThat(appliedVersions(jdbc)).containsExactly("0", "1");
+            assertNoSeedData(jdbc);
+        }
+    }
+}

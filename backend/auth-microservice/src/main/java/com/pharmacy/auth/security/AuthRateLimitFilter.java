@@ -17,13 +17,13 @@ import java.io.IOException;
  * and bulk account enumeration; over-limit requests get 429 with Retry-After.
  */
 public class AuthRateLimitFilter extends OncePerRequestFilter {
-
+    
     private final FixedWindowRateLimiter limiter;
-
+    
     public AuthRateLimitFilter(FixedWindowRateLimiter limiter) {
         this.limiter = limiter;
     }
-
+    
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
@@ -31,7 +31,7 @@ public class AuthRateLimitFilter extends OncePerRequestFilter {
                      || path.equals("/api/auth/signup")
                      || path.startsWith("/api/auth/check-"));
     }
-
+    
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
         throws ServletException, IOException {

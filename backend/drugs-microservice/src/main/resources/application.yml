@@ -12,24 +12,29 @@ spring:
     driver-class-name: org.h2.Driver
     username: sa
     password: password
+  flyway:
+    # Schema changes are versioned SQL in db/migration; Hibernate only validates.
+    # All services share one database, so each keeps its own history table, and
+    # baselining at version 0 lets V1 (CREATE TABLE IF NOT EXISTS) run even when
+    # other services' tables already exist.
+    table: flyway_history_drugs
+    baseline-on-migrate: true
+    baseline-version: 0
+    # Dev/demo data (repeatable migration). Production overrides this to db/migration only.
+    locations: classpath:db/migration,classpath:db/seed
   jpa:
     # Don't hold a DB connection for the whole request (e.g. while calling other services)
     open-in-view: false
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     show-sql: true
-    defer-datasource-initialization: true
     properties:
       hibernate:
         format_sql: true
-    generate-ddl: true
   h2:
     console:
       enabled: true
       path: /h2-console
-  sql:
-    init:
-      mode: always
 
 jwt:
   secret: ${JWT_SECRET}
@@ -62,39 +67,12 @@ spring:
     password: password
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     show-sql: true
-    defer-datasource-initialization: true
     properties:
       hibernate:
         format_sql: true
-    generate-ddl: true
   h2:
     console:
       enabled: true
       path: /h2-console
-  sql:
-    init:
-      mode: always
----
-spring:
-  config:
-    activate:
-      on-profile: cloud
-  datasource:
-    url: ${DATABASE_URL}
-    driver-class-name: org.postgresql.Driver
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-  sql:
-    init:
-      mode: always
-
-jwt:
-  secret: ${JWT_SECRET}
-  expiration: ${JWT_EXPIRATION}

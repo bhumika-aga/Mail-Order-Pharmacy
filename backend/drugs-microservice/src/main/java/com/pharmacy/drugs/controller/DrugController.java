@@ -96,7 +96,7 @@ public class DrugController {
     
     // Stock changes are made only by other services (the refill service), using a
     // short-lived SERVICE token; members cannot reserve or release stock directly.
-
+    
     @PostMapping("/reserve")
     @PreAuthorize("hasRole('SERVICE')")
     @Operation(summary = "Reserve drug stock",
@@ -105,7 +105,7 @@ public class DrugController {
         return ResponseEntity.ok(
             drugService.reserveStock(request.drugCode(), request.location(), request.quantity()));
     }
-
+    
     @PostMapping("/release")
     @PreAuthorize("hasRole('SERVICE')")
     @Operation(summary = "Release reserved drug stock",

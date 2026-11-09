@@ -69,7 +69,9 @@ const RefillsPage: React.FC = () => {
     useState<RefillStatusResponse | null>(null);
   const { user } = useAuth();
   // The member ID is taken from the signed-in user when the request is sent.
-  const [adhocForm, setAdhocForm] = useState<Omit<AdhocRefillRequest, "memberId">>({
+  const [adhocForm, setAdhocForm] = useState<
+    Omit<AdhocRefillRequest, "memberId">
+  >({
     memberLocation: "",
     prescriptions: [
       {
@@ -102,7 +104,8 @@ const RefillsPage: React.FC = () => {
   // The member's own prescriptions, offered in the adhoc refill form
   const { data: prescriptions } = useQuery({
     queryKey: ["prescriptions"],
-    queryFn: () => subscriptionService.getPrescriptions().then((res) => res.data),
+    queryFn: () =>
+      subscriptionService.getPrescriptions().then((res) => res.data),
     enabled: adhocDialog,
   });
 

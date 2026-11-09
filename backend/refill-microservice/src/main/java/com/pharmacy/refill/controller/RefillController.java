@@ -38,13 +38,27 @@ import java.util.List;
 @Tag(name = "Refill Management", description = "APIs for managing refill orders and subscriptions")
 @SecurityRequirement(name = "bearerAuth")
 public class RefillController {
-
+    
     private final RefillService refillService;
-
+    
     public RefillController(RefillService refillService) {
         this.refillService = refillService;
     }
-
+    
+    /**
+     * Member ID from the validated token (null for admin accounts).
+     */
+    private static String memberId(HttpServletRequest request) {
+        return (String) request.getAttribute("memberId");
+    }
+    
+    /**
+     * The caller's validated bearer token, forwarded to other services.
+     */
+    private static String bearerToken(HttpServletRequest request) {
+        return request.getHeader(HttpHeaders.AUTHORIZATION).substring("Bearer ".length());
+    }
+    
     @GetMapping("/viewRefillStatus")
     @Operation(summary = "Get latest refill status", description = "Retrieve the latest refill order status for the authenticated member")
     @ApiResponses(value = {
@@ -60,7 +74,7 @@ public class RefillController {
         }
         return ResponseEntity.ok(refillService.getLatestRefillStatus(memberId));
     }
-
+    
     @GetMapping("/getRefillDuesAsOfDate")
     @Operation(summary = "Get refill dues as of date",
         description = "Subscriptions whose next scheduled refill falls on or before the date (the member's own; admins see all)")
@@ -75,7 +89,7 @@ public class RefillController {
         @Parameter(description = "Due date in YYYY-MM-DD format", example = "2024-01-15") @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dueDate) {
         return ResponseEntity.ok(refillService.getRefillDuesAsOfDate(bearerToken(request), dueDate));
     }
-
+    
     @PostMapping("/requestAdhocRefill")
     @Operation(summary = "Request adhoc refill", description = "Create a new adhoc refill order for the specified prescriptions")
     @ApiResponses(value = {
@@ -99,7 +113,7 @@ public class RefillController {
         AdhocRefillResponse response = refillService.createAdhocRefillOrder(bearerToken(httpRequest), request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-
+    
     @GetMapping("/orders")
     @Operation(summary = "Get all refill orders", description = "Retrieve all refill orders for the authenticated member")
     @ApiResponses(value = {
@@ -111,7 +125,7 @@ public class RefillController {
         // Admin accounts have no member ID and therefore no orders of their own.
         return ResponseEntity.ok(memberId == null ? List.of() : refillService.getAllRefillOrdersForMember(memberId));
     }
-
+    
     @PutMapping("/orders/{refillOrderId}/status")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Update refill order status", description = "Update the status of a refill order (Admin only)")
@@ -125,15 +139,5 @@ public class RefillController {
         @PathVariable String refillOrderId,
         @RequestParam RefillOrder.OrderStatus status) {
         return ResponseEntity.ok(refillService.updateRefillOrderStatus(refillOrderId, status));
-    }
-
-    /** Member ID from the validated token (null for admin accounts). */
-    private static String memberId(HttpServletRequest request) {
-        return (String) request.getAttribute("memberId");
-    }
-
-    /** The caller's validated bearer token, forwarded to other services. */
-    private static String bearerToken(HttpServletRequest request) {
-        return request.getHeader(HttpHeaders.AUTHORIZATION).substring("Bearer ".length());
     }
 }

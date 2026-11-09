@@ -15,19 +15,19 @@ import java.util.Optional;
  */
 @Repository
 public interface MemberSubscriptionRepository extends JpaRepository<MemberSubscription, String> {
-
+    
     @EntityGraph(attributePaths = "prescription")
     List<MemberSubscription> findByMemberId(String memberId);
-
+    
     @EntityGraph(attributePaths = "prescription")
     List<MemberSubscription> findByMemberIdAndSubscriptionStatus(String memberId,
                                                                  MemberSubscription.SubscriptionStatus status);
-
+    
     @Override
     @EntityGraph(attributePaths = "prescription")
     Optional<MemberSubscription> findById(String subscriptionId);
-
+    
     List<MemberSubscription> findByPrescriptionId(String prescriptionId);
-
+    
     List<MemberSubscription> findBySubscriptionStatus(MemberSubscription.SubscriptionStatus status);
 }

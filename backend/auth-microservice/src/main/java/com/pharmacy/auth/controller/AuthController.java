@@ -40,7 +40,7 @@ public class AuthController {
     private final JwtUtils jwtUtils;
     private final UserService userService;
     private final LoginAttemptService loginAttempts;
-
+    
     public AuthController(AuthenticationManager authenticationManager, JwtUtils jwtUtils, UserService userService,
                           LoginAttemptService loginAttempts) {
         this.authenticationManager = authenticationManager;
@@ -48,7 +48,7 @@ public class AuthController {
         this.userService = userService;
         this.loginAttempts = loginAttempts;
     }
-
+    
     @PostMapping("/signin")
     @Operation(summary = "User login",
         description = "Authenticate user and return JWT token. After 5 failed attempts for a username from the same address, sign-in is locked for 15 minutes (429).")
@@ -61,7 +61,7 @@ public class AuthController {
                        .header(HttpHeaders.RETRY_AFTER, String.valueOf(locked.get().toSeconds() + 1))
                        .body(new MessageResponse("Too many failed sign-in attempts. Try again in " + minutes + " minutes."));
         }
-
+        
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(
@@ -71,7 +71,7 @@ public class AuthController {
             throw e; // -> 401 via the security entry point
         }
         loginAttempts.recordSuccess(attemptKey);
-
+        
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String role = userDetails.getRole().name();
         String jwt = jwtUtils.generateToken(userDetails.getUsername(), userDetails.getMemberId(), role);
@@ -143,7 +143,7 @@ public class AuthController {
         // A member re-pointing their own member ID could take over another member's
         // prescriptions and orders, so only admins may change it.
         String memberId = currentUser.isAdmin() ? updateRequest.getMemberId() : null;
-
+        
         String newPassword = updateRequest.getPassword();
         boolean changingPassword = newPassword != null && !newPassword.isBlank();
         // A stolen session token alone must not be enough to take over the account.

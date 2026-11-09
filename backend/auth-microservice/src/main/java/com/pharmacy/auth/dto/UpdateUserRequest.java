@@ -10,28 +10,12 @@ import jakarta.validation.constraints.Size;
  * changing their own password must also send {@code currentPassword}.
  */
 public class UpdateUserRequest {
+    
     @Size(min = 6, max = 40, message = "Password must be between 6 and 40 characters")
     private String password;
-
+    
     private String currentPassword;
-
-    public String getPassword() {
-        // A blank field means "unchanged"
-        return password == null || password.isBlank() ? null : password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password == null || password.isBlank() ? null : password;
-    }
-
-    public String getCurrentPassword() {
-        return currentPassword;
-    }
-
-    public void setCurrentPassword(String currentPassword) {
-        this.currentPassword = currentPassword;
-    }
-
+    
     @NotBlank(message = "Username is required")
     @Size(min = 3, max = 20, message = "Username must be between 3 and 20 characters")
     private String username;
@@ -47,6 +31,23 @@ public class UpdateUserRequest {
     private String memberId;
     
     public UpdateUserRequest() {
+    }
+    
+    public String getPassword() {
+        // A blank field means "unchanged"
+        return password == null || password.isBlank() ? null : password;
+    }
+    
+    public void setPassword(String password) {
+        this.password = password == null || password.isBlank() ? null : password;
+    }
+    
+    public String getCurrentPassword() {
+        return currentPassword;
+    }
+    
+    public void setCurrentPassword(String currentPassword) {
+        this.currentPassword = currentPassword;
     }
     
     public String getUsername() {

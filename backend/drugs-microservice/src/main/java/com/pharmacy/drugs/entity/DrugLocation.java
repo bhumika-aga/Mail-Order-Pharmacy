@@ -24,8 +24,6 @@ public class DrugLocation {
     @Column(name = "quantity_available")
     private Integer quantityAvailable;
     
-    // Internal join only: not serialized, so rendering a stock row never triggers a
-    // lazy load (open-in-view is disabled) and the response stays {drugId, location, quantity}.
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "drug_id", insertable = false, updatable = false)

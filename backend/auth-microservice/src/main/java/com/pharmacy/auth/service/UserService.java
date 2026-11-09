@@ -13,6 +13,7 @@ import java.util.Optional;
 @Service
 public class UserService {
     
+    private static final SecureRandom RANDOM = new SecureRandom();
     private final UserRepository userRepository;
     private final PasswordEncoder encoder;
     
@@ -41,19 +42,19 @@ public class UserService {
         return userRepository.save(user);
     }
     
-    private static final SecureRandom RANDOM = new SecureRandom();
-
     private String generateUniqueMemberId() {
         String memberId;
         do {
             // Format: MEM + 6 digits (e.g. MEM001234). SecureRandom, so IDs can't be predicted.
             memberId = String.format("MEM%06d", RANDOM.nextInt(1, 1_000_000));
         } while (userRepository.existsByMemberId(memberId));
-
+        
         return memberId;
     }
-
-    /** Whether {@code rawPassword} is the current password of user {@code id}. */
+    
+    /**
+     * Whether {@code rawPassword} is the current password of user {@code id}.
+     */
     public boolean passwordMatches(Long id, String rawPassword) {
         return rawPassword != null && userRepository.findById(id)
                                           .map(user -> encoder.matches(rawPassword, user.getPassword()))
@@ -130,7 +131,7 @@ public class UserService {
         if (newPassword != null) {
             user.setPassword(encoder.encode(newPassword));
         }
-
+        
         return userRepository.save(user);
     }
 }

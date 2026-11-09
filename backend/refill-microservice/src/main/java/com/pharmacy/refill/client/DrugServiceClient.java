@@ -28,26 +28,40 @@ import java.util.Optional;
  */
 @Service
 public class DrugServiceClient {
-
+    
     private static final Logger log = LoggerFactory.getLogger(DrugServiceClient.class);
-
+    
     private final RestTemplate restTemplate;
     private final JwtUtils jwtUtils;
-
+    
     @Value("${drugs.service.url:http://localhost:8081}")
     private String drugsServiceUrl;
-
+    
     public DrugServiceClient(RestTemplate restTemplate, JwtUtils jwtUtils) {
         this.restTemplate = restTemplate;
         this.jwtUtils = jwtUtils;
     }
-
-    /** Drug details (name, cost...), or empty if the drug code does not exist. */
+    
+    private static HttpHeaders bearer(String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        return headers;
+    }
+    
+    private static ApiException unavailable(RestClientException e) {
+        log.warn("Drugs service call failed: {}", e.getMessage());
+        return new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "Service Unavailable",
+            "The drugs service could not be reached; please try again", e);
+    }
+    
+    /**
+     * Drug details (name, cost...), or empty if the drug code does not exist.
+     */
     public Optional<Map<String, Object>> getDrugDetails(String token, String drugCode) {
         URI url = UriComponentsBuilder.fromUriString(drugsServiceUrl)
-                         .path("/api/drugs/searchDrugsByID")
-                         .queryParam("drugId", drugCode)
-                         .encode().build().toUri();
+                      .path("/api/drugs/searchDrugsByID")
+                      .queryParam("drugId", drugCode)
+                      .encode().build().toUri();
         try {
             return Optional.ofNullable(restTemplate.exchange(
                 url, HttpMethod.GET, new HttpEntity<>(bearer(token)),
@@ -59,14 +73,14 @@ public class DrugServiceClient {
             throw unavailable(e);
         }
     }
-
+    
     public boolean checkDrugAvailability(String token, String drugCode, String location, int quantity) {
         URI url = UriComponentsBuilder.fromUriString(drugsServiceUrl)
-                         .path("/api/drugs/availability")
-                         .queryParam("drugCode", drugCode)
-                         .queryParam("location", location)
-                         .queryParam("quantity", quantity)
-                         .encode().build().toUri();
+                      .path("/api/drugs/availability")
+                      .queryParam("drugCode", drugCode)
+                      .queryParam("location", location)
+                      .queryParam("quantity", quantity)
+                      .encode().build().toUri();
         try {
             Boolean available = restTemplate.exchange(
                 url, HttpMethod.GET, new HttpEntity<>(bearer(token)), Boolean.class).getBody();
@@ -75,17 +89,21 @@ public class DrugServiceClient {
             throw unavailable(e);
         }
     }
-
-    /** Atomically reserves stock; false if there is not enough (or the drug expired meanwhile). */
+    
+    /**
+     * Atomically reserves stock; false if there is not enough (or the drug expired meanwhile).
+     */
     public boolean reserveDrugStock(String drugCode, String location, int quantity) {
         return changeStock("/api/drugs/reserve", drugCode, location, quantity);
     }
-
-    /** Returns stock reserved earlier for an order that could not be completed. */
+    
+    /**
+     * Returns stock reserved earlier for an order that could not be completed.
+     */
     public boolean releaseDrugStock(String drugCode, String location, int quantity) {
         return changeStock("/api/drugs/release", drugCode, location, quantity);
     }
-
+    
     private boolean changeStock(String path, String drugCode, String location, int quantity) {
         HttpHeaders headers = bearer(jwtUtils.generateServiceToken());
         Map<String, Object> body = Map.of("drugCode", drugCode, "location", location, "quantity", quantity);
@@ -96,17 +114,5 @@ public class DrugServiceClient {
         } catch (RestClientException e) {
             throw unavailable(e);
         }
-    }
-
-    private static HttpHeaders bearer(String token) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        return headers;
-    }
-
-    private static ApiException unavailable(RestClientException e) {
-        log.warn("Drugs service call failed: {}", e.getMessage());
-        return new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "Service Unavailable",
-            "The drugs service could not be reached; please try again", e);
     }
 }

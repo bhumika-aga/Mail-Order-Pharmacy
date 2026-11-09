@@ -5,6 +5,9 @@ server:
   forward-headers-strategy: framework
 
 spring:
+  flyway:
+    # Schema migrations only: never the dev seed data
+    locations: classpath:db/migration
   datasource:
     url: ${DATABASE_URL}
     username: ${DATABASE_USERNAME}
@@ -20,14 +23,13 @@ spring:
         prepareThreshold: 0
   jpa:
     hibernate:
-      ddl-auto: update
+      # Flyway owns the schema (db/migration); Hibernate only checks it matches
+      ddl-auto: validate
     # SQL logging off in production (queries touch member/prescription data)
     show-sql: false
-    defer-datasource-initialization: true
     properties:
       hibernate:
         format_sql: true
-    generate-ddl: true
   sql:
     init:
       mode: never

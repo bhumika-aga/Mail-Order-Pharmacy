@@ -14,7 +14,7 @@ public class RefillMicroserviceApplication {
     public static void main(String[] args) {
         SpringApplication.run(RefillMicroserviceApplication.class, args);
     }
-
+    
     /**
      * HTTP client for calls to the drugs and subscription services. Without
      * timeouts a slow or hung service would block request threads indefinitely.

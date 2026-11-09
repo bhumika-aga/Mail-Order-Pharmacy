@@ -40,7 +40,18 @@ public class SubscriptionController {
     }
     
     // Errors are raised as ApiException and rendered by ApiExceptionHandler.
-
+    
+    /**
+     * Admin accounts have no member ID, so they cannot hold subscriptions.
+     */
+    private static String requireMemberId(HttpServletRequest request) {
+        String memberId = (String) request.getAttribute("memberId");
+        if (memberId == null) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "Only member accounts can manage subscriptions");
+        }
+        return memberId;
+    }
+    
     @PostMapping("/subscribe")
     @Operation(summary = "Create new subscription", description = "Create a new mail-order pharmacy subscription")
     public ResponseEntity<MemberSubscription> subscribe(@Valid @RequestBody SubscriptionRequest request,
@@ -50,7 +61,7 @@ public class SubscriptionController {
         String token = httpRequest.getHeader(HttpHeaders.AUTHORIZATION).substring("Bearer ".length());
         return ResponseEntity.ok(subscriptionService.subscribe(request, memberId, token));
     }
-
+    
     @PostMapping("/unsubscribe")
     @Operation(summary = "Cancel subscription", description = "Cancel one of the authenticated member's subscriptions")
     public ResponseEntity<Map<String, String>> unsubscribe(
@@ -58,15 +69,6 @@ public class SubscriptionController {
         HttpServletRequest httpRequest) {
         subscriptionService.unsubscribe(subscriptionId, requireMemberId(httpRequest));
         return ResponseEntity.ok(Map.of("message", "Subscription cancelled successfully"));
-    }
-
-    /** Admin accounts have no member ID, so they cannot hold subscriptions. */
-    private static String requireMemberId(HttpServletRequest request) {
-        String memberId = (String) request.getAttribute("memberId");
-        if (memberId == null) {
-            throw new ApiException(HttpStatus.FORBIDDEN, "Only member accounts can manage subscriptions");
-        }
-        return memberId;
     }
     
     @GetMapping("/my-subscriptions")

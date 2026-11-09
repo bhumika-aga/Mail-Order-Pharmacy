@@ -18,7 +18,10 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -29,14 +32,14 @@ import java.util.stream.Collectors;
  */
 @Service
 public class RefillService {
-
+    
     private static final Logger log = LoggerFactory.getLogger(RefillService.class);
-
+    
     private final RefillOrderRepository refillOrderRepository;
     private final RefillOrderLineItemRepository refillOrderLineItemRepository;
     private final SubscriptionServiceClient subscriptionServiceClient;
     private final DrugServiceClient drugServiceClient;
-
+    
     public RefillService(RefillOrderRepository refillOrderRepository,
                          RefillOrderLineItemRepository refillOrderLineItemRepository,
                          SubscriptionServiceClient subscriptionServiceClient, DrugServiceClient drugServiceClient) {
@@ -45,7 +48,7 @@ public class RefillService {
         this.subscriptionServiceClient = subscriptionServiceClient;
         this.drugServiceClient = drugServiceClient;
     }
-
+    
     @Transactional(readOnly = true)
     public RefillStatusResponse getLatestRefillStatus(String memberId) {
         return refillOrderRepository.findTopByMemberIdOrderByOrderDateDesc(memberId)
@@ -53,11 +56,11 @@ public class RefillService {
                    .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Not Found",
                        "No refill orders found for this account"));
     }
-
+    
     public List<RefillDueResponse> getRefillDuesAsOfDate(String token, LocalDate dueDate) {
         return subscriptionServiceClient.getRefillDuesAsOfDate(token, dueDate);
     }
-
+    
     /**
      * Creates and confirms an adhoc refill order for the member who owns {@code token}.
      * <ol>
@@ -70,9 +73,9 @@ public class RefillService {
     public AdhocRefillResponse createAdhocRefillOrder(String token, AdhocRefillRequest request) {
         String location = request.getMemberLocation();
         List<AdhocRefillPrescriptionRequest> lines = request.getPrescriptions();
-
+        
         verifyPrescriptions(token, lines);
-
+        
         RefillOrder refillOrder = new RefillOrder(
             newOrderId(),
             request.getMemberId(),
@@ -81,7 +84,7 @@ public class RefillService {
             RefillOrder.OrderStatus.PENDING,
             RefillOrder.OrderType.ADHOC,
             null); // adhoc orders are not tied to a subscription
-
+        
         BigDecimal totalAmount = BigDecimal.ZERO;
         for (AdhocRefillPrescriptionRequest line : lines) {
             if (!drugServiceClient.checkDrugAvailability(token, line.getDrugCode(), location, line.getQuantity())) {
@@ -99,7 +102,7 @@ public class RefillService {
             refillOrder.addLineItem(lineItem);
             totalAmount = totalAmount.add(lineItem.getTotalPrice());
         }
-
+        
         List<AdhocRefillPrescriptionRequest> reserved = new ArrayList<>();
         try {
             for (AdhocRefillPrescriptionRequest line : lines) {
@@ -116,7 +119,7 @@ public class RefillService {
             releaseReservations(reserved, location, refillOrder.getRefillOrderId());
             throw e;
         }
-
+        
         return new AdhocRefillResponse(
             refillOrder.getRefillOrderId(),
             request.getMemberId(),
@@ -126,7 +129,7 @@ public class RefillService {
             "Adhoc refill order created successfully",
             totalAmount);
     }
-
+    
     /**
      * A short random order ID. save() on an existing ID would silently overwrite
      * that order, so a (rare) collision is retried instead.
@@ -138,8 +141,10 @@ public class RefillService {
         } while (refillOrderRepository.existsById(id));
         return id;
     }
-
-    /** Rejects lines whose prescription is not the member's, or is for a different drug. */
+    
+    /**
+     * Rejects lines whose prescription is not the member's, or is for a different drug.
+     */
     private void verifyPrescriptions(String token, List<AdhocRefillPrescriptionRequest> lines) {
         Map<String, PrescriptionSummary> prescriptions = subscriptionServiceClient.getMemberPrescriptions(token)
                                                              .stream()
@@ -158,7 +163,7 @@ public class RefillService {
             }
         }
     }
-
+    
     /**
      * Best-effort compensation: returns stock reserved for an order that could not
      * be completed. A release that fails is logged for manual correction rather
@@ -177,32 +182,32 @@ public class RefillService {
             }
         }
     }
-
+    
     @Transactional
     public RefillStatusResponse updateRefillOrderStatus(String refillOrderId, RefillOrder.OrderStatus newStatus) {
         RefillOrder order = refillOrderRepository.findById(refillOrderId)
                                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Not Found",
                                     "Refill order not found: " + refillOrderId));
         order.setOrderStatus(newStatus);
-
+        
         if (newStatus == RefillOrder.OrderStatus.SHIPPED) {
             order.setTrackingNumber("TRK" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         }
         if (newStatus == RefillOrder.OrderStatus.DELIVERED) {
             order.setDeliveryDate(LocalDateTime.now());
         }
-
+        
         refillOrderRepository.save(order);
         return toStatusResponse(order);
     }
-
+    
     @Transactional(readOnly = true)
     public List<RefillStatusResponse> getAllRefillOrdersForMember(String memberId) {
         return refillOrderRepository.findByMemberIdOrderByOrderDateDesc(memberId).stream()
                    .map(this::toStatusResponse)
                    .collect(Collectors.toList());
     }
-
+    
     private RefillStatusResponse toStatusResponse(RefillOrder order) {
         List<RefillLineItemResponse> lineItems = refillOrderLineItemRepository
                                                      .findByRefillOrderRefillOrderId(order.getRefillOrderId())
@@ -210,7 +215,7 @@ public class RefillService {
                                                      .map(this::convertToLineItemResponse)
                                                      .collect(Collectors.toList());
         BigDecimal totalAmount = refillOrderLineItemRepository.calculateTotalOrderAmount(order.getRefillOrderId());
-
+        
         return new RefillStatusResponse(
             order.getRefillOrderId(),
             order.getMemberId(),
@@ -224,7 +229,7 @@ public class RefillService {
             lineItems,
             totalAmount);
     }
-
+    
     private RefillLineItemResponse convertToLineItemResponse(RefillOrderLineItem lineItem) {
         return new RefillLineItemResponse(
             lineItem.getLineItemId(),

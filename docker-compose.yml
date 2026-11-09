@@ -97,7 +97,6 @@ services:
         VITE_DRUGS_SERVICE_URL: http://localhost:8081
         VITE_SUBSCRIPTION_SERVICE_URL: http://localhost:8082
         VITE_REFILL_SERVICE_URL: http://localhost:8083
-        VITE_SWAGGER_URL: http://localhost:8085
     ports:
       - "3000:8080"
     depends_on:

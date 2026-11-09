@@ -19,12 +19,14 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
-/** Exercises the real HTTP client against a mock server (no network). */
+/**
+ * Exercises the real HTTP client against a mock server (no network).
+ */
 class DrugServiceClientTest {
-
+    
     private MockRestServiceServer server;
     private DrugServiceClient client;
-
+    
     @BeforeEach
     void setUp() {
         RestTemplate restTemplate = new RestTemplate();
@@ -33,7 +35,7 @@ class DrugServiceClientTest {
         client = new DrugServiceClient(restTemplate, jwtUtils);
         ReflectionTestUtils.setField(client, "drugsServiceUrl", "http://drugs");
     }
-
+    
     @Test
     void encodesQueryParametersExactlyOnce() {
         // Regression: "New York" was sent as New%2520York (double-encoded), so every
@@ -43,11 +45,11 @@ class DrugServiceClientTest {
             .andExpect(method(HttpMethod.GET))
             .andExpect(header("Authorization", "Bearer member-token"))
             .andRespond(withSuccess("true", MediaType.APPLICATION_JSON));
-
+        
         assertThat(client.checkDrugAvailability("member-token", "D001", "New York", 3)).isTrue();
         server.verify();
     }
-
+    
     @Test
     void reservesStockWithAServiceTokenNotTheMembersToken() {
         server.expect(requestTo("http://drugs/api/drugs/reserve"))
@@ -57,16 +59,16 @@ class DrugServiceClientTest {
             .andExpect(jsonPath("$.drugCode").value("D001"))
             .andExpect(jsonPath("$.quantity").value(2))
             .andRespond(withSuccess("true", MediaType.APPLICATION_JSON));
-
+        
         assertThat(client.reserveDrugStock("D001", "New York", 2)).isTrue();
         server.verify();
     }
-
+    
     @Test
     void reportsAnOutageAs503InsteadOfNotAvailable() {
         server.expect(requestTo(org.hamcrest.Matchers.startsWith("http://drugs/api/drugs/availability")))
             .andRespond(withServerError());
-
+        
         assertThatThrownBy(() -> client.checkDrugAvailability("member-token", "D001", "New York", 1))
             .isInstanceOfSatisfying(ApiException.class,
                 e -> assertThat(e.getStatus()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE));

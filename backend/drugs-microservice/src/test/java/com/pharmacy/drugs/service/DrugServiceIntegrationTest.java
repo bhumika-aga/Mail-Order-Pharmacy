@@ -23,19 +23,19 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest(properties = "jwt.secret=test-secret-0123456789-0123456789-0123456789-0123456789-0123456789")
 class DrugServiceIntegrationTest {
-
+    
     @Autowired
     private DrugService drugService;
     @Autowired
     private DrugRepository drugRepository;
     @Autowired
     private DrugLocationRepository drugLocationRepository;
-
+    
     private int stock(String drugId, String location) {
         return drugLocationRepository.findById(new DrugLocationId(drugId, location)).orElseThrow()
                    .getQuantityAvailable();
     }
-
+    
     @Test
     void validInStockDrugIsDispatchable() {
         // The original bug: this returned false for every valid drug.
@@ -43,7 +43,7 @@ class DrugServiceIntegrationTest {
         assertThat(drugService.isDispatchable("D001", "New York", 10_000)).isFalse();
         assertThat(drugService.isDispatchable("NO-SUCH-DRUG", "New York", 1)).isFalse();
     }
-
+    
     @Test
     void nameSearchIsCaseInsensitiveAndMatchesWildcardsLiterally() {
         assertThat(drugService.searchDrugsByName("para")).extracting(Drug::getDrugId).containsExactly("D001");
@@ -52,43 +52,43 @@ class DrugServiceIntegrationTest {
         assertThat(drugService.searchDrugsByName("%")).isEmpty();
         assertThat(drugService.searchDrugsByName("_")).isEmpty();
     }
-
+    
     @Test
     void drugExpiringTodayIsNotAvailableAnywhere() {
         // One rule everywhere: a drug counts as expired on its expiry date.
         drugRepository.save(new Drug("DTODAY", "Expires Today", "Test", LocalDate.now().minusYears(1),
             LocalDate.now(), 10, new BigDecimal("5.00"), "Test composition"));
         drugLocationRepository.save(new DrugLocation("DTODAY", "Chicago", 50));
-
+        
         assertThat(drugService.isDispatchable("DTODAY", "Chicago", 1)).isFalse();
         var stock = drugService.getDispatchableDrugStock(
             new com.pharmacy.drugs.dto.DrugStockRequest(List.of("DTODAY"), "Chicago"));
         assertThat(stock).singleElement().satisfies(s -> assertThat(s.getIsAvailable()).isFalse());
     }
-
+    
     @Test
     void reserveDecrementsStockAndReleaseRestoresIt() {
         int before = stock("D004", "New York");
-
+        
         assertThat(drugService.reserveStock("D004", "New York", 5)).isTrue();
         assertThat(stock("D004", "New York")).isEqualTo(before - 5);
-
+        
         assertThat(drugService.releaseStock("D004", "New York", 5)).isTrue();
         assertThat(stock("D004", "New York")).isEqualTo(before);
     }
-
+    
     @Test
     void expiredStockCannotBeDispatchedOrReserved() {
         // The original bug let expired (and unknown) drugs through.
         drugRepository.save(new Drug("DEXP", "Expired Drug", "Test", LocalDate.now().minusYears(2),
             LocalDate.now().minusDays(1), 10, new BigDecimal("5.00"), "Test composition"));
         drugLocationRepository.save(new DrugLocation("DEXP", "New York", 100));
-
+        
         assertThat(drugService.isDispatchable("DEXP", "New York", 1)).isFalse();
         assertThat(drugService.reserveStock("DEXP", "New York", 1)).isFalse();
         assertThat(stock("DEXP", "New York")).isEqualTo(100);
     }
-
+    
     @Test
     void concurrentReservationsNeverOversell() throws Exception {
         String drug = "D003";
@@ -96,7 +96,7 @@ class DrugServiceIntegrationTest {
         int available = stock(drug, location);   // 45 in the seed data
         int threads = 20;
         int perOrder = 5;                        // 20 x 5 = 100 requested, far more than available
-
+        
         ExecutorService pool = Executors.newFixedThreadPool(threads);
         CountDownLatch start = new CountDownLatch(1);
         List<Future<Boolean>> results = new ArrayList<>();
@@ -114,7 +114,7 @@ class DrugServiceIntegrationTest {
             }
         }
         pool.shutdown();
-
+        
         assertThat(succeeded).isEqualTo(available / perOrder);
         assertThat(stock(drug, location)).isEqualTo(available - succeeded * perOrder).isNotNegative();
     }

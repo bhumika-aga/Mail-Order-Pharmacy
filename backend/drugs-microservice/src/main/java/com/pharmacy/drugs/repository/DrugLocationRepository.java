@@ -12,13 +12,13 @@ import java.util.List;
 
 @Repository
 public interface DrugLocationRepository extends JpaRepository<DrugLocation, DrugLocationId> {
-
+    
     List<DrugLocation> findByDrugId(String drugId);
-
+    
     @Query("SELECT dl FROM DrugLocation dl WHERE dl.drugId IN :drugIds AND dl.location = :location")
     List<DrugLocation> findByDrugIdsAndLocation(@Param("drugIds") List<String> drugIds,
                                                 @Param("location") String location);
-
+    
     /**
      * Decrements stock in a single conditional UPDATE, so the database checks and
      * changes the quantity atomically: concurrent reservations can never oversell.
@@ -30,7 +30,7 @@ public interface DrugLocationRepository extends JpaRepository<DrugLocation, Drug
                + "WHERE dl.drugId = :drugId AND dl.location = :location AND dl.quantityAvailable >= :quantity")
     int decrementStock(@Param("drugId") String drugId, @Param("location") String location,
                        @Param("quantity") int quantity);
-
+    
     /**
      * Returns previously reserved stock (compensation when an order fails).
      *

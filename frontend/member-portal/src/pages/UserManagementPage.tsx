@@ -286,7 +286,10 @@ const UserManagementPage: React.FC = () => {
           <>
             {updateMutation.error && (
               <Alert severity="error" sx={{ mb: 2 }}>
-                {apiErrorMessage(updateMutation.error, "Update failed. Please try again.")}
+                {apiErrorMessage(
+                  updateMutation.error,
+                  "Update failed. Please try again.",
+                )}
               </Alert>
             )}
             <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -363,7 +366,10 @@ const UserManagementPage: React.FC = () => {
           <>
             {addMutation.error && (
               <Alert severity="error" sx={{ mb: 2 }}>
-                {apiErrorMessage(addMutation.error, "Registration failed. Please try again.")}
+                {apiErrorMessage(
+                  addMutation.error,
+                  "Registration failed. Please try again.",
+                )}
               </Alert>
             )}
             <Grid container spacing={2} sx={{ mt: 1 }}>

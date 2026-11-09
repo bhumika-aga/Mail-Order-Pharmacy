@@ -18,27 +18,25 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Component
 public class LoginAttemptService {
-
+    
     static final int MAX_FAILURES = 5;
     static final Duration FAILURE_WINDOW = Duration.ofMinutes(15);
     static final Duration LOCK_DURATION = Duration.ofMinutes(15);
     private static final int CLEANUP_THRESHOLD = 10_000;
-
-    private record Attempts(int failures, long firstFailureMillis, long lockedUntilMillis) {
-    }
-
     private final Clock clock;
     private final ConcurrentHashMap<String, Attempts> attempts = new ConcurrentHashMap<>();
-
+    
     public LoginAttemptService(Clock clock) {
         this.clock = clock;
     }
-
+    
     public static String key(String username, String clientAddress) {
         return (username == null ? "" : username.trim().toLowerCase()) + "|" + clientAddress;
     }
-
-    /** How much longer {@code key} stays locked, if it is locked. */
+    
+    /**
+     * How much longer {@code key} stays locked, if it is locked.
+     */
     public Optional<Duration> lockedFor(String key) {
         Attempts a = attempts.get(key);
         long now = clock.millis();
@@ -47,7 +45,7 @@ public class LoginAttemptService {
         }
         return Optional.of(Duration.ofMillis(a.lockedUntilMillis() - now));
     }
-
+    
     public void recordFailure(String key) {
         long now = clock.millis();
         if (attempts.size() > CLEANUP_THRESHOLD) {
@@ -65,8 +63,11 @@ public class LoginAttemptService {
                        : new Attempts(failures, a.firstFailureMillis(), lockedUntil);
         });
     }
-
+    
     public void recordSuccess(String key) {
         attempts.remove(key);
+    }
+    
+    private record Attempts(int failures, long firstFailureMillis, long lockedUntilMillis) {
     }
 }

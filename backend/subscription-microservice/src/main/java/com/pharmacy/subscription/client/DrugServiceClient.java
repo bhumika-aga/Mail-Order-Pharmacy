@@ -3,11 +3,7 @@ package com.pharmacy.subscription.client;
 import com.pharmacy.subscription.exception.ApiException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -17,16 +13,16 @@ import java.util.Map;
 
 @Component
 public class DrugServiceClient {
-
+    
     private final RestTemplate restTemplate;
-
+    
     @Value("${services.drugs.url:http://localhost:8081}")
     private String drugsServiceUrl;
-
+    
     public DrugServiceClient(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
-
+    
     /**
      * Whether the drug is in stock and unexpired at the location.
      *
@@ -37,7 +33,7 @@ public class DrugServiceClient {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token);
         Map<String, Object> request = Map.of("drugIds", List.of(drugId), "location", location);
-
+        
         try {
             ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(
                 drugsServiceUrl + "/api/drugs/getDispatchableDrugStock",

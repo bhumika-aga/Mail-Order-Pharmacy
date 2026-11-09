@@ -308,7 +308,10 @@ const SubscriptionsPage: React.FC = () => {
                 onChange={(e) =>
                   setSubscriptionForm({
                     ...subscriptionForm,
-                    prescriptionCourse: Math.max(1, parseInt(e.target.value, 10) || 1),
+                    prescriptionCourse: Math.max(
+                      1,
+                      parseInt(e.target.value, 10) || 1,
+                    ),
                   })
                 }
               />

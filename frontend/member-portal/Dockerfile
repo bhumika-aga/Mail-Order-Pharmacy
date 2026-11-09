@@ -17,7 +17,6 @@ ARG VITE_AUTH_SERVICE_URL
 ARG VITE_DRUGS_SERVICE_URL
 ARG VITE_SUBSCRIPTION_SERVICE_URL
 ARG VITE_REFILL_SERVICE_URL
-ARG VITE_SWAGGER_URL
 RUN npm run build
 
 # ---- Runtime stage: official non-root nginx image (listens on 8080) ----

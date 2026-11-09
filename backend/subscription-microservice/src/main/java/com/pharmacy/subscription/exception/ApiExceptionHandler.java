@@ -13,7 +13,7 @@ import java.util.Map;
  */
 @RestControllerAdvice
 public class ApiExceptionHandler {
-
+    
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<Map<String, String>> handleApiException(ApiException e) {
         return ResponseEntity.status(e.getStatus()).body(Map.of("error", e.getMessage()));

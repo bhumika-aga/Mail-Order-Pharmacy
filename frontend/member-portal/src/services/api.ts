@@ -1,4 +1,5 @@
 import axios, { AxiosResponse } from "axios";
+import { resolveServiceUrl } from "../config/serviceUrls";
 import {
   AdhocRefillRequest,
   AdhocRefillResponse,
@@ -17,14 +18,14 @@ import {
   User,
 } from "../types";
 
-const AUTH_SERVICE_URL =
-  import.meta.env.VITE_AUTH_SERVICE_URL || "http://localhost:8084";
-const DRUGS_SERVICE_URL =
-  import.meta.env.VITE_DRUGS_SERVICE_URL || "http://localhost:8081";
-const SUBSCRIPTION_SERVICE_URL =
-  import.meta.env.VITE_SUBSCRIPTION_SERVICE_URL || "http://localhost:8082";
-const REFILL_SERVICE_URL =
-  import.meta.env.VITE_REFILL_SERVICE_URL || "http://localhost:8083";
+const env = import.meta.env;
+const AUTH_SERVICE_URL = resolveServiceUrl(env, "VITE_AUTH_SERVICE_URL");
+const DRUGS_SERVICE_URL = resolveServiceUrl(env, "VITE_DRUGS_SERVICE_URL");
+const SUBSCRIPTION_SERVICE_URL = resolveServiceUrl(
+  env,
+  "VITE_SUBSCRIPTION_SERVICE_URL",
+);
+const REFILL_SERVICE_URL = resolveServiceUrl(env, "VITE_REFILL_SERVICE_URL");
 
 const authApi = axios.create({
   baseURL: `${AUTH_SERVICE_URL}/api/auth`,

@@ -1,3 +1,5 @@
+-- Development/demo seed data (H2). Loaded by Flyway only in the default (dev)
+-- and docker profiles; production loads db/migration only.
 INSERT INTO drugs (drug_id, drug_name, manufacturer, manufactured_date, expiry_date, units_per_package,
                    cost_per_package, medical_composition)
 VALUES ('D001', 'Paracetamol 500mg', 'PharmaCorp', '2025-01-15', '2027-01-15', 10, 15.50,

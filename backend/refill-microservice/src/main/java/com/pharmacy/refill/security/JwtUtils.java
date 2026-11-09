@@ -20,7 +20,10 @@ public class JwtUtils {
      * JWT_SECRET environment variable and must match the auth service's.
      */
     static final int MIN_SECRET_BYTES = 64;
-    
+    /**
+     * Lifetime of the internal service token; it is minted per call, so keep it short.
+     */
+    private static final long SERVICE_TOKEN_TTL_MS = 60_000;
     private final SecretKey signingKey;
     
     public JwtUtils(@Value("${jwt.secret}") String jwtSecret) {
@@ -31,10 +34,7 @@ public class JwtUtils {
         }
         this.signingKey = Keys.hmacShaKeyFor(secretBytes);
     }
-
-    /** Lifetime of the internal service token; it is minted per call, so keep it short. */
-    private static final long SERVICE_TOKEN_TTL_MS = 60_000;
-
+    
     /**
      * A short-lived token with role SERVICE, for internal calls that members must
      * not be able to make themselves (reserving and releasing drug stock).
@@ -49,7 +49,7 @@ public class JwtUtils {
                    .signWith(signingKey, Jwts.SIG.HS512)
                    .compact();
     }
-
+    
     public String getUserNameFromJwtToken(String token) {
         return getClaimFromToken(token, Claims::getSubject);
     }

@@ -14,8 +14,7 @@ public class AdhocRefillRequest {
     private String memberLocation;
     
     @NotEmpty(message = "At least one prescription is required")
-    @Valid
-    private List<AdhocRefillPrescriptionRequest> prescriptions;
+    private List<@Valid AdhocRefillPrescriptionRequest> prescriptions;
     
     public AdhocRefillRequest() {
     }

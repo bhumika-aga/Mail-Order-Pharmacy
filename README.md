@@ -47,7 +47,7 @@ MediFlow follows the **Microservices Architecture** pattern — each business ca
 | **Service Communication** | Synchronous REST over HTTP                                         | Simple, well-understood, adequate for the request/response pattern                                                              |
 | **Authentication**        | Stateless JWT (HS512) with shared secret                           | Each service validates tokens independently — no central auth dependency at runtime                                             |
 | **Database Strategy**     | Database-per-service (logical)                                     | Loose coupling: each service owns its tables; H2 for dev, PostgreSQL/Supabase for prod                                          |
-| **DDL Management**        | Hibernate `ddl-auto: update` (prod) / `create-drop` (dev)          | Dev gets clean state on each restart; prod preserves data and schema                                                            |
+| **DDL Management**        | Flyway migrations (`db/migration`); Hibernate `ddl-auto: validate` | Versioned, reviewable schema changes; services refuse to start if entities and schema disagree                                  |
 | **API Documentation**     | OpenAPI 3.0 via springdoc; a thin Swagger UI host aggregates specs | Each service self-documents; one Swagger UI switches between all service specs via `springdoc.swagger-ui.urls` (no custom code) |
 | **Row Level Security**    | Supabase RLS enabled on all tables                                 | Prevents direct API access to data via Supabase's PostgREST layer                                                               |
 
@@ -84,6 +84,7 @@ Subscription Service ──REST──▶ Drugs Service   (verify drug availabili
 - **CORS** allows only the origins in `APP_CORS_ALLOWED_ORIGINS` (dev default: `http://localhost:5173`, `http://localhost:3000`, and the Swagger aggregator `http://localhost:8085`); no credentialed CORS. In production, include both the frontend's and the Swagger aggregator's origins.
 - **Brute-force protection**: sign-in, sign-up and the availability checks are limited to 20 requests/minute per client address (`429` + `Retry-After`), and 5 failed sign-ins for the same username from the same address lock that combination for 15 minutes. Limits are in-memory, i.e. per service instance.
 - **Passwords** can be changed via `PUT /users/{id}` with `password`; members must also send `currentPassword`, admins can reset directly.
+- **Content-Security-Policy**: production builds of the member portal carry a CSP that only runs the app's own scripts and only allows API calls to the configured service URLs, so injected scripts can't run or send the session token elsewhere.
 - **JWT secret** comes only from the `JWT_SECRET` environment variable — there is no default. Services refuse to start without one, or if it is shorter than 64 bytes. Use the same value for all four services.
 
 ### Supabase Row Level Security (RLS)
@@ -176,7 +177,7 @@ cd backend/subscription-microservice && mvn spring-boot:run
 cd backend/refill-microservice && mvn spring-boot:run
 ```
 
-All services use **H2 in-memory database** for development — no external DB setup required. Seed data is loaded automatically from `data.sql` files, including the logins `member1` / `member2` / `member3` and an `admin` account, all with password `password`.
+All services use **H2 in-memory database** for development — no external DB setup required. Flyway creates the schema and loads the dev seed data (`db/seed`), including the logins `member1` / `member2` / `member3` and an `admin` account, all with password `password`.
 
 #### 3. Start Frontend
 
@@ -203,8 +204,8 @@ npm run dev
 
 ### Auth Service (`/api/auth`)
 
-| Method   | Endpoint                     | Description                    |
-| -------- | ---------------------------- | ------------------------------ |
+| Method   | Endpoint                     | Description                             |
+| -------- | ---------------------------- | --------------------------------------- |
 | `POST`   | `/signin`                    | Authenticate user, returns JWT (public) |
 | `POST`   | `/signup`                    | Register new user (public)              |
 | `POST`   | `/validate`                  | Validate JWT token (public)             |
@@ -219,36 +220,36 @@ All other endpoints below require a valid JWT.
 
 ### Drugs Service (`/api/drugs`)
 
-| Method | Endpoint                                      | Description                                   |
-| ------ | --------------------------------------------- | --------------------------------------------- |
-| `GET`  | `/searchDrugsByID?drugId=`                    | Search by drug ID                             |
-| `GET`  | `/searchDrugsByName?drugName=`                | Search by name (fuzzy, non-expired)           |
-| `GET`  | `/all`                                        | All valid (non-expired) drugs                 |
-| `GET`  | `/{drugId}/locations`                         | Stock rows for a drug across locations        |
-| `POST` | `/getDispatchableDrugStock`                   | Stock availability for drug IDs at a location |
-| `GET`  | `/availability?drugCode=&location=&quantity=` | Can this quantity be dispatched? (bool)       |
+| Method | Endpoint                                      | Description                                                        |
+| ------ | --------------------------------------------- | ------------------------------------------------------------------ |
+| `GET`  | `/searchDrugsByID?drugId=`                    | Search by drug ID                                                  |
+| `GET`  | `/searchDrugsByName?drugName=`                | Search by name (fuzzy, non-expired)                                |
+| `GET`  | `/all`                                        | All valid (non-expired) drugs                                      |
+| `GET`  | `/{drugId}/locations`                         | Stock rows for a drug across locations                             |
+| `POST` | `/getDispatchableDrugStock`                   | Stock availability for drug IDs at a location                      |
+| `GET`  | `/availability?drugCode=&location=&quantity=` | Can this quantity be dispatched? (bool)                            |
 | `POST` | `/reserve`                                    | Atomically decrement stock (bool) — internal, `SERVICE` token only |
 | `POST` | `/release`                                    | Return reserved stock (bool) — internal, `SERVICE` token only      |
 
 ### Subscription Service (`/api/subscriptions`)
 
-| Method | Endpoint               | Description               |
-| ------ | ---------------------- | ------------------------- |
-| `POST` | `/subscribe`           | Create subscription       |
-| `GET`  | `/my-subscriptions`    | User's subscriptions      |
-| `GET`  | `/active`              | Active subscriptions only |
-| `POST` | `/unsubscribe`         | Cancel subscription       |
-| `GET`  | `/{subscriptionId}`    | One of the member's subscriptions (admin: any) |
+| Method | Endpoint               | Description                                                                               |
+| ------ | ---------------------- | ----------------------------------------------------------------------------------------- |
+| `POST` | `/subscribe`           | Create subscription                                                                       |
+| `GET`  | `/my-subscriptions`    | User's subscriptions                                                                      |
+| `GET`  | `/active`              | Active subscriptions only                                                                 |
+| `POST` | `/unsubscribe`         | Cancel subscription                                                                       |
+| `GET`  | `/{subscriptionId}`    | One of the member's subscriptions (admin: any)                                            |
 | `GET`  | `/refillDues?dueDate=` | Member's subscriptions whose next refill falls on or before the date (admin: all members) |
 
 ### Refill Service (`/api/refill`)
 
-| Method | Endpoint                       | Description                                         |
-| ------ | ------------------------------ | --------------------------------------------------- |
-| `GET`  | `/viewRefillStatus`            | Latest refill status                                |
-| `GET`  | `/orders`                      | All orders for member                               |
-| `POST` | `/requestAdhocRefill`          | Create adhoc refill order                           |
-| `GET`  | `/getRefillDuesAsOfDate?date=` | Due refills (delegates to subscription service)     |
+| Method | Endpoint                       | Description                                                     |
+| ------ | ------------------------------ | --------------------------------------------------------------- |
+| `GET`  | `/viewRefillStatus`            | Latest refill status                                            |
+| `GET`  | `/orders`                      | All orders for member                                           |
+| `POST` | `/requestAdhocRefill`          | Create adhoc refill order                                       |
+| `GET`  | `/getRefillDuesAsOfDate?date=` | Due refills (delegates to subscription service)                 |
 | `PUT`  | `/orders/{id}/status?status=`  | Update order status, admin only (auto-sets tracking on SHIPPED) |
 
 ---
@@ -257,12 +258,12 @@ All other endpoints below require a valid JWT.
 
 ### Development vs Production
 
-| Aspect       | Development                           | Production                          |
-| ------------ | ------------------------------------- | ----------------------------------- |
-| Database     | H2 in-memory                          | PostgreSQL (Supabase)               |
-| DDL Strategy | `create-drop` (fresh on each restart) | `update` (preserves data)           |
-| Seed Data    | Loaded from `data.sql` on startup     | Not loaded (`sql.init.mode: never`) |
-| RLS          | N/A (H2 doesn't support it)           | Enabled on all 7 tables             |
+| Aspect    | Development                                     | Production                                    |
+| --------- | ----------------------------------------------- | --------------------------------------------- |
+| Database  | H2 in-memory                                    | PostgreSQL (Supabase)                         |
+| Schema    | Flyway migrations (fresh in-memory DB each run) | Flyway migrations (`ddl-auto: validate`)      |
+| Seed Data | Flyway repeatable migration in `db/seed`        | Never loaded (prod reads `db/migration` only) |
+| RLS       | N/A (H2 doesn't support it)                     | Enabled on all 7 tables                       |
 
 ### Entity Relationships
 
@@ -293,6 +294,19 @@ Refill Service:
 ```
 
 ---
+
+### Schema Migrations (Flyway)
+
+Each service owns its migrations in `src/main/resources/db/migration` (`V1__…`, `V2__…`).
+Hibernate only **validates** the schema, so a service will not start if its entities and
+the database disagree. To change the schema, add the next versioned SQL file; never edit
+one that has already run.
+
+All services share one database, so each keeps its own history table
+(`flyway_history_auth`, `flyway_history_drugs`, …) and baselines at version 0. The V1
+scripts use `CREATE TABLE IF NOT EXISTS`, so the first deploy adopts the existing tables
+without touching data. `PostgresMigrationTest` in each service checks this against a
+real (embedded) PostgreSQL, for both a fresh and an existing database.
 
 ## 🔧 Supabase RLS Setup
 

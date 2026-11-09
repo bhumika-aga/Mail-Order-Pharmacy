@@ -15,7 +15,7 @@ public class SubscriptionMicroserviceApplication {
     public static void main(String[] args) {
         SpringApplication.run(SubscriptionMicroserviceApplication.class, args);
     }
-
+    
     /**
      * HTTP client for calls to other services. Without timeouts a slow or hung
      * service would block request threads indefinitely.
@@ -28,8 +28,10 @@ public class SubscriptionMicroserviceApplication {
         requestFactory.setReadTimeout(readTimeout);
         return new RestTemplate(requestFactory);
     }
-
-    /** Source of "today" for refill scheduling; replaceable in tests. */
+    
+    /**
+     * Source of "today" for refill scheduling; replaceable in tests.
+     */
     @Bean
     public Clock clock() {
         return Clock.systemDefaultZone();
