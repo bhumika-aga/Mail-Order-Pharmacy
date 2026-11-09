@@ -59,10 +59,17 @@ Frontend ──JWT──▶ Drugs Service         (search/stock queries)
 Frontend ──JWT──▶ Subscription Service  (subscribe/unsubscribe)
 Frontend ──JWT──▶ Refill Service        (order status/adhoc refills)
 
-Refill Service ──REST──▶ Subscription Service  (get refill dues)
-Refill Service ──REST──▶ Drugs Service         (check availability, reserve stock)
+Refill Service ──REST──▶ Subscription Service  (verify prescriptions, get refill dues)
+Refill Service ──REST──▶ Drugs Service         (check availability; reserve/release stock*)
 Subscription Service ──REST──▶ Drugs Service   (verify drug availability)
+Auth Service ──REST──▶ Refill, Subscription    (erase a deleted member's data*)
 ```
+
+\* Internal endpoints: called with a short-lived `SERVICE` token, which members can't obtain.
+Calls between services time out (`SERVICES_HTTP_CONNECTTIMEOUT` 5s, `SERVICES_HTTP_READTIMEOUT` 15s).
+On hosts that put idle services to sleep, set `SERVICES_HTTP_WAKEUPWAIT` (e.g. `90s`) so a call
+waits for a waking service instead of failing; only calls that are safe to repeat are retried
+after a timeout.
 
 ---
 
@@ -71,9 +78,9 @@ Subscription Service ──REST──▶ Drugs Service   (verify drug availabili
 ### JWT Authentication Flow
 
 1. **Signup** — User registers with username, email, password, fullName. Password is hashed with **BCrypt**. A unique **Member ID** (`MEM` + 6 digits) is auto-generated.
-2. **Signin** — Credentials are validated. An **HS512-signed JWT** is issued containing the username (`sub`), member ID and role as claims. Token expires in 15 minutes.
+2. **Signin** — Credentials are validated. An **HS512-signed JWT** is issued containing the username (`sub`), account ID (`uid`), member ID and role as claims. Its lifetime is `JWT_EXPIRATION` milliseconds (15 minutes by default in local development).
 3. **Request Auth** — Frontend sends `Authorization: Bearer <token>` header with every request.
-4. **Token Validation** — Each microservice has its own `JwtAuthFilter` that validates the JWT signature using a shared secret key, extracts the username, member ID and role, and sets the Spring Security context.
+4. **Token Validation** — Each microservice has its own `JwtAuthFilter` that validates the JWT signature using a shared secret key, extracts the username, member ID and role, and sets the Spring Security context. The auth service also checks that the token's account still exists (and is the same account, by `uid`); subscription and refill reject tokens issued to a member before their data was erased.
 
 ### Access Control
 
@@ -124,11 +131,11 @@ Since the database is hosted on **Supabase**, all public tables are exposed via 
 
 ### 3. Refill Processing (Refill Microservice)
 
-- **Scheduled refills**: System queries active subscriptions due as of a given date
+- **Refill dues**: lists the active subscriptions whose next scheduled refill falls on or before a given date (the member's own; admins see all). Orders for them are not created automatically
 - **Adhoc refills**: User manually requests a refill — each line must name one of the member's own prescriptions for that drug; the system checks stock for every line, reserves it line by line (releasing everything already reserved if any line or the save fails), and confirms the order
 - **Order lifecycle**: `CONFIRMED` → `IN_PROGRESS` (optional) → `SHIPPED` → `DELIVERED`. Orders only move forward; anything else (including re-setting the current status) is `409`. An order can be `CANCELLED` until it ships, which returns its reserved stock (see below). `DELIVERED` and `CANCELLED` are final. The order row is locked during a change, so concurrent requests can't both apply.
 - **Tracking**: A tracking number is generated once, when the order ships
-- **Returning stock reliably**: stock to be returned (cancelled or erased orders, or an order that failed part-way) is stored in `pending_stock_releases` in the same transaction as the change, sent to the drugs service, and removed once confirmed. If the drugs service is down, it stays queued and is retried every minute until it succeeds. Each release has an ID that the drugs service records (`stock_releases`), so a retry never returns the same stock twice
+- **Returning stock reliably**: stock to be returned (cancelled or erased orders, or an order that failed part-way) is stored in `pending_stock_releases` in the same transaction as the change, sent to the drugs service, and removed once confirmed. If the drugs service is down, it stays queued and is retried until it succeeds: after 1 minute, then with the gap doubling up to once an hour. From the 6th failure each one is logged as an ERROR naming the likely causes. Each release has an ID that the drugs service records (`stock_releases`, pruned after 30 days), so a retry never returns the same stock twice
 
 ### 4. Authentication (Auth Microservice)
 
@@ -207,17 +214,17 @@ npm run dev
 
 ### Auth Service (`/api/auth`)
 
-| Method   | Endpoint                     | Description                              |
-| -------- | ---------------------------- | ---------------------------------------- |
-| `POST`   | `/signin`                    | Authenticate user, returns JWT (public)  |
-| `POST`   | `/signup`                    | Register new user (public)               |
-| `POST`   | `/validate`                  | Validate JWT token (public)              |
-| `GET`    | `/users`                     | List all users (admin)                   |
-| `GET`    | `/users/{id}`                | Get user by ID (self or admin)           |
-| `PUT`    | `/users/{id}`                | Update user (self or admin)              |
-| `DELETE` | `/users/{id}`                | Delete user and erase their data (admin) |
-| `GET`    | `/check-username/{username}` | Check username availability (public)     |
-| `GET`    | `/check-email/{email}`       | Check email availability (public)        |
+| Method   | Endpoint                     | Description                                                      |
+| -------- | ---------------------------- | ---------------------------------------------------------------- |
+| `POST`   | `/signin`                    | Authenticate user, returns JWT (public)                          |
+| `POST`   | `/signup`                    | Register new user (public)                                       |
+| `POST`   | `/validate`                  | Validate JWT token (public; 401 if its account no longer exists) |
+| `GET`    | `/users`                     | List all users (admin)                                           |
+| `GET`    | `/users/{id}`                | Get user by ID (self or admin)                                   |
+| `PUT`    | `/users/{id}`                | Update user (self or admin)                                      |
+| `DELETE` | `/users/{id}`                | Delete user and erase their data (admin)                         |
+| `GET`    | `/check-username/{username}` | Check username availability (public)                             |
+| `GET`    | `/check-email/{email}`       | Check email availability (public)                                |
 
 All other endpoints below require a valid JWT.
 
@@ -338,6 +345,30 @@ Docker images use **multi-stage builds** for optimized image sizes (~150MB each)
 
 On a hosting platform, point each service at its folder: Dockerfile path `backend/<service>/Dockerfile`, build context `backend/<service>`.
 
+### Production configuration
+
+Every backend service runs with `SPRING_PROFILES_ACTIVE=prod`, which requires the variables
+marked **required**; a service refuses to start without them. `PORT` is read automatically.
+
+| Variable                                                                                                     |  drugs   | subscription |  refill  |   auth   | swagger |
+| ------------------------------------------------------------------------------------------------------------ | :------: | :----------: | :------: | :------: | :-----: |
+| `DATABASE_URL` (JDBC form: `jdbc:postgresql://host:5432/postgres`), `DATABASE_USERNAME`, `DATABASE_PASSWORD` | required |   required   | required | required |    –    |
+| `JWT_SECRET` (64+ bytes, the same on all four)                                                               | required |   required   | required | required |    –    |
+| `APP_CORS_ALLOWED_ORIGINS` (portal and Swagger UI origins, comma-separated)                                  | required |   required   | required | required |    –    |
+| `JWT_EXPIRATION` (token lifetime, ms)                                                                        |    –     |      –       |    –     | required |    –    |
+| `DRUGS_SERVICE_URL`                                                                                          |    –     |   required   | required |    –     |  set\*  |
+| `SUBSCRIPTION_SERVICE_URL`                                                                                   |    –     |      –       | required | required |  set\*  |
+| `REFILL_SERVICE_URL`                                                                                         |    –     |      –       |    –     | required |  set\*  |
+| `AUTH_SERVICE_URL`                                                                                           |    –     |      –       |    –     |    –     |  set\*  |
+| `SERVICES_HTTP_WAKEUPWAIT` (wait for sleeping services, e.g. `90s`)                                          |    –     |   optional   | optional | optional |    –    |
+| `SERVICES_HTTP_CONNECTTIMEOUT` / `SERVICES_HTTP_READTIMEOUT` (default `5s` / `15s`)                          |    –     |   optional   | optional | optional |    –    |
+
+\* The Swagger UI host starts without these but then points at `localhost`; set them to the services' public URLs.
+
+The member portal is configured at build time with `VITE_AUTH_SERVICE_URL`,
+`VITE_DRUGS_SERVICE_URL`, `VITE_SUBSCRIPTION_SERVICE_URL` and `VITE_REFILL_SERVICE_URL`;
+the build's Content-Security-Policy allows API calls only to those origins.
+
 ### Hosting the member portal (SPA fallback)
 
 The portal is a single-page app: routes like `/refills` exist only in the browser, so
@@ -408,4 +439,4 @@ Mail-Order-Pharmacy/
 
 **Tech Stack**: Spring Boot 4.1 • React 19 • TypeScript 6 • Java 21 • Maven • Vite 8 • H2/PostgreSQL • Supabase • Docker
 
-**Architecture**: Microservices • REST APIs • JWT Auth • Database per Service • Row Level Security
+**Architecture**: Microservices • REST APIs • JWT Auth • Shared database with per-service tables and migrations • Row Level Security
