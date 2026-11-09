@@ -8,14 +8,22 @@ spring:
   flyway:
     # Schema migrations only: never the dev seed data
     locations: classpath:db/migration
+    # If the database is momentarily out of connections (e.g. several services
+    # deploying at once), wait and retry (1s, 2s, 4s ...) instead of failing.
+    connect-retries: 6
   datasource:
     url: ${DATABASE_URL}
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 3
-      minimum-idle: 1
+      # Supabase's free session pooler admits 15 clients across ALL services, and
+      # during a deploy old and new instances run side by side. 2 is the minimum
+      # Flyway needs at start-up; idle connections are handed back after 30s.
+      maximum-pool-size: 2
+      minimum-idle: 0
+      idle-timeout: 30000
+      connection-timeout: 10000
       data-source-properties:
         sslmode: require
         # Disables server-side prepared statements so the Supabase connection

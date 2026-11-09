@@ -100,7 +100,7 @@ after a timeout.
 
 Since the database is hosted on **Supabase**, all public tables are exposed via Supabase's PostgREST API. To prevent unauthorized direct access:
 
-- **RLS is enabled automatically.** After every Flyway migration, each service enables RLS on every table it owns that lacks it — its own tables, its `flyway_history_*` table, and any table added by a future migration (`EnableRowLevelSecurityCallback`). PostgreSQL only; no manual SQL step.
+- **RLS is enabled automatically.** After every Flyway migration, each service enables RLS on every table it owns that lacks it — its own tables, its `flyway_history_*` table, and any table added by a future migration (`RowLevelSecurityMigrationStrategy`, which runs right after Flyway on one connection). PostgreSQL only; no manual SQL step.
 - The Spring Boot backend connects as the **`postgres` user** (table owner), which **bypasses RLS automatically** — no policies are needed for the backend, and with no policies the PostgREST API sees nothing
 - `PostgresMigrationTest` in each service fails if any table is left without RLS
 
@@ -342,6 +342,7 @@ Docker images use **multi-stage builds** for optimized image sizes (~150MB each)
 
 1. **Build stage**: Maven compiles the JAR with dependencies
 2. **Runtime stage**: Lightweight JRE runs the JAR as a non-root user, on `$PORT` if the host sets it (otherwise the service's default port), with a container health check on `/actuator/health`
+3. **JVM sizing**: built into the image (`JAVA_OPTS`) for a 512 MB container: heap at most half the memory, a lean garbage collector and compiler, about 325 MB in use. No hosting setting is needed; set `JAVA_OPTS` on the host only to override it
 
 On a hosting platform, point each service at its folder: Dockerfile path `backend/<service>/Dockerfile`, build context `backend/<service>`.
 
@@ -364,6 +365,12 @@ marked **required**; a service refuses to start without them. `PORT` is read aut
 | `SERVICES_HTTP_CONNECTTIMEOUT` / `SERVICES_HTTP_READTIMEOUT` (default `5s` / `15s`)                          |    –     |   optional   | optional | optional |    –    |
 
 \* The Swagger UI host starts without these but then points at `localhost`; set them to the services' public URLs.
+
+**Database connections.** Each service uses at most 2 connections (the minimum Flyway
+needs at start-up) and hands idle ones back after 30 seconds, so all four stay within the
+15-client limit of Supabase's free session pooler, even while a deploy runs old and new
+instances side by side. If the limit is momentarily reached, Flyway retries the connection
+instead of failing the start-up.
 
 The member portal is configured at build time with `VITE_AUTH_SERVICE_URL`,
 `VITE_DRUGS_SERVICE_URL`, `VITE_SUBSCRIPTION_SERVICE_URL` and `VITE_REFILL_SERVICE_URL`;
