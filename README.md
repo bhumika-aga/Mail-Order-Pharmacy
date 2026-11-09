@@ -187,7 +187,7 @@ cd backend/subscription-microservice && mvn spring-boot:run
 cd backend/refill-microservice && mvn spring-boot:run
 ```
 
-All services use **H2 in-memory database** for development — no external DB setup required. Flyway creates the schema and loads the dev seed data (`db/seed`), including the logins `member1` / `member2` / `member3` and an `admin` account, all with password `password`.
+All services use **H2 in-memory database** for development — no external DB setup required. Flyway creates the schema and loads the dev seed data (`db/seed`), including the logins `member1` / `member2` / `member3` and an `admin` account, all with password `password`. These demo accounts exist **only locally** (dev and docker-compose); production loads no seed data, so there you sign up and promote your own account to admin (see Access Control). The login page shows them only on the dev server or when built with `VITE_SHOW_DEMO_CREDENTIALS=true`, which docker-compose sets.
 
 #### 3. Start Frontend
 
@@ -367,7 +367,8 @@ marked **required**; a service refuses to start without them. `PORT` is read aut
 
 The member portal is configured at build time with `VITE_AUTH_SERVICE_URL`,
 `VITE_DRUGS_SERVICE_URL`, `VITE_SUBSCRIPTION_SERVICE_URL` and `VITE_REFILL_SERVICE_URL`;
-the build's Content-Security-Policy allows API calls only to those origins.
+the build's Content-Security-Policy allows API calls only to those origins. Leave
+`VITE_SHOW_DEMO_CREDENTIALS` unset in production: the demo accounts don't exist there.
 
 ### Hosting the member portal (SPA fallback)
 
@@ -413,8 +414,9 @@ Import `MediFlow.postman_collection.json`. Run **Auth → Sign In** first — it
 script captures the JWT into the `token` collection variable that every other request
 reuses. For the admin-only requests (List Users, Delete User, Update Refill Order Status),
 run **Auth → Sign In (Admin)**, which stores `admin_token`. The `*_url` variables default to
-the local dev ports; override them to target a deployed environment. Seed logins are
-`member1` / `member2` / `member3` and `admin`, all with password `password`. The collection
+the local dev ports; override them to target a deployed environment. Seed logins (local
+only) are `member1` / `member2` / `member3` and `admin`, all with password `password`; against
+a deployed environment, change the sign-in request bodies to your own accounts. The collection
 ships with captured example responses for the happy path plus the 400/403/404 error cases.
 
 ---

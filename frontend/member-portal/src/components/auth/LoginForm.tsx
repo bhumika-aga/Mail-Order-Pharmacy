@@ -20,6 +20,15 @@ interface LoginFormData {
   password: string;
 }
 
+/**
+ * The demo accounts exist only where the backend loads its development seed
+ * data (local dev and the docker-compose stack), never in production. So they
+ * are shown on the dev server, or in a build that opts in explicitly. A constant,
+ * so production builds drop the block (and its text) entirely.
+ */
+const SHOW_DEMO_CREDENTIALS =
+  import.meta.env.DEV || import.meta.env.VITE_SHOW_DEMO_CREDENTIALS === "true";
+
 const LoginForm: React.FC = () => {
   const { login } = useAuth();
   const [error, setError] = useState<string>("");
@@ -147,19 +156,26 @@ const LoginForm: React.FC = () => {
             </Box>
           </Box>
 
-          <Divider sx={{ my: 2 }} />
-
-          <Box sx={{ mt: 2, p: 2, bgcolor: "action.hover", borderRadius: 1 }}>
-            <Typography variant="body2" color="text.secondary" align="center">
-              <strong>Demo Credentials:</strong>
-              <br />
-              Username: member1 | Password: password
-              <br />
-              Username: member2 | Password: password
-              <br />
-              Username: member3 | Password: password
-            </Typography>
-          </Box>
+          {SHOW_DEMO_CREDENTIALS && (
+            <>
+              <Divider sx={{ my: 2 }} />
+              <Box
+                sx={{ mt: 2, p: 2, bgcolor: "action.hover", borderRadius: 1 }}
+              >
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  align="center"
+                >
+                  <strong>Demo Credentials (local only):</strong>
+                  <br />
+                  Members: member1, member2, member3 | Password: password
+                  <br />
+                  Admin: admin | Password: password
+                </Typography>
+              </Box>
+            </>
+          )}
         </Paper>
       </Box>
     </Container>

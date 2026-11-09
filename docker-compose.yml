@@ -100,6 +100,8 @@ services:
         VITE_DRUGS_SERVICE_URL: http://localhost:8081
         VITE_SUBSCRIPTION_SERVICE_URL: http://localhost:8082
         VITE_REFILL_SERVICE_URL: http://localhost:8083
+        # This stack loads the dev seed data, so the demo accounts exist
+        VITE_SHOW_DEMO_CREDENTIALS: "true"
     ports:
       - "3000:8080"
     depends_on:

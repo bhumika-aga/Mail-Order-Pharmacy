@@ -1,5 +1,7 @@
 server:
   port: ${PORT:8085}
+  # Behind the hosting proxy (TLS ends there): build redirects with the public https:// URL.
+  forward-headers-strategy: framework
 
 management:
   endpoints:

@@ -1,5 +1,8 @@
 server:
   port: ${PORT}
+  # Behind the hosting proxy (TLS ends there): take scheme and host from the
+  # X-Forwarded-* headers, so the API docs advertise the public https:// URL.
+  forward-headers-strategy: framework
 
 spring:
   flyway:
