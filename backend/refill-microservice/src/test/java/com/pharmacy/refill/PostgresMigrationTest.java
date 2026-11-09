@@ -48,9 +48,7 @@ class PostgresMigrationTest {
             "--DATABASE_PASSWORD=postgres",
             "--spring.datasource.hikari.data-source-properties.sslmode=disable",
             "--JWT_SECRET=test-secret-0123456789-0123456789-0123456789-0123456789-0123456789",
-            "--JWT_EXPIRATION=900000",
             "--APP_CORS_ALLOWED_ORIGINS=http://localhost:5173",
-            "--AUTH_SERVICE_URL=http://localhost:8084",
             "--DRUGS_SERVICE_URL=http://localhost:8081",
             "--SUBSCRIPTION_SERVICE_URL=http://localhost:8082");
     }
@@ -91,13 +89,26 @@ class PostgresMigrationTest {
                                            + " WHERE script LIKE '%seed%'", Integer.class)).isZero();
     }
     
+    /**
+     * Supabase exposes public tables via its REST API unless RLS is on: no table may be left without it.
+     */
+    private static void assertRowLevelSecurityOnAllTables(JdbcTemplate jdbc) {
+        assertThat(jdbc.queryForList(
+            "SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND NOT rowsecurity", String.class))
+            .as("tables without row level security").isEmpty();
+        assertThat(jdbc.queryForObject(
+            "SELECT rowsecurity FROM pg_tables WHERE schemaname = 'public' AND tablename = '" + HISTORY_TABLE + "'",
+            Boolean.class)).as("Flyway history table has RLS").isTrue();
+    }
+    
     @Test
     void migratesAFreshDatabase() throws Exception {
         try (ConfigurableApplicationContext app = startProd(newDatabase(""))) {
             JdbcTemplate jdbc = new JdbcTemplate(app.getBean(DataSource.class));
             assertThat(tables(jdbc)).contains("refill_orders", "refill_order_line_items");
-            assertThat(appliedVersions(jdbc)).containsExactly("1");
+            assertThat(appliedVersions(jdbc)).containsExactly("1", "2", "3");
             assertNoSeedData(jdbc);
+            assertRowLevelSecurityOnAllTables(jdbc);
         }
     }
     
@@ -116,8 +127,9 @@ class PostgresMigrationTest {
             JdbcTemplate jdbc = new JdbcTemplate(app.getBean(DataSource.class));
             assertThat(jdbc.queryForObject("SELECT count(*) FROM refill_order_line_items WHERE refill_order_id = 'ROX'", Integer.class)).isEqualTo(1);
             // baseline at 0 for the existing schema, then every migration runs (as a no-op where applied)
-            assertThat(appliedVersions(jdbc)).containsExactly("0", "1");
+            assertThat(appliedVersions(jdbc)).containsExactly("0", "1", "2", "3");
             assertNoSeedData(jdbc);
+            assertRowLevelSecurityOnAllTables(jdbc);
         }
     }
 }

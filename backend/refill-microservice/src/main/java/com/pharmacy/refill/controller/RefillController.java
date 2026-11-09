@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Every endpoint here is reached only with a JWT the security filter has already
@@ -128,10 +129,14 @@ public class RefillController {
     
     @PutMapping("/orders/{refillOrderId}/status")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Update refill order status", description = "Update the status of a refill order (Admin only)")
+    @Operation(summary = "Update refill order status",
+        description = "Move a refill order along its lifecycle (Admin only): CONFIRMED -> IN_PROGRESS (optional) -> "
+                          + "SHIPPED -> DELIVERED. An order can be CANCELLED until it ships, which returns its stock. "
+                          + "DELIVERED and CANCELLED are final.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully updated order status", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RefillStatusResponse.class))),
         @ApiResponse(responseCode = "404", description = "Refill order not found", content = @Content(mediaType = "application/json")),
+        @ApiResponse(responseCode = "409", description = "The order cannot move to that status from its current one", content = @Content(mediaType = "application/json")),
         @ApiResponse(responseCode = "401", description = "Unauthorized access", content = @Content(mediaType = "application/json")),
         @ApiResponse(responseCode = "403", description = "Caller is not an admin", content = @Content(mediaType = "application/json"))
     })
@@ -139,5 +144,19 @@ public class RefillController {
         @PathVariable String refillOrderId,
         @RequestParam RefillOrder.OrderStatus status) {
         return ResponseEntity.ok(refillService.updateRefillOrderStatus(refillOrderId, status));
+    }
+    
+    @DeleteMapping("/members/{memberId}")
+    @PreAuthorize("hasRole('SERVICE')")
+    @Operation(summary = "Erase a member's refill orders (internal)",
+        description = "Called by the auth service when a user is deleted: deletes all of the member's orders and "
+                          + "returns the stock of orders that had not shipped. Requires a SERVICE token.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Orders erased (also when there were none)", content = @Content(mediaType = "application/json")),
+        @ApiResponse(responseCode = "401", description = "Unauthorized access", content = @Content(mediaType = "application/json")),
+        @ApiResponse(responseCode = "403", description = "Caller is not an internal service", content = @Content(mediaType = "application/json"))
+    })
+    public ResponseEntity<Map<String, Integer>> eraseMemberOrders(@PathVariable String memberId) {
+        return ResponseEntity.ok(Map.of("deletedOrders", refillService.eraseMemberOrders(memberId)));
     }
 }

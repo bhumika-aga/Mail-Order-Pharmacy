@@ -1,9 +1,11 @@
 package com.pharmacy.auth.controller;
 
+import com.pharmacy.auth.client.MemberDataClient;
 import com.pharmacy.auth.dto.*;
 import com.pharmacy.auth.entity.User;
 import com.pharmacy.auth.security.JwtUtils;
 import com.pharmacy.auth.security.LoginAttemptService;
+import com.pharmacy.auth.service.UserAccountException;
 import com.pharmacy.auth.service.UserDetailsImpl;
 import com.pharmacy.auth.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -74,7 +76,8 @@ public class AuthController {
         
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String role = userDetails.getRole().name();
-        String jwt = jwtUtils.generateToken(userDetails.getUsername(), userDetails.getMemberId(), role);
+        String jwt = jwtUtils.generateToken(userDetails.getUsername(), userDetails.getMemberId(), role,
+            userDetails.getId());
         
         return ResponseEntity.ok(new JwtResponse(jwt,
             userDetails.getUsername(),
@@ -108,7 +111,7 @@ public class AuthController {
                 signUpRequest.getFullName());
             
             return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
-        } catch (RuntimeException e) {
+        } catch (UserAccountException e) {
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
         }
     }
@@ -160,7 +163,7 @@ public class AuthController {
                 updateRequest.getFullName(),
                 changingPassword ? newPassword : null);
             return ResponseEntity.ok(updatedUser);
-        } catch (RuntimeException e) {
+        } catch (UserAccountException e) {
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
         }
     }
@@ -168,12 +171,20 @@ public class AuthController {
     @DeleteMapping("/users/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "Delete user", description = "Delete user by ID (Admin only)")
+    @Operation(summary = "Delete user",
+        description = "Delete a user and permanently erase their prescriptions, subscriptions and refill orders (Admin only). "
+                          + "Stock of orders that had not shipped is returned. If the data can't be erased right now, "
+                          + "the user is kept (503) and the request can be retried.")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
-        if (userService.getUserById(id).isEmpty()) {
-            return ResponseEntity.notFound().build();
+        try {
+            if (!userService.deleteUser(id)) {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (MemberDataClient.MemberDataErasureException e) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                       .body(new MessageResponse("User was not deleted: their data in the " + e.getService()
+                                                     + " service could not be erased right now. Please try again."));
         }
-        userService.deleteUser(id);
         return ResponseEntity.ok(new MessageResponse("User deleted successfully!"));
     }
     
@@ -190,13 +201,5 @@ public class AuthController {
     public ResponseEntity<?> checkEmailAvailability(@PathVariable String email) {
         boolean isAvailable = !userService.existsByEmail(email);
         return ResponseEntity.ok(new MessageResponse(isAvailable ? "Email is available" : "Email is already in use"));
-    }
-    
-    @GetMapping("/check-memberid/{memberId}")
-    @Operation(summary = "Check member ID availability", description = "Check if member ID is available")
-    public ResponseEntity<?> checkMemberIdAvailability(@PathVariable String memberId) {
-        boolean isAvailable = !userService.existsByMemberId(memberId);
-        return ResponseEntity
-                   .ok(new MessageResponse(isAvailable ? "Member ID is available" : "Member ID is already in use"));
     }
 }

@@ -5,6 +5,7 @@ import com.pharmacy.subscription.entity.MemberSubscription;
 import com.pharmacy.subscription.entity.MemberSubscription.RefillFrequency;
 import com.pharmacy.subscription.repository.MemberPrescriptionRepository;
 import com.pharmacy.subscription.repository.MemberSubscriptionRepository;
+import com.pharmacy.subscription.security.ErasedMembers;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -83,7 +84,8 @@ class SubscriptionServiceTest {
         
         Clock today = Clock.fixed(date("2026-11-07").atStartOfDay().toInstant(ZoneOffset.UTC), ZoneOffset.UTC);
         SubscriptionService service = new SubscriptionService(prescriptions, subscriptions,
-            mock(DrugServiceClient.class), mock(PlatformTransactionManager.class), today);
+            mock(DrugServiceClient.class), mock(PlatformTransactionManager.class), today,
+            mock(ErasedMembers.class));
         
         List<Map<String, Object>> dueToday = service.getRefillDues(date("2026-11-07"), "MEM001");
         assertThat(dueToday).extracting(d -> d.get("subscriptionId")).containsExactly("SUB-B");

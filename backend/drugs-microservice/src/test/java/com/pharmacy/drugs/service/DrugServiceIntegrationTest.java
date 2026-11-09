@@ -8,6 +8,7 @@ import com.pharmacy.drugs.repository.DrugRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -26,8 +27,10 @@ class DrugServiceIntegrationTest {
     
     @Autowired
     private DrugService drugService;
+    
     @Autowired
     private DrugRepository drugRepository;
+    
     @Autowired
     private DrugLocationRepository drugLocationRepository;
     
@@ -73,7 +76,7 @@ class DrugServiceIntegrationTest {
         assertThat(drugService.reserveStock("D004", "New York", 5)).isTrue();
         assertThat(stock("D004", "New York")).isEqualTo(before - 5);
         
-        assertThat(drugService.releaseStock("D004", "New York", 5)).isTrue();
+        assertThat(drugService.releaseStock(null, "D004", "New York", 5)).isTrue();
         assertThat(stock("D004", "New York")).isEqualTo(before);
     }
     
@@ -117,5 +120,56 @@ class DrugServiceIntegrationTest {
         
         assertThat(succeeded).isEqualTo(available / perOrder);
         assertThat(stock(drug, location)).isEqualTo(available - succeeded * perOrder).isNotNegative();
+    }
+    
+    private void stockedDrug(String drugId, String location, int quantity) {
+        drugRepository.save(new Drug(drugId, "Release Test " + drugId, "Test", LocalDate.now().minusMonths(1),
+            LocalDate.now().plusYears(1), 10, new BigDecimal("5.00"), "Test composition"));
+        drugLocationRepository.save(new DrugLocation(drugId, location, quantity));
+    }
+    
+    @Test
+    void aRetriedReleaseIsAppliedOnlyOnce() {
+        stockedDrug("DREL1", "Boston", 10);
+        
+        assertThat(drugService.releaseStock("release-1", "DREL1", "Boston", 4)).isTrue();
+        // e.g. the caller never got the first reply and sends the release again
+        assertThat(drugService.releaseStock("release-1", "DREL1", "Boston", 4)).isTrue();
+        assertThat(stock("DREL1", "Boston")).isEqualTo(14);
+        
+        assertThat(drugService.releaseStock("release-2", "DREL1", "Boston", 1)).isTrue();
+        assertThat(stock("DREL1", "Boston")).isEqualTo(15);
+    }
+    
+    @Test
+    void concurrentDeliveriesOfOneReleaseApplyItOnce() throws Exception {
+        stockedDrug("DREL2", "Boston", 10);
+        int threads = 8;
+        ExecutorService pool = Executors.newFixedThreadPool(threads);
+        CountDownLatch start = new CountDownLatch(1);
+        List<Future<Boolean>> results = new ArrayList<>();
+        for (int i = 0; i < threads; i++) {
+            results.add(pool.submit(() -> {
+                start.await();
+                try {
+                    return drugService.releaseStock("release-concurrent", "DREL2", "Boston", 3);
+                } catch (DataIntegrityViolationException duplicate) {
+                    return true; // rolled back; the API reports this as applied
+                }
+            }));
+        }
+        start.countDown();
+        for (Future<Boolean> result : results) {
+            assertThat(result.get(30, TimeUnit.SECONDS)).isTrue();
+        }
+        pool.shutdown();
+        
+        assertThat(stock("DREL2", "Boston")).isEqualTo(13);
+    }
+    
+    @Test
+    void releaseForAnUnknownStockRowIsRefusedAndNotRecorded() {
+        assertThat(drugService.releaseStock("release-unknown", "NOPE", "Boston", 1)).isFalse();
+        assertThat(drugLocationRepository.countAppliedReleases("release-unknown")).isZero();
     }
 }

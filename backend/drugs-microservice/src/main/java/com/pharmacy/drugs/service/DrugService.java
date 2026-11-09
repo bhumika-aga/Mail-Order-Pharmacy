@@ -112,15 +112,28 @@ public class DrugService {
     }
     
     /**
-     * Returns previously reserved stock, e.g. when a later line of the same
-     * order failed. Returns false if there is no stock row for the drug/location.
+     * Returns previously reserved stock, e.g. for a cancelled order. A release
+     * with a {@code releaseId} is applied at most once: repeating it (a retry
+     * after a lost reply) changes nothing and returns true. Returns false if there
+     * is no stock row for the drug/location.
      */
     @Transactional
-    public boolean releaseStock(String drugId, String location, int quantity) {
+    public boolean releaseStock(String releaseId, String drugId, String location, int quantity) {
         if (quantity <= 0) {
             return false;
         }
-        return drugLocationRepository.incrementStock(drugId, location, quantity) == 1;
+        if (releaseId != null && drugLocationRepository.countAppliedReleases(releaseId) > 0) {
+            return true; // a retry of a release that was already applied
+        }
+        if (drugLocationRepository.incrementStock(drugId, location, quantity) != 1) {
+            return false;
+        }
+        if (releaseId != null) {
+            // Two concurrent deliveries of one release can both get here; the second
+            // insert fails on the primary key and its increment is rolled back.
+            drugLocationRepository.recordAppliedRelease(releaseId, drugId, location, quantity);
+        }
+        return true;
     }
     
     /**

@@ -151,13 +151,33 @@ public class RefillOrder {
         lineItem.setRefillOrder(this);
     }
     
-    public void removeLineItem(RefillOrderLineItem lineItem) {
-        lineItems.remove(lineItem);
-        lineItem.setRefillOrder(null);
-    }
-    
+    /**
+     * Order lifecycle. Orders only move forward:
+     * PENDING -> CONFIRMED -> IN_PROGRESS -> SHIPPED -> DELIVERED, where
+     * IN_PROGRESS may be skipped, and an order can be CANCELLED until it ships.
+     * DELIVERED and CANCELLED are final.
+     */
     public enum OrderStatus {
-        PENDING, CONFIRMED, IN_PROGRESS, SHIPPED, DELIVERED, CANCELLED
+        PENDING, CONFIRMED, IN_PROGRESS, SHIPPED, DELIVERED, CANCELLED;
+        
+        public boolean canMoveTo(OrderStatus next) {
+            return switch (this) {
+                case PENDING -> next == CONFIRMED || next == CANCELLED;
+                case CONFIRMED -> next == IN_PROGRESS || next == SHIPPED || next == CANCELLED;
+                case IN_PROGRESS -> next == SHIPPED || next == CANCELLED;
+                case SHIPPED -> next == DELIVERED;
+                case DELIVERED, CANCELLED -> false;
+            };
+        }
+        
+        /**
+         * Whether the order's stock is reserved but not yet shipped, so that
+         * cancelling it must return the stock. (Orders are saved only once their
+         * stock is reserved, as CONFIRMED; PENDING is never persisted with stock.)
+         */
+        public boolean holdsStock() {
+            return this == CONFIRMED || this == IN_PROGRESS;
+        }
     }
     
     public enum OrderType {

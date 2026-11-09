@@ -24,7 +24,13 @@ public class JwtUtils {
      */
     static final int MIN_SECRET_BYTES = 64;
     
+    /**
+     * Lifetime of an internal service token; one is minted per call, so keep it short.
+     */
+    private static final long SERVICE_TOKEN_TTL_MS = 60_000;
+    
     private final SecretKey signingKey;
+    
     private final long jwtExpirationMs;
     
     public JwtUtils(@Value("${jwt.secret}") String jwtSecret,
@@ -38,10 +44,31 @@ public class JwtUtils {
         this.jwtExpirationMs = jwtExpirationMs;
     }
     
-    public String generateToken(String username, String memberId, String role) {
+    /**
+     * A short-lived token with role SERVICE, for internal calls members must not be
+     * able to make themselves (erasing a deleted member's data in other services).
+     */
+    public String generateServiceToken() {
+        long now = System.currentTimeMillis();
+        return Jwts.builder()
+                   .subject("auth-service")
+                   .claim("role", "SERVICE")
+                   .issuedAt(new Date(now))
+                   .expiration(new Date(now + SERVICE_TOKEN_TTL_MS))
+                   .signWith(signingKey, Jwts.SIG.HS512)
+                   .compact();
+    }
+    
+    /**
+     * @param userId the account's database ID ("uid" claim): binds the token to that
+     *               account, so it stops working if the user is deleted and the
+     *               username is later registered again
+     */
+    public String generateToken(String username, String memberId, String role, Long userId) {
         long now = System.currentTimeMillis();
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", role);
+        claims.put("uid", userId);
         if (memberId != null) {
             // Admin accounts have no member ID
             claims.put("memberId", memberId);
@@ -57,6 +84,15 @@ public class JwtUtils {
     
     public String getUserNameFromJwtToken(String token) {
         return getClaimFromToken(token, Claims::getSubject);
+    }
+    
+    /**
+     * The account ID the token was issued to, or null for tokens issued before the
+     * claim existed.
+     */
+    public Long getUserIdFromJwtToken(String token) {
+        Number uid = getClaimFromToken(token, claims -> claims.get("uid", Number.class));
+        return uid == null ? null : uid.longValue();
     }
     
     public String getMemberIdFromJwtToken(String token) {

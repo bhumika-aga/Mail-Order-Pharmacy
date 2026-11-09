@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 import java.time.LocalDateTime;
+import java.util.Locale;
 
 @Entity
 @Table(name = "users")
@@ -27,6 +28,20 @@ public class User {
     @JsonIgnore
     @NotBlank(message = "Password is required")
     private String password;
+    
+    /*
+     * Lower-cased username and email, kept unique by the database so names that
+     * differ only in case can't both be registered, even by simultaneous requests
+     * (see V3__case_insensitive_unique_keys.sql). Null only for case-variants that
+     * already existed when the constraint was added.
+     */
+    @JsonIgnore
+    @Column(name = "username_key")
+    private String usernameKey;
+    
+    @JsonIgnore
+    @Column(name = "email_key")
+    private String emailKey;
     
     @Column(name = "member_id", unique = true)
     private String memberId;
@@ -50,10 +65,24 @@ public class User {
     
     public User(String username, String email, String password, String memberId, String fullName) {
         this.username = username;
+        this.usernameKey = key(username);
         this.email = email;
+        this.emailKey = key(email);
         this.password = password;
         this.memberId = memberId;
         this.fullName = fullName;
+    }
+    
+    private static String key(String value) {
+        return value == null ? null : value.toLowerCase(Locale.ROOT);
+    }
+    
+    /**
+     * Keeps the key in step with a new value. Changing only the case keeps the old
+     * key, so a pre-existing case-variant (which has none) can still be edited.
+     */
+    private static String rekey(String oldValue, String newValue, String oldKey) {
+        return newValue != null && newValue.equalsIgnoreCase(oldValue) ? oldKey : key(newValue);
     }
     
     @PrePersist
@@ -92,6 +121,7 @@ public class User {
     }
     
     public void setUsername(String username) {
+        this.usernameKey = rekey(this.username, username, this.usernameKey);
         this.username = username;
     }
     
@@ -100,6 +130,7 @@ public class User {
     }
     
     public void setEmail(String email) {
+        this.emailKey = rekey(this.email, email, this.emailKey);
         this.email = email;
     }
     

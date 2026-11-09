@@ -14,17 +14,6 @@ public interface RefillOrderLineItemRepository extends JpaRepository<RefillOrder
     
     List<RefillOrderLineItem> findByRefillOrderRefillOrderId(String refillOrderId);
     
-    List<RefillOrderLineItem> findByDrugCode(String drugCode);
-    
-    List<RefillOrderLineItem> findByPrescriptionId(String prescriptionId);
-    
-    @Query("SELECT rli FROM RefillOrderLineItem rli WHERE rli.refillOrder.memberId = :memberId")
-    List<RefillOrderLineItem> findByMemberId(@Param("memberId") String memberId);
-    
-    @Query("SELECT rli FROM RefillOrderLineItem rli WHERE rli.refillOrder.refillOrderId = :refillOrderId AND rli.drugCode = :drugCode")
-    List<RefillOrderLineItem> findByRefillOrderIdAndDrugCode(@Param("refillOrderId") String refillOrderId,
-                                                             @Param("drugCode") String drugCode);
-    
     @Query("SELECT SUM(rli.totalPrice) FROM RefillOrderLineItem rli WHERE rli.refillOrder.refillOrderId = :refillOrderId")
     BigDecimal calculateTotalOrderAmount(@Param("refillOrderId") String refillOrderId);
 }

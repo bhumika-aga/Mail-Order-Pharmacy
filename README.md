@@ -81,6 +81,8 @@ Subscription Service ──REST──▶ Drugs Service   (verify drug availabili
 - **Roles**: every self-registered account is a `MEMBER`. `ADMIN` is granted only in the database: `UPDATE users SET user_role = 'ADMIN' WHERE username = '...';`
 - **Members** see only their own data: profile, subscriptions, prescriptions, orders and refill dues. Another member's subscription returns 404.
 - **Admins** can list and delete users, edit any profile (including member ID), see all members' refill dues, and change refill order status.
+- **Deleting a user erases their data everywhere**: the auth service first has the refill service delete the member's orders (returning the stock of any order that hadn't shipped) and the subscription service delete their subscriptions and prescriptions, using short-lived `SERVICE` tokens. Only then is the account deleted. If either service can't be reached, the user is kept and the admin gets `503`; retrying is safe. The auth service needs `SUBSCRIPTION_SERVICE_URL` and `REFILL_SERVICE_URL` for this.
+- **A deleted user's tokens stop working immediately**, not when they expire: the subscription and refill services record each erased member and reject tokens issued to that member before the erasure (`401`), so the old token can't create new subscriptions or orders. Tokens also carry the account's ID (`uid`), so if a deleted username is registered again, the old token doesn't work for the new account.
 - **CORS** allows only the origins in `APP_CORS_ALLOWED_ORIGINS` (dev default: `http://localhost:5173`, `http://localhost:3000`, and the Swagger aggregator `http://localhost:8085`); no credentialed CORS. In production, include both the frontend's and the Swagger aggregator's origins.
 - **Brute-force protection**: sign-in, sign-up and the availability checks are limited to 20 requests/minute per client address (`429` + `Retry-After`), and 5 failed sign-ins for the same username from the same address lock that combination for 15 minutes. Limits are in-memory, i.e. per service instance.
 - **Passwords** can be changed via `PUT /users/{id}` with `password`; members must also send `currentPassword`, admins can reset directly.
@@ -91,9 +93,9 @@ Subscription Service ──REST──▶ Drugs Service   (verify drug availabili
 
 Since the database is hosted on **Supabase**, all public tables are exposed via Supabase's PostgREST API. To prevent unauthorized direct access:
 
-- **RLS is enabled** on all 7 tables: `users`, `drugs`, `drug_locations`, `member_prescriptions`, `member_subscriptions`, `refill_orders`, `refill_order_line_items`
-- The Spring Boot backend connects as the **`postgres` user** (table owner), which **bypasses RLS automatically** — no additional policies are needed for the backend
-- The `supabase/enable_rls.sql` script must be run once in the Supabase SQL Editor after initial deployment
+- **RLS is enabled automatically.** After every Flyway migration, each service enables RLS on every table it owns that lacks it — its own tables, its `flyway_history_*` table, and any table added by a future migration (`EnableRowLevelSecurityCallback`). PostgreSQL only; no manual SQL step.
+- The Spring Boot backend connects as the **`postgres` user** (table owner), which **bypasses RLS automatically** — no policies are needed for the backend, and with no policies the PostgREST API sees nothing
+- `PostgresMigrationTest` in each service fails if any table is left without RLS
 
 ### Password Security
 
@@ -124,13 +126,14 @@ Since the database is hosted on **Supabase**, all public tables are exposed via 
 
 - **Scheduled refills**: System queries active subscriptions due as of a given date
 - **Adhoc refills**: User manually requests a refill — each line must name one of the member's own prescriptions for that drug; the system checks stock for every line, reserves it line by line (releasing everything already reserved if any line or the save fails), and confirms the order
-- **Order lifecycle**: `PENDING` → `CONFIRMED` → `IN_PROGRESS` → `SHIPPED` → `DELIVERED`
-- **Tracking**: Tracking numbers are auto-generated when an order is shipped
+- **Order lifecycle**: `CONFIRMED` → `IN_PROGRESS` (optional) → `SHIPPED` → `DELIVERED`. Orders only move forward; anything else (including re-setting the current status) is `409`. An order can be `CANCELLED` until it ships, which returns its reserved stock (see below). `DELIVERED` and `CANCELLED` are final. The order row is locked during a change, so concurrent requests can't both apply.
+- **Tracking**: A tracking number is generated once, when the order ships
+- **Returning stock reliably**: stock to be returned (cancelled or erased orders, or an order that failed part-way) is stored in `pending_stock_releases` in the same transaction as the change, sent to the drugs service, and removed once confirmed. If the drugs service is down, it stays queued and is retried every minute until it succeeds. Each release has an ID that the drugs service records (`stock_releases`), so a retry never returns the same stock twice
 
 ### 4. Authentication (Auth Microservice)
 
 - **User CRUD**: Create, read, update, delete users
-- **Uniqueness enforcement**: Username, email, and member ID must all be unique
+- **Uniqueness enforcement**: Username, email, and member ID must all be unique; usernames and emails regardless of case (`Bob` = `bob`). Emails are stored in lower case. Lower-cased `username_key`/`email_key` columns carry unique constraints, so even simultaneous sign-ups can't create case-variants; the loser gets the same clean `400` as any duplicate. (Case-variants that existed before these constraints keep working; the oldest account holds the key.)
 - **Member ID generation**: Auto-generated in format `MEM` + 6 random digits with collision detection
 
 ---
@@ -204,17 +207,17 @@ npm run dev
 
 ### Auth Service (`/api/auth`)
 
-| Method   | Endpoint                     | Description                             |
-| -------- | ---------------------------- | --------------------------------------- |
-| `POST`   | `/signin`                    | Authenticate user, returns JWT (public) |
-| `POST`   | `/signup`                    | Register new user (public)              |
-| `POST`   | `/validate`                  | Validate JWT token (public)             |
-| `GET`    | `/users`                     | List all users (admin)                  |
-| `GET`    | `/users/{id}`                | Get user by ID (self or admin)          |
-| `PUT`    | `/users/{id}`                | Update user (self or admin)             |
-| `DELETE` | `/users/{id}`                | Delete user (admin)                     |
-| `GET`    | `/check-username/{username}` | Check username availability (public)    |
-| `GET`    | `/check-email/{email}`       | Check email availability (public)       |
+| Method   | Endpoint                     | Description                              |
+| -------- | ---------------------------- | ---------------------------------------- |
+| `POST`   | `/signin`                    | Authenticate user, returns JWT (public)  |
+| `POST`   | `/signup`                    | Register new user (public)               |
+| `POST`   | `/validate`                  | Validate JWT token (public)              |
+| `GET`    | `/users`                     | List all users (admin)                   |
+| `GET`    | `/users/{id}`                | Get user by ID (self or admin)           |
+| `PUT`    | `/users/{id}`                | Update user (self or admin)              |
+| `DELETE` | `/users/{id}`                | Delete user and erase their data (admin) |
+| `GET`    | `/check-username/{username}` | Check username availability (public)     |
+| `GET`    | `/check-email/{email}`       | Check email availability (public)        |
 
 All other endpoints below require a valid JWT.
 
@@ -233,24 +236,26 @@ All other endpoints below require a valid JWT.
 
 ### Subscription Service (`/api/subscriptions`)
 
-| Method | Endpoint               | Description                                                                               |
-| ------ | ---------------------- | ----------------------------------------------------------------------------------------- |
-| `POST` | `/subscribe`           | Create subscription                                                                       |
-| `GET`  | `/my-subscriptions`    | User's subscriptions                                                                      |
-| `GET`  | `/active`              | Active subscriptions only                                                                 |
-| `POST` | `/unsubscribe`         | Cancel subscription                                                                       |
-| `GET`  | `/{subscriptionId}`    | One of the member's subscriptions (admin: any)                                            |
-| `GET`  | `/refillDues?dueDate=` | Member's subscriptions whose next refill falls on or before the date (admin: all members) |
+| Method   | Endpoint               | Description                                                                               |
+| -------- | ---------------------- | ----------------------------------------------------------------------------------------- |
+| `POST`   | `/subscribe`           | Create subscription                                                                       |
+| `GET`    | `/my-subscriptions`    | User's subscriptions                                                                      |
+| `GET`    | `/active`              | Active subscriptions only                                                                 |
+| `POST`   | `/unsubscribe`         | Cancel subscription                                                                       |
+| `GET`    | `/{subscriptionId}`    | One of the member's subscriptions (admin: any)                                            |
+| `GET`    | `/refillDues?dueDate=` | Member's subscriptions whose next refill falls on or before the date (admin: all members) |
+| `DELETE` | `/members/{memberId}`  | Erase a deleted member's subscriptions and prescriptions — internal, `SERVICE` token only |
 
 ### Refill Service (`/api/refill`)
 
-| Method | Endpoint                       | Description                                                     |
-| ------ | ------------------------------ | --------------------------------------------------------------- |
-| `GET`  | `/viewRefillStatus`            | Latest refill status                                            |
-| `GET`  | `/orders`                      | All orders for member                                           |
-| `POST` | `/requestAdhocRefill`          | Create adhoc refill order                                       |
-| `GET`  | `/getRefillDuesAsOfDate?date=` | Due refills (delegates to subscription service)                 |
-| `PUT`  | `/orders/{id}/status?status=`  | Update order status, admin only (auto-sets tracking on SHIPPED) |
+| Method   | Endpoint                       | Description                                                                                 |
+| -------- | ------------------------------ | ------------------------------------------------------------------------------------------- |
+| `GET`    | `/viewRefillStatus`            | Latest refill status                                                                        |
+| `GET`    | `/orders`                      | All orders for member                                                                       |
+| `POST`   | `/requestAdhocRefill`          | Create adhoc refill order                                                                   |
+| `GET`    | `/getRefillDuesAsOfDate?date=` | Due refills (delegates to subscription service)                                             |
+| `PUT`    | `/orders/{id}/status?status=`  | Move order along its lifecycle, admin only (`409` if not allowed; cancelling returns stock) |
+| `DELETE` | `/members/{memberId}`          | Erase a deleted member's orders — internal, `SERVICE` token only                            |
 
 ---
 
@@ -258,12 +263,12 @@ All other endpoints below require a valid JWT.
 
 ### Development vs Production
 
-| Aspect    | Development                                     | Production                                    |
-| --------- | ----------------------------------------------- | --------------------------------------------- |
-| Database  | H2 in-memory                                    | PostgreSQL (Supabase)                         |
-| Schema    | Flyway migrations (fresh in-memory DB each run) | Flyway migrations (`ddl-auto: validate`)      |
-| Seed Data | Flyway repeatable migration in `db/seed`        | Never loaded (prod reads `db/migration` only) |
-| RLS       | N/A (H2 doesn't support it)                     | Enabled on all 7 tables                       |
+| Aspect    | Development                                     | Production                                                  |
+| --------- | ----------------------------------------------- | ----------------------------------------------------------- |
+| Database  | H2 in-memory                                    | PostgreSQL (Supabase)                                       |
+| Schema    | Flyway migrations (fresh in-memory DB each run) | Flyway migrations (`ddl-auto: validate`)                    |
+| Seed Data | Flyway repeatable migration in `db/seed`        | Never loaded (prod reads `db/migration` only)               |
+| RLS       | N/A (H2 doesn't support it)                     | Enabled automatically on every table (incl. Flyway history) |
 
 ### Entity Relationships
 
@@ -308,22 +313,6 @@ scripts use `CREATE TABLE IF NOT EXISTS`, so the first deploy adopts the existin
 without touching data. `PostgresMigrationTest` in each service checks this against a
 real (embedded) PostgreSQL, for both a fresh and an existing database.
 
-## 🔧 Supabase RLS Setup
-
-After deploying to production with Supabase, run the following SQL once in the **Supabase SQL Editor** (`supabase/enable_rls.sql`):
-
-```sql
-ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.drugs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.drug_locations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.member_prescriptions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.member_subscriptions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.refill_orders ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.refill_order_line_items ENABLE ROW LEVEL SECURITY;
-```
-
-> **Why no policies?** The Spring Boot backend connects as the `postgres` user, which is the table owner and automatically bypasses RLS. This satisfies the Supabase linter while keeping the backend fully functional.
-
 ---
 
 ## 🐳 Docker Deployment
@@ -333,18 +322,41 @@ ALTER TABLE public.refill_order_line_items ENABLE ROW LEVEL SECURITY;
 # Member portal: http://localhost:3000 · API docs: http://localhost:8085
 docker compose up --build
 
-# Individual service builds
-docker build -f Dockerfile.auth -t auth-service .
-docker build -f Dockerfile.auth.drugs -t drugs-service .
-docker build -f Dockerfile.auth.subscription -t subscription-service .
-docker build -f Dockerfile.auth.refill -t refill-service .
-docker build -f Dockerfile.auth.swagger -t swagger-service .
+# Individual service builds (each service folder is its own build context)
+docker build -t auth-service backend/auth-microservice
+docker build -t drugs-service backend/drugs-microservice
+docker build -t subscription-service backend/subscription-microservice
+docker build -t refill-service backend/refill-microservice
+docker build -t swagger-service backend/swagger-aggregator
+docker build -t member-portal frontend/member-portal   # pass --build-arg VITE_*_SERVICE_URL=... for production
 ```
 
 Docker images use **multi-stage builds** for optimized image sizes (~150MB each):
 
 1. **Build stage**: Maven compiles the JAR with dependencies
-2. **Runtime stage**: Lightweight JRE runs the JAR as a non-root user
+2. **Runtime stage**: Lightweight JRE runs the JAR as a non-root user, on `$PORT` if the host sets it (otherwise the service's default port), with a container health check on `/actuator/health`
+
+On a hosting platform, point each service at its folder: Dockerfile path `backend/<service>/Dockerfile`, build context `backend/<service>`.
+
+### Hosting the member portal (SPA fallback)
+
+The portal is a single-page app: routes like `/refills` exist only in the browser, so
+the host must answer any unknown path with `index.html` (status 200). Otherwise a
+page refresh or a shared link gives a 404.
+
+| Host                                               | How the fallback is configured                                                                     |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Docker image (`frontend/member-portal/Dockerfile`) | Built in: `nginx.conf` uses `try_files $uri $uri/ /index.html`                                     |
+| Netlify, Cloudflare Pages                          | Built in: `public/_redirects` (`/*  /index.html  200`) is copied into the build                    |
+| Vercel                                             | Add a `vercel.json`: `{ "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }] }`       |
+| Render (static site)                               | Dashboard → Redirects/Rewrites: source `/*`, destination `/index.html`, action **Rewrite**         |
+| GitHub Pages                                       | No rewrites: copy `index.html` to `404.html` in the build output (pages then load with status 404) |
+| Other / your own server                            | Rewrite every path that isn't a file to `/index.html`, as in `nginx.conf`                          |
+
+Static hosts other than the Docker image also don't send the security headers in
+`nginx.conf` (`X-Frame-Options`, `nosniff`, `Referrer-Policy`); add them in the host's
+header settings if it supports them. The Content-Security-Policy is in `index.html`, so
+it applies everywhere.
 
 ---
 
@@ -388,10 +400,7 @@ Mail-Order-Pharmacy/
 │   └── swagger-aggregator/         # Thin Swagger UI host (springdoc urls dropdown)
 ├── frontend/
 │   └── member-portal/              # React TypeScript SPA
-├── supabase/
-│   └── enable_rls.sql                  # RLS migration for Supabase
 ├── MediFlow.postman_collection.json    # Postman API collection (full flow)
-├── Dockerfile.* (5 files)              # Multi-stage Docker builds
 └── docker-compose.yml                  # Local Docker orchestration
 ```
 

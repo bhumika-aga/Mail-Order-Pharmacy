@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.function.Function;
 
 @Component
@@ -52,6 +53,14 @@ public class JwtUtils {
     
     public String getUserNameFromJwtToken(String token) {
         return getClaimFromToken(token, Claims::getSubject);
+    }
+    
+    /**
+     * When the token was issued (the epoch if it carries no issue time).
+     */
+    public Instant getIssuedAtFromJwtToken(String token) {
+        java.util.Date issuedAt = getClaimFromToken(token, Claims::getIssuedAt);
+        return issuedAt == null ? Instant.EPOCH : issuedAt.toInstant();
     }
     
     public String getMemberIdFromJwtToken(String token) {

@@ -2,6 +2,7 @@ package com.pharmacy.auth.service;
 
 import com.pharmacy.auth.entity.Role;
 import com.pharmacy.auth.entity.User;
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -42,7 +43,7 @@ public class UserDetailsImpl implements UserDetails {
     }
     
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
+    public @NonNull Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
     
@@ -72,7 +73,7 @@ public class UserDetailsImpl implements UserDetails {
     }
     
     @Override
-    public String getUsername() {
+    public @NonNull String getUsername() {
         return username;
     }
     

@@ -1,6 +1,5 @@
 package com.pharmacy.drugs.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -23,11 +22,6 @@ public class DrugLocation {
     @PositiveOrZero(message = "Quantity available must be zero or positive")
     @Column(name = "quantity_available")
     private Integer quantityAvailable;
-    
-    @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "drug_id", insertable = false, updatable = false)
-    private Drug drug;
     
     public DrugLocation() {
     }
@@ -60,13 +54,5 @@ public class DrugLocation {
     
     public void setQuantityAvailable(Integer quantityAvailable) {
         this.quantityAvailable = quantityAvailable;
-    }
-    
-    public Drug getDrug() {
-        return drug;
-    }
-    
-    public void setDrug(Drug drug) {
-        this.drug = drug;
     }
 }

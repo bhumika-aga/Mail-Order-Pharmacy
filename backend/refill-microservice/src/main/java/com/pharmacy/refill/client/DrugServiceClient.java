@@ -94,19 +94,23 @@ public class DrugServiceClient {
      * Atomically reserves stock; false if there is not enough (or the drug expired meanwhile).
      */
     public boolean reserveDrugStock(String drugCode, String location, int quantity) {
-        return changeStock("/api/drugs/reserve", drugCode, location, quantity);
+        return changeStock("/api/drugs/reserve",
+            Map.of("drugCode", drugCode, "location", location, "quantity", quantity));
     }
     
     /**
-     * Returns stock reserved earlier for an order that could not be completed.
+     * Returns stock reserved earlier. The drugs service applies each
+     * {@code releaseId} once, so a retried release is not counted twice.
+     *
+     * @return false if the drugs service has no stock row for the drug and location
      */
-    public boolean releaseDrugStock(String drugCode, String location, int quantity) {
-        return changeStock("/api/drugs/release", drugCode, location, quantity);
+    public boolean releaseDrugStock(String releaseId, String drugCode, String location, int quantity) {
+        return changeStock("/api/drugs/release",
+            Map.of("releaseId", releaseId, "drugCode", drugCode, "location", location, "quantity", quantity));
     }
     
-    private boolean changeStock(String path, String drugCode, String location, int quantity) {
+    private boolean changeStock(String path, Map<String, Object> body) {
         HttpHeaders headers = bearer(jwtUtils.generateServiceToken());
-        Map<String, Object> body = Map.of("drugCode", drugCode, "location", location, "quantity", quantity);
         try {
             Boolean changed = restTemplate.exchange(
                 drugsServiceUrl + path, HttpMethod.POST, new HttpEntity<>(body, headers), Boolean.class).getBody();

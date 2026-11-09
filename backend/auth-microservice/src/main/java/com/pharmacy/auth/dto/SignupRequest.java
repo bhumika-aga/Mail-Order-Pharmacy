@@ -23,16 +23,7 @@ public class SignupRequest {
     @Size(min = 2, max = 100, message = "Full name must be between 2 and 100 characters")
     private String fullName;
     
-    private String memberId;
-    
     public SignupRequest() {
-    }
-    
-    public SignupRequest(String username, String email, String password, String fullName) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.fullName = fullName;
     }
     
     public String getUsername() {
@@ -57,14 +48,6 @@ public class SignupRequest {
     
     public void setPassword(String password) {
         this.password = password;
-    }
-    
-    public String getMemberId() {
-        return memberId;
-    }
-    
-    public void setMemberId(String memberId) {
-        this.memberId = memberId;
     }
     
     public String getFullName() {

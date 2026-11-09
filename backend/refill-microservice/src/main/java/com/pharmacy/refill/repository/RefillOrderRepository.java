@@ -1,12 +1,13 @@
 package com.pharmacy.refill.repository;
 
 import com.pharmacy.refill.entity.RefillOrder;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,21 +18,14 @@ public interface RefillOrderRepository extends JpaRepository<RefillOrder, String
     
     Optional<RefillOrder> findTopByMemberIdOrderByOrderDateDesc(String memberId);
     
-    List<RefillOrder> findByOrderStatus(RefillOrder.OrderStatus orderStatus);
+    /**
+     * Loads the order and locks its row until the transaction ends (SELECT ... FOR
+     * UPDATE), so concurrent status changes are applied one after the other.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT ro FROM RefillOrder ro WHERE ro.refillOrderId = :refillOrderId")
+    Optional<RefillOrder> findByIdForUpdate(@Param("refillOrderId") String refillOrderId);
     
-    List<RefillOrder> findByOrderType(RefillOrder.OrderType orderType);
-    
-    List<RefillOrder> findByMemberIdAndOrderStatus(String memberId, RefillOrder.OrderStatus orderStatus);
-    
-    @Query("SELECT ro FROM RefillOrder ro WHERE ro.memberId = :memberId AND ro.orderDate >= :fromDate")
-    List<RefillOrder> findByMemberIdAndOrderDateAfter(@Param("memberId") String memberId,
-                                                      @Param("fromDate") LocalDateTime fromDate);
-    
-    @Query("SELECT ro FROM RefillOrder ro WHERE ro.orderDate BETWEEN :startDate AND :endDate")
-    List<RefillOrder> findOrdersBetweenDates(@Param("startDate") LocalDateTime startDate,
-                                             @Param("endDate") LocalDateTime endDate);
-    
-    @Query("SELECT COUNT(ro) FROM RefillOrder ro WHERE ro.memberId = :memberId AND ro.orderStatus = :status")
-    Long countByMemberIdAndOrderStatus(@Param("memberId") String memberId,
-                                       @Param("status") RefillOrder.OrderStatus status);
+    @Query("SELECT ro.refillOrderId FROM RefillOrder ro WHERE ro.memberId = :memberId")
+    List<String> findOrderIdsByMemberId(@Param("memberId") String memberId);
 }

@@ -25,7 +25,6 @@ export interface SignupRequest {
   email: string;
   password: string;
   fullName: string;
-  memberId?: string; // Optional since it's auto-generated
 }
 
 /** Profile update. Omit password to keep it; members changing their own must send currentPassword. */
@@ -51,21 +50,6 @@ export interface Drug {
   unitsPerPackage: number;
   costPerPackage: number;
   medicalComposition: string;
-}
-
-export interface DrugLocation {
-  drugId: string;
-  location: string;
-  quantityAvailable: number;
-}
-
-export interface DrugStockResponse {
-  drugId: string;
-  drugName: string;
-  location: string;
-  quantityAvailable: number;
-  costPerPackage: number;
-  isAvailable: boolean;
 }
 
 export interface MemberPrescription {
@@ -101,20 +85,6 @@ export interface SubscriptionRequest {
   doctorDetails: string;
   refillFrequency: "WEEKLY" | "MONTHLY";
   memberLocation: string;
-}
-
-export interface RefillOrder {
-  refillOrderId: string;
-  subscriptionId: string;
-  refillDate: string;
-  quantity: number;
-  paymentStatus: "PAID" | "PENDING";
-}
-
-export interface RefillOrderLineItem {
-  refillOrderId: string;
-  drugId: string;
-  quantity: number;
 }
 
 export interface RefillLineItemResponse {

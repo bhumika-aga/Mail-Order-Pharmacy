@@ -33,11 +33,8 @@ spring:
 
 jwt:
   secret: ${JWT_SECRET}
-  expiration: ${JWT_EXPIRATION}
 
 services:
-  auth:
-    url: ${AUTH_SERVICE_URL}
   drugs:
     url: ${DRUGS_SERVICE_URL}
 

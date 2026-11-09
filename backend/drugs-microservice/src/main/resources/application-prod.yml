@@ -33,11 +33,6 @@ spring:
 
 jwt:
   secret: ${JWT_SECRET}
-  expiration: ${JWT_EXPIRATION}
-
-services:
-  auth:
-    url: ${AUTH_SERVICE_URL}
 
 management:
   endpoints:

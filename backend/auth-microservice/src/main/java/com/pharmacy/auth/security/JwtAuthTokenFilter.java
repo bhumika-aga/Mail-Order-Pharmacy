@@ -1,13 +1,14 @@
 package com.pharmacy.auth.security;
 
+import com.pharmacy.auth.service.UserDetailsImpl;
 import com.pharmacy.auth.service.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -25,14 +26,20 @@ public class JwtAuthTokenFilter extends OncePerRequestFilter {
     }
     
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
         throws ServletException, IOException {
         try {
             String jwt = parseJwt(request);
             if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
                 String username = jwtUtils.getUserNameFromJwtToken(jwt);
                 
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsService.loadUserByUsername(username);
+                // The token belongs to a deleted account whose username was registered again.
+                Long tokenUserId = jwtUtils.getUserIdFromJwtToken(jwt);
+                if (tokenUserId != null && !tokenUserId.equals(userDetails.getId())) {
+                    filterChain.doFilter(request, response); // unauthenticated -> 401
+                    return;
+                }
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                     userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

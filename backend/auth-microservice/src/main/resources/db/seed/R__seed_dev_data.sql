@@ -9,3 +9,8 @@ VALUES ('member1', 'member1@pharmacy.com', '$2a$10$USgSbpLWz3gno1KkblHbl.cmaeRBH
         'Member Three', 'MEMBER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
        ('admin', 'admin@pharmacy.com', '$2a$10$USgSbpLWz3gno1KkblHbl.cmaeRBHFxv3cX/6dCYKkfEFaaG8BHyC', NULL,
         'Pharmacy Admin', 'ADMIN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+-- Case-insensitive uniqueness keys (see V3); the application sets them on save
+UPDATE users
+SET username_key = LOWER(username),
+    email_key    = LOWER(email);

@@ -21,6 +21,9 @@ services:
       - "8084:8084"
     environment:
       <<: *backend-env
+      # Deleting a user erases their data in these services (container-to-container)
+      SUBSCRIPTION_SERVICE_URL: http://subscription-microservice:8082
+      REFILL_SERVICE_URL: http://refill-microservice:8083
     networks: [ pharmacy-network ]
     healthcheck:
       <<: *healthcheck

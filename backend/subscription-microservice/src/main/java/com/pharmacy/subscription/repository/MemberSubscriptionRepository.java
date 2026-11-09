@@ -1,8 +1,12 @@
 package com.pharmacy.subscription.repository;
 
 import com.pharmacy.subscription.entity.MemberSubscription;
+import org.jspecify.annotations.NonNull;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -25,9 +29,11 @@ public interface MemberSubscriptionRepository extends JpaRepository<MemberSubscr
     
     @Override
     @EntityGraph(attributePaths = "prescription")
-    Optional<MemberSubscription> findById(String subscriptionId);
-    
-    List<MemberSubscription> findByPrescriptionId(String prescriptionId);
+    @NonNull Optional<MemberSubscription> findById(@NonNull String subscriptionId);
     
     List<MemberSubscription> findBySubscriptionStatus(MemberSubscription.SubscriptionStatus status);
+    
+    @Modifying
+    @Query("DELETE FROM MemberSubscription s WHERE s.memberId = :memberId")
+    int deleteByMemberId(@Param("memberId") String memberId);
 }

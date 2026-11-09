@@ -7,6 +7,7 @@ import com.pharmacy.subscription.entity.MemberSubscription;
 import com.pharmacy.subscription.exception.ApiException;
 import com.pharmacy.subscription.repository.MemberPrescriptionRepository;
 import com.pharmacy.subscription.repository.MemberSubscriptionRepository;
+import com.pharmacy.subscription.security.ErasedMembers;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -26,17 +27,20 @@ public class SubscriptionService {
     private final DrugServiceClient drugServiceClient;
     private final TransactionTemplate transactionTemplate;
     private final Clock clock;
+    private final ErasedMembers erasedMembers;
     
     public SubscriptionService(MemberPrescriptionRepository prescriptionRepository,
                                MemberSubscriptionRepository subscriptionRepository,
                                DrugServiceClient drugServiceClient,
                                PlatformTransactionManager transactionManager,
-                               Clock clock) {
+                               Clock clock,
+                               ErasedMembers erasedMembers) {
         this.prescriptionRepository = prescriptionRepository;
         this.subscriptionRepository = subscriptionRepository;
         this.drugServiceClient = drugServiceClient;
         this.transactionTemplate = new TransactionTemplate(transactionManager);
         this.clock = clock;
+        this.erasedMembers = erasedMembers;
     }
     
     private static String newId(String prefix, java.util.function.Predicate<String> exists) {
@@ -110,6 +114,19 @@ public class SubscriptionService {
                 request.getMemberLocation(),
                 MemberSubscription.SubscriptionStatus.ACTIVE));
         });
+    }
+    
+    /**
+     * Erases all of a member's subscriptions and prescriptions (their account is
+     * being deleted). Subscriptions go first, as they reference the prescriptions.
+     * Repeating it is harmless.
+     */
+    @Transactional
+    public Map<String, Integer> eraseMember(String memberId) {
+        erasedMembers.record(memberId); // the member's existing tokens stop working here
+        int subscriptions = subscriptionRepository.deleteByMemberId(memberId);
+        int prescriptions = prescriptionRepository.deleteByMemberId(memberId);
+        return Map.of("deletedSubscriptions", subscriptions, "deletedPrescriptions", prescriptions);
     }
     
     @Transactional

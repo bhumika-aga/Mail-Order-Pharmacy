@@ -41,4 +41,17 @@ public interface DrugLocationRepository extends JpaRepository<DrugLocation, Drug
                + "WHERE dl.drugId = :drugId AND dl.location = :location")
     int incrementStock(@Param("drugId") String drugId, @Param("location") String location,
                        @Param("quantity") int quantity);
+    
+    @Query(value = "SELECT COUNT(*) FROM stock_releases WHERE release_id = :releaseId", nativeQuery = true)
+    long countAppliedReleases(@Param("releaseId") String releaseId);
+    
+    /**
+     * Records a release as applied. The primary key rejects a second record of the
+     * same release ID, which rolls back that (duplicate) release.
+     */
+    @Modifying(flushAutomatically = true)
+    @Query(value = "INSERT INTO stock_releases (release_id, drug_id, location, quantity, released_at) "
+                       + "VALUES (:releaseId, :drugId, :location, :quantity, CURRENT_TIMESTAMP)", nativeQuery = true)
+    void recordAppliedRelease(@Param("releaseId") String releaseId, @Param("drugId") String drugId,
+                              @Param("location") String location, @Param("quantity") int quantity);
 }

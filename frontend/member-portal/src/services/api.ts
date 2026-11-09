@@ -5,8 +5,6 @@ import {
   AdhocRefillResponse,
   AuthResponse,
   Drug,
-  DrugLocation,
-  DrugStockResponse,
   MemberPrescription,
   MemberSubscription,
   MessageResponse,
@@ -101,9 +99,6 @@ export const authService = {
 
   getAllUsers: (): Promise<AxiosResponse<User[]>> => authApi.get("/users"),
 
-  getUserById: (id: number): Promise<AxiosResponse<User>> =>
-    authApi.get(`/users/${encodeURIComponent(id)}`),
-
   updateUser: (
     id: number,
     userData: UpdateUserRequest,
@@ -122,11 +117,6 @@ export const authService = {
     email: string,
   ): Promise<AxiosResponse<MessageResponse>> =>
     authApi.get(`/check-email/${encodeURIComponent(email)}`),
-
-  checkMemberIdAvailability: (
-    memberId: string,
-  ): Promise<AxiosResponse<MessageResponse>> =>
-    authApi.get(`/check-memberid/${encodeURIComponent(memberId)}`),
 };
 
 export const drugService = {
@@ -136,16 +126,7 @@ export const drugService = {
   searchByName: (drugName: string): Promise<AxiosResponse<Drug[]>> =>
     drugsApi.get("/searchDrugsByName", { params: { drugName } }),
 
-  getDispatchableStock: (
-    drugIds: string[],
-    location: string,
-  ): Promise<AxiosResponse<DrugStockResponse[]>> =>
-    drugsApi.post("/getDispatchableDrugStock", { drugIds, location }),
-
   getAllValidDrugs: (): Promise<AxiosResponse<Drug[]>> => drugsApi.get("/all"),
-
-  getDrugLocations: (drugId: string): Promise<AxiosResponse<DrugLocation[]>> =>
-    drugsApi.get(`/${encodeURIComponent(drugId)}/locations`),
 };
 
 export const subscriptionService = {
@@ -162,16 +143,8 @@ export const subscriptionService = {
   getMySubscriptions: (): Promise<AxiosResponse<MemberSubscription[]>> =>
     subscriptionApi.get("/my-subscriptions"),
 
-  getActiveSubscriptions: (): Promise<AxiosResponse<MemberSubscription[]>> =>
-    subscriptionApi.get("/active"),
-
   getPrescriptions: (): Promise<AxiosResponse<MemberPrescription[]>> =>
     subscriptionApi.get("/prescriptions"),
-
-  getSubscriptionById: (
-    subscriptionId: string,
-  ): Promise<AxiosResponse<MemberSubscription>> =>
-    subscriptionApi.get(`/${encodeURIComponent(subscriptionId)}`),
 };
 
 export const refillService = {

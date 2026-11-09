@@ -1,0 +1,5 @@
+# Only pom.xml and src/ are needed: keep local build output and IDE files out of the build context
+target/
+.idea/
+*.iml
+.DS_Store

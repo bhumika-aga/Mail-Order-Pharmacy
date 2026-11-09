@@ -107,6 +107,7 @@ const UserManagementPage: React.FC = () => {
 
   const handleDelete = (user: User) => {
     setSelectedUser(user);
+    deleteMutation.reset(); // clear an error left from an earlier attempt
     setDeleteDialog(true);
   };
 
@@ -438,9 +439,18 @@ const UserManagementPage: React.FC = () => {
       <Dialog open={deleteDialog} onClose={() => setDeleteDialog(false)}>
         <DialogTitle>Confirm Delete</DialogTitle>
         <DialogContent>
+          {deleteMutation.error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {apiErrorMessage(
+                deleteMutation.error,
+                "Delete failed. Please try again.",
+              )}
+            </Alert>
+          )}
           <DialogContentText>
             Are you sure you want to delete user "{selectedUser?.username}"?
-            This action cannot be undone.
+            Their prescriptions, subscriptions and refill orders will be
+            permanently erased too. This action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

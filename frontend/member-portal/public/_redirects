@@ -1,1 +1,3 @@
+# SPA fallback for Netlify and Cloudflare Pages: serve index.html for every route.
+# Other hosts need their own equivalent; see "Hosting the member portal" in README.md.
 /*    /index.html   200

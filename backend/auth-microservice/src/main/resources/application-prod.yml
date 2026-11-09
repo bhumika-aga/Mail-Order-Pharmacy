@@ -56,3 +56,11 @@ logging:
 app:
   cors:
     allowed-origins: ${APP_CORS_ALLOWED_ORIGINS}
+
+# When a user is deleted, their data in these services is erased too
+subscription:
+  service:
+    url: ${SUBSCRIPTION_SERVICE_URL}
+refill:
+  service:
+    url: ${REFILL_SERVICE_URL}

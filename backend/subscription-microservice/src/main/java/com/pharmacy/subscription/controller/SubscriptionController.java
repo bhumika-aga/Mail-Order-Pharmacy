@@ -15,6 +15,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -108,6 +109,14 @@ public class SubscriptionController {
                    .filter(subscription -> admin || subscription.getMemberId().equals(memberId))
                    .map(ResponseEntity::ok)
                    .orElse(ResponseEntity.notFound().build());
+    }
+    
+    @DeleteMapping("/members/{memberId}")
+    @PreAuthorize("hasRole('SERVICE')")
+    @Operation(summary = "Erase a member's subscriptions and prescriptions (internal)",
+        description = "Called by the auth service when a user is deleted. Requires a SERVICE token.")
+    public ResponseEntity<Map<String, Integer>> eraseMember(@PathVariable String memberId) {
+        return ResponseEntity.ok(subscriptionService.eraseMember(memberId));
     }
     
     @GetMapping("/refillDues")

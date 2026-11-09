@@ -1,53 +1,30 @@
-# Multi-stage build for swagger-aggregator
+# swagger-aggregator: multi-stage build. The build context is this folder:
+#   docker build -t swagger-aggregator backend/swagger-aggregator
+# (on a hosting platform: Dockerfile path backend/swagger-aggregator/Dockerfile, build context backend/swagger-aggregator)
+
+# ---- Build stage: compile with the official Maven image ----
 FROM maven:3.9-eclipse-temurin-21 AS builder
+WORKDIR /build
 
-# Set working directory
-WORKDIR /app
-
-# Copy pom.xml first for better layer caching
+# Resolve dependencies first so they are cached between source changes
 COPY pom.xml .
+RUN mvn -B dependency:go-offline
 
-# Download dependencies
-RUN mvn dependency:go-offline -B
+COPY src src
+RUN mvn -B clean package -DskipTests
 
-# Copy source code
-COPY src ./src
-
-# Build the application
-RUN mvn clean package -DskipTests
-
-# Production stage
+# ---- Runtime stage: slim JRE, non-root user ----
 FROM eclipse-temurin:21-jre-jammy
-
-# Add labels for better container management
-LABEL maintainer="pharmacy-team"
-LABEL version="1.0.0"
-LABEL description="Swagger aggregator for Mail Order Pharmacy microservices"
-
-# Create app user for security
-RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
-
-# Set working directory
 WORKDIR /app
-
-# Create data directory
-RUN mkdir -p /app/data && chown -R appuser:appgroup /app
-
-# Copy the jar file from builder stage
-COPY --from=builder /app/target/swagger-aggregator-*.jar /app/swagger-aggregator.jar
-
-# Change ownership to app user
-RUN chown appuser:appgroup /app/swagger-aggregator.jar
-
-# Switch to non-root user
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
+COPY --from=builder --chown=appuser:appgroup /build/target/swagger-aggregator-*.jar app.jar
 USER appuser
 
-# Expose port
+# Most hosting platforms inject PORT; fall back to the service's default port.
+ENV PORT=8085
 EXPOSE 8085
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:8085/actuator/health || exit 1
+    CMD curl -fs http://localhost:${PORT}/actuator/health || exit 1
 
-# Run the application
-ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "/app/swagger-aggregator.jar"]
+CMD ["sh", "-c", "exec java -Dserver.port=$PORT -jar /app/app.jar"]

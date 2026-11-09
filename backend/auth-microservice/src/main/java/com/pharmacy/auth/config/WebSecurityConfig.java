@@ -75,8 +75,7 @@ public class WebSecurityConfig {
                                                .requestMatchers(HttpMethod.POST,
                                                    "/api/auth/signin", "/api/auth/signup", "/api/auth/validate").permitAll()
                                                .requestMatchers(HttpMethod.GET,
-                                                   "/api/auth/check-username/**", "/api/auth/check-email/**",
-                                                   "/api/auth/check-memberid/**").permitAll()
+                                                   "/api/auth/check-username/**", "/api/auth/check-email/**").permitAll()
                                                // Docs, health and error rendering
                                                .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                                                .requestMatchers("/actuator/health/**", "/actuator/info").permitAll()

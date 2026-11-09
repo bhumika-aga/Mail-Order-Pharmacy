@@ -2,6 +2,7 @@ package com.pharmacy.auth.service;
 
 import com.pharmacy.auth.entity.User;
 import com.pharmacy.auth.repository.UserRepository;
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -19,7 +20,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     
     @Override
     @Transactional
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public @NonNull UserDetails loadUserByUsername(@NonNull String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
                         .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
         

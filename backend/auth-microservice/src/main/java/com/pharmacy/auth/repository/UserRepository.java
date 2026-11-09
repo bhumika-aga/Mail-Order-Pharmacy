@@ -10,13 +10,14 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUsername(String username);
     
-    Optional<User> findByEmail(String email);
+    // Usernames and emails are unique regardless of case ("Bob" and "bob" are the same user)
+    boolean existsByUsernameIgnoreCase(String username);
     
-    Optional<User> findByMemberId(String memberId);
+    boolean existsByEmailIgnoreCase(String email);
     
-    Boolean existsByUsername(String username);
+    boolean existsByUsernameIgnoreCaseAndIdNot(String username, Long id);
     
-    Boolean existsByEmail(String email);
+    boolean existsByEmailIgnoreCaseAndIdNot(String email, Long id);
     
     Boolean existsByMemberId(String memberId);
 }

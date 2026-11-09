@@ -122,15 +122,23 @@
           "response": [
             {
               "name": "200 JWT issued",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"token\": \"eyJhbGciOiJIUzUxMiJ9...\",\n  \"username\": \"member1\",\n  \"memberId\": \"MEM001\",\n  \"role\": \"MEMBER\",\n  \"expirationTime\": 900000,\n  \"type\": \"Bearer\"\n}",
               "originalRequest": {
                 "method": "POST",
                 "url": {
-                  "raw": "{{auth_url}}/api/auth/signin"
+                  "raw": "{{auth_url}}/api/auth/signin",
+                  "host": [
+                    "{{auth_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "signin"
+                  ]
                 }
-              },
-              "status": "OK",
-              "code": 200,
-              "body": "{\n  \"token\": \"eyJhbGciOiJIUzUxMiJ9...\",\n  \"username\": \"member1\",\n  \"memberId\": \"MEM001\",\n  \"expirationTime\": 900000,\n  \"type\": \"Bearer\"\n}"
+              }
             }
           ]
         },
@@ -174,7 +182,28 @@
             },
             "description": "Signs in as the seeded dev admin and stores the JWT in `admin_token`, used by the admin-only requests (List Users, Delete User, Update Refill Order Status)."
           },
-          "response": []
+          "response": [
+            {
+              "name": "200 JWT issued (admin: no member ID)",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"token\": \"eyJhbGciOiJIUzUxMiJ9...\",\n  \"username\": \"admin\",\n  \"memberId\": null,\n  \"role\": \"ADMIN\",\n  \"expirationTime\": 900000,\n  \"type\": \"Bearer\"\n}",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{auth_url}}/api/auth/signin",
+                  "host": [
+                    "{{auth_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "signin"
+                  ]
+                }
+              }
+            }
+          ]
         },
         {
           "name": "Validate Token",
@@ -301,8 +330,73 @@
                 "99"
               ]
             },
-            "description": "Admin only: run **Auth → Sign In (Admin)** first."
-          }
+            "description": "Admin only: run **Auth → Sign In (Admin)** first.\n\nAlso permanently erases the member's prescriptions, subscriptions and refill orders (returning the stock of orders that hadn't shipped), and their existing tokens stop working. If the subscription or refill service can't be reached, the user is kept and `503` is returned; retrying is safe."
+          },
+          "response": [
+            {
+              "name": "200 Deleted, data erased",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"message\": \"User deleted successfully!\"\n}",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": {
+                  "raw": "{{auth_url}}/api/auth/users/99",
+                  "host": [
+                    "{{auth_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "users",
+                    "99"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "503 Data could not be erased (user kept)",
+              "status": "Service Unavailable",
+              "code": 503,
+              "body": "{\n  \"message\": \"User was not deleted: their data in the refill service could not be erased right now. Please try again.\"\n}",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": {
+                  "raw": "{{auth_url}}/api/auth/users/99",
+                  "host": [
+                    "{{auth_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "users",
+                    "99"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "404 No such user",
+              "status": "Not Found",
+              "code": 404,
+              "body": "",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": {
+                  "raw": "{{auth_url}}/api/auth/users/99",
+                  "host": [
+                    "{{auth_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "users",
+                    "99"
+                  ]
+                }
+              }
+            }
+          ]
         },
         {
           "name": "Check Username Availability",
@@ -605,16 +699,24 @@
           },
           "response": [
             {
-              "name": "200 true",
+              "name": "403 Forbidden (member or admin token)",
+              "status": "Forbidden",
+              "code": 403,
+              "body": "{\n  \"timestamp\": \"2026-11-09T13:23:23.922Z\",\n  \"status\": 403,\n  \"error\": \"Forbidden\",\n  \"path\": \"/api/drugs/reserve\"\n}",
               "originalRequest": {
                 "method": "POST",
                 "url": {
-                  "raw": "{{drugs_url}}/api/drugs/reserve"
+                  "raw": "{{drugs_url}}/api/drugs/reserve",
+                  "host": [
+                    "{{drugs_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "drugs",
+                    "reserve"
+                  ]
                 }
-              },
-              "status": "OK",
-              "code": 200,
-              "body": "true"
+              }
             }
           ]
         }
@@ -1010,20 +1112,92 @@
                 }
               ]
             },
-            "description": "Admin only: run **Auth → Sign In (Admin)** first."
+            "description": "Admin only: run **Auth → Sign In (Admin)** first.\n\nOrders only move forward: `CONFIRMED` → `IN_PROGRESS` (optional) → `SHIPPED` → `DELIVERED`. An order can be `CANCELLED` until it ships, which returns its reserved stock. Anything else, including setting the status the order already has, returns `409`."
           },
           "response": [
             {
-              "name": "200 Shipped (tracking generated)",
+              "name": "200 Shipped (tracking generated once)",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"refillOrderId\": \"ROF42D38CC\",\n  \"memberId\": \"MEM001\",\n  \"orderDate\": \"2026-11-09T18:53:24.185495\",\n  \"memberLocation\": \"New York\",\n  \"orderStatus\": \"SHIPPED\",\n  \"orderType\": \"ADHOC\",\n  \"subscriptionId\": null,\n  \"deliveryDate\": null,\n  \"trackingNumber\": \"TRK1394A63A\",\n  \"lineItems\": [\n    {\n      \"lineItemId\": 8,\n      \"drugCode\": \"D001\",\n      \"drugName\": \"Paracetamol 500mg\",\n      \"quantity\": 1,\n      \"prescriptionId\": \"PRES001\",\n      \"unitPrice\": 15.5,\n      \"totalPrice\": 15.5\n    }\n  ],\n  \"totalAmount\": 15.5\n}",
               "originalRequest": {
                 "method": "PUT",
                 "url": {
-                  "raw": "{{refill_url}}/api/refill/orders/REF005/status?status=SHIPPED"
+                  "raw": "{{refill_url}}/api/refill/orders/REF005/status?status=SHIPPED",
+                  "host": [
+                    "{{refill_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "refill",
+                    "orders",
+                    "REF005",
+                    "status"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "SHIPPED"
+                    }
+                  ]
                 }
-              },
-              "status": "OK",
-              "code": 200,
-              "body": "{\n  \"refillOrderId\": \"REF005\",\n  \"orderStatus\": \"SHIPPED\",\n  \"trackingNumber\": \"TRKC8671648\"\n}"
+              }
+            },
+            {
+              "name": "409 Already shipped",
+              "status": "Conflict",
+              "code": 409,
+              "body": "{\n  \"error\": \"Invalid Status Change\",\n  \"message\": \"Refill order ROF42D38CC is already SHIPPED\"\n}",
+              "originalRequest": {
+                "method": "PUT",
+                "url": {
+                  "raw": "{{refill_url}}/api/refill/orders/REF005/status?status=SHIPPED",
+                  "host": [
+                    "{{refill_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "refill",
+                    "orders",
+                    "REF005",
+                    "status"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "SHIPPED"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "409 Shipped orders can't be cancelled",
+              "status": "Conflict",
+              "code": 409,
+              "body": "{\n  \"error\": \"Invalid Status Change\",\n  \"message\": \"Refill order ROF42D38CC cannot change from SHIPPED to CANCELLED\"\n}",
+              "originalRequest": {
+                "method": "PUT",
+                "url": {
+                  "raw": "{{refill_url}}/api/refill/orders/REF005/status?status=SHIPPED",
+                  "host": [
+                    "{{refill_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "refill",
+                    "orders",
+                    "REF005",
+                    "status"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "SHIPPED"
+                    }
+                  ]
+                }
+              }
             }
           ]
         }

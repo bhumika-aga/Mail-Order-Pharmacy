@@ -2,6 +2,7 @@ package com.pharmacy.drugs.controller;
 
 import com.pharmacy.drugs.dto.DrugStockRequest;
 import com.pharmacy.drugs.dto.DrugStockResponse;
+import com.pharmacy.drugs.dto.StockReleaseRequest;
 import com.pharmacy.drugs.dto.StockReservationRequest;
 import com.pharmacy.drugs.entity.Drug;
 import com.pharmacy.drugs.entity.DrugLocation;
@@ -10,8 +11,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -34,8 +35,7 @@ public class DrugController {
     @GetMapping("/searchDrugsByID")
     @Operation(summary = "Search drug by ID", description = "Search for a specific drug by its ID")
     public ResponseEntity<?> searchDrugsByID(
-        @Parameter(description = "Drug ID to search for", required = true) @RequestParam String drugId,
-        HttpServletRequest request) {
+        @Parameter(description = "Drug ID to search for", required = true) @RequestParam String drugId) {
         
         Optional<Drug> drug = drugService.searchDrugById(drugId);
         
@@ -49,8 +49,7 @@ public class DrugController {
     @GetMapping("/searchDrugsByName")
     @Operation(summary = "Search drugs by name", description = "Search for drugs containing the specified name")
     public ResponseEntity<List<Drug>> searchDrugsByName(
-        @Parameter(description = "Drug name to search for", required = true) @RequestParam String drugName,
-        HttpServletRequest request) {
+        @Parameter(description = "Drug name to search for", required = true) @RequestParam String drugName) {
         
         List<Drug> drugs = drugService.searchDrugsByName(drugName);
         return ResponseEntity.ok(drugs);
@@ -59,8 +58,7 @@ public class DrugController {
     @PostMapping("/getDispatchableDrugStock")
     @Operation(summary = "Get dispatchable drug stock", description = "Get available stock for specified drugs at a specific location")
     public ResponseEntity<List<DrugStockResponse>> getDispatchableDrugStock(
-        @Valid @RequestBody DrugStockRequest request,
-        HttpServletRequest httpRequest) {
+        @Valid @RequestBody DrugStockRequest request) {
         
         List<DrugStockResponse> stockResponses = drugService.getDispatchableDrugStock(request);
         return ResponseEntity.ok(stockResponses);
@@ -68,7 +66,7 @@ public class DrugController {
     
     @GetMapping("/all")
     @Operation(summary = "Get all valid drugs", description = "Get all drugs that are not expired")
-    public ResponseEntity<List<Drug>> getAllValidDrugs(HttpServletRequest request) {
+    public ResponseEntity<List<Drug>> getAllValidDrugs() {
         
         List<Drug> drugs = drugService.getAllValidDrugs();
         return ResponseEntity.ok(drugs);
@@ -77,8 +75,7 @@ public class DrugController {
     @GetMapping("/{drugId}/locations")
     @Operation(summary = "Get drug locations", description = "Get all locations where a specific drug is available")
     public ResponseEntity<List<DrugLocation>> getDrugLocations(
-        @Parameter(description = "Drug ID", required = true) @PathVariable String drugId,
-        HttpServletRequest request) {
+        @Parameter(description = "Drug ID", required = true) @PathVariable String drugId) {
         
         List<DrugLocation> locations = drugService.getDrugLocationsByDrugId(drugId);
         return ResponseEntity.ok(locations);
@@ -109,9 +106,15 @@ public class DrugController {
     @PostMapping("/release")
     @PreAuthorize("hasRole('SERVICE')")
     @Operation(summary = "Release reserved drug stock",
-        description = "Return previously reserved stock, e.g. when an order fails part-way (internal: service token only)")
-    public ResponseEntity<Boolean> releaseStock(@Valid @RequestBody StockReservationRequest request) {
-        return ResponseEntity.ok(
-            drugService.releaseStock(request.drugCode(), request.location(), request.quantity()));
+        description = "Return previously reserved stock, e.g. for a cancelled order (internal: service token only). "
+                          + "A release with a releaseId is applied at most once, so callers can retry safely.")
+    public ResponseEntity<Boolean> releaseStock(@Valid @RequestBody StockReleaseRequest request) {
+        try {
+            return ResponseEntity.ok(drugService.releaseStock(request.releaseId(), request.drugCode(),
+                request.location(), request.quantity()));
+        } catch (DataIntegrityViolationException e) {
+            // The same release was applied concurrently; this duplicate was rolled back.
+            return ResponseEntity.ok(true);
+        }
     }
 }
