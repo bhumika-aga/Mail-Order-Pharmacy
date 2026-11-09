@@ -31,6 +31,9 @@ class UserAccountIntegrationTest {
     @MockitoBean
     private MemberDataClient memberDataClient;
     
+    @Autowired
+    private UserDetailsServiceImpl userDetailsService;
+    
     private User create(String username, String email) {
         return userService.createUser(username, email, "password1", "Test User");
     }
@@ -114,6 +117,23 @@ class UserAccountIntegrationTest {
         assertThatThrownBy(() -> userService.deleteUser(user.getId()))
             .isInstanceOf(MemberDataErasureException.class);
         assertThat(userRepository.findById(user.getId())).isPresent();
+    }
+    
+    @Test
+    void aTokenOnlyMatchesTheAccountItWasIssuedTo() {
+        User user = create("holder", "holder@example.com");
+        
+        assertThat(userDetailsService.loadTokenAccount("holder", user.getId())).isPresent();
+        assertThat(userDetailsService.loadTokenAccount("holder", null)).isPresent(); // token from before the uid claim
+        assertThat(userDetailsService.loadTokenAccount("holder", user.getId() + 1000)).isEmpty();
+        
+        userService.deleteUser(user.getId());
+        assertThat(userDetailsService.loadTokenAccount("holder", user.getId())).isEmpty();
+        
+        // The username is registered again: the old token must not open the new account.
+        User newcomer = create("holder", "holder.new@example.com");
+        assertThat(userDetailsService.loadTokenAccount("holder", user.getId())).isEmpty();
+        assertThat(userDetailsService.loadTokenAccount("holder", newcomer.getId())).isPresent();
     }
     
     @Test

@@ -5,6 +5,8 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -23,7 +25,7 @@ public class JwtUtils {
      * JWT_SECRET environment variable; there is deliberately no default.
      */
     static final int MIN_SECRET_BYTES = 64;
-    
+    private static final Logger log = LoggerFactory.getLogger(JwtUtils.class);
     /**
      * Lifetime of an internal service token; one is minted per call, so keep it short.
      */
@@ -124,11 +126,12 @@ public class JwtUtils {
             getAllClaimsFromToken(authToken);
             return true;
         } catch (ExpiredJwtException e) {
-            System.err.println("JWT token is expired: " + e.getMessage());
+            log.debug("JWT token is expired: {}", e.getMessage()); // routine: the client signs in again
         } catch (JwtException e) {
-            System.err.println("Invalid JWT token: " + e.getMessage());
+            // A bad signature can mean a JWT_SECRET mismatch between services, or a forged token.
+            log.warn("Invalid JWT token: {}", e.getMessage());
         } catch (IllegalArgumentException e) {
-            System.err.println("JWT claims string is empty: " + e.getMessage());
+            log.debug("JWT claims string is empty: {}", e.getMessage());
         }
         return false;
     }

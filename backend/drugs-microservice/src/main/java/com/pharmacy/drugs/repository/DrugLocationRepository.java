@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -54,4 +55,12 @@ public interface DrugLocationRepository extends JpaRepository<DrugLocation, Drug
                        + "VALUES (:releaseId, :drugId, :location, :quantity, CURRENT_TIMESTAMP)", nativeQuery = true)
     void recordAppliedRelease(@Param("releaseId") String releaseId, @Param("drugId") String drugId,
                               @Param("location") String location, @Param("quantity") int quantity);
+    
+    /**
+     * Forgets applied releases older than {@code cutoff}; callers only retry a
+     * release for a short while, so old records can no longer prevent a duplicate.
+     */
+    @Modifying
+    @Query(value = "DELETE FROM stock_releases WHERE released_at < :cutoff", nativeQuery = true)
+    int deleteAppliedReleasesBefore(@Param("cutoff") LocalDateTime cutoff);
 }

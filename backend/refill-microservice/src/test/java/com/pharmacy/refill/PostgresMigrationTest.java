@@ -106,7 +106,7 @@ class PostgresMigrationTest {
         try (ConfigurableApplicationContext app = startProd(newDatabase(""))) {
             JdbcTemplate jdbc = new JdbcTemplate(app.getBean(DataSource.class));
             assertThat(tables(jdbc)).contains("refill_orders", "refill_order_line_items");
-            assertThat(appliedVersions(jdbc)).containsExactly("1", "2", "3");
+            assertThat(appliedVersions(jdbc)).containsExactly("1", "2", "3", "4");
             assertNoSeedData(jdbc);
             assertRowLevelSecurityOnAllTables(jdbc);
         }
@@ -127,7 +127,7 @@ class PostgresMigrationTest {
             JdbcTemplate jdbc = new JdbcTemplate(app.getBean(DataSource.class));
             assertThat(jdbc.queryForObject("SELECT count(*) FROM refill_order_line_items WHERE refill_order_id = 'ROX'", Integer.class)).isEqualTo(1);
             // baseline at 0 for the existing schema, then every migration runs (as a no-op where applied)
-            assertThat(appliedVersions(jdbc)).containsExactly("0", "1", "2", "3");
+            assertThat(appliedVersions(jdbc)).containsExactly("0", "1", "2", "3", "4");
             assertNoSeedData(jdbc);
             assertRowLevelSecurityOnAllTables(jdbc);
         }

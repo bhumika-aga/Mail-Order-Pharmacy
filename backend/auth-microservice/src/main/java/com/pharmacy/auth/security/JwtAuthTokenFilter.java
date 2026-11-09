@@ -14,6 +14,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Optional;
 
 public class JwtAuthTokenFilter extends OncePerRequestFilter {
     
@@ -31,23 +32,21 @@ public class JwtAuthTokenFilter extends OncePerRequestFilter {
         try {
             String jwt = parseJwt(request);
             if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
-                String username = jwtUtils.getUserNameFromJwtToken(jwt);
-                
-                UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsService.loadUserByUsername(username);
-                // The token belongs to a deleted account whose username was registered again.
-                Long tokenUserId = jwtUtils.getUserIdFromJwtToken(jwt);
-                if (tokenUserId != null && !tokenUserId.equals(userDetails.getId())) {
-                    filterChain.doFilter(request, response); // unauthenticated -> 401
-                    return;
+                Optional<UserDetailsImpl> account = userDetailsService.loadTokenAccount(
+                    jwtUtils.getUserNameFromJwtToken(jwt), jwtUtils.getUserIdFromJwtToken(jwt));
+                if (account.isPresent()) {
+                    UserDetailsImpl userDetails = account.get();
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities());
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                } else {
+                    // Routine after a user is deleted: the request stays unauthenticated (401).
+                    logger.debug("Token's account no longer exists; request left unauthenticated");
                 }
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    userDetails, null, userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                
-                SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (Exception e) {
-            logger.error("Cannot set user authentication: {}", e);
+            logger.error("Cannot set user authentication", e);
         }
         
         filterChain.doFilter(request, response);

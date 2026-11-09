@@ -21,7 +21,7 @@ public class JacksonConfig {
     @Bean
     JsonMapperBuilderCustomizer moneyScaleCustomizer() {
         SimpleModule moneyModule = new SimpleModule("money-scale")
-                                       .addSerializer(BigDecimal.class, new ValueSerializer<BigDecimal>() {
+                                       .addSerializer(BigDecimal.class, new ValueSerializer<>() {
                                            @Override
                                            public void serialize(BigDecimal value, JsonGenerator gen,
                                                                  SerializationContext ctxt) {

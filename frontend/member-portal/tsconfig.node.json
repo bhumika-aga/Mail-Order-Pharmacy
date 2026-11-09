@@ -5,6 +5,11 @@
     // Vite would load a stale vite.config.js in preference to the .ts file.
     "outDir": "./node_modules/.tmp/tsconfig.node",
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+    // Vite's native config loader needs explicit file extensions on imports
+    // (e.g. "./src/config/serviceUrls.ts"); TypeScript allows that only when
+    // the project emits declarations, not JavaScript.
+    "allowImportingTsExtensions": true,
+    "emitDeclarationOnly": true,
     "skipLibCheck": true,
     "module": "ESNext",
     "moduleResolution": "bundler",

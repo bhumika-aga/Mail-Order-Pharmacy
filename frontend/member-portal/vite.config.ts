@@ -2,7 +2,10 @@
 import react from "@vitejs/plugin-react";
 import { fileURLToPath } from "node:url";
 import { defineConfig, loadEnv, type Plugin } from "vite";
-import { resolveServiceUrl, SERVICE_URL_KEYS } from "./src/config/serviceUrls";
+import {
+  resolveServiceUrl,
+  SERVICE_URL_KEYS,
+} from "./src/config/serviceUrls.ts";
 
 /**
  * Adds a Content-Security-Policy <meta> tag to index.html in production builds.

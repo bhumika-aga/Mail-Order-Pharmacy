@@ -21,6 +21,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +67,7 @@ class RefillServiceTest {
         when(pendingReleases.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
         erasedMembers = mock(ErasedMembers.class);
         service = new RefillService(orderRepository, mock(RefillOrderLineItemRepository.class),
-            subscriptionClient, drugClient, new StockReleaseService(pendingReleases, drugClient), erasedMembers,
+            subscriptionClient, drugClient, new StockReleaseService(pendingReleases, drugClient, Clock.systemUTC()), erasedMembers,
             mock(PlatformTransactionManager.class));
         when(orderRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
         
@@ -288,8 +290,8 @@ class RefillServiceTest {
         // the drugs service is back: the scheduled retry sends the same releases and clears them
         reset(drugClient);
         when(drugClient.releaseDrugStock(anyString(), anyString(), anyString(), anyInt())).thenReturn(true);
-        when(pendingReleases.findTop100ByOrderByCreatedAtAsc()).thenReturn(failed.getAllValues());
-        new StockReleaseService(pendingReleases, drugClient).retryPending();
+        when(pendingReleases.findTop100ByNextAttemptAtLessThanEqualOrderByCreatedAtAsc(any())).thenReturn(failed.getAllValues());
+        new StockReleaseService(pendingReleases, drugClient, Clock.systemUTC()).retryPending();
         
         for (PendingStockRelease release : failed.getAllValues()) {
             verify(drugClient).releaseDrugStock(release.getReleaseId(), release.getDrugCode(), NY, release.getQuantity());
@@ -323,5 +325,34 @@ class RefillServiceTest {
         var order = inOrder(erasedMembers, orderRepository);
         order.verify(erasedMembers).record("MEM001");
         order.verify(orderRepository).delete(any());
+    }
+    
+    @Test
+    void aFailingReleaseIsRetriedWithGrowingGapsUpToAnHour() {
+        PendingStockRelease release = new PendingStockRelease("RO1", "D001", NY, 2);
+        LocalDateTime now = LocalDateTime.of(2026, 11, 9, 12, 0);
+        
+        release.recordFailure("drugs service down", now);
+        assertThat(release.getNextAttemptAt()).isEqualTo(now.plusMinutes(1));
+        release.recordFailure("drugs service down", now);
+        assertThat(release.getNextAttemptAt()).isEqualTo(now.plusMinutes(2));
+        release.recordFailure("drugs service down", now);
+        assertThat(release.getNextAttemptAt()).isEqualTo(now.plusMinutes(4));
+        for (int i = 0; i < 10; i++) {
+            release.recordFailure("drugs service down", now);
+        }
+        assertThat(release.retryDelay()).isEqualTo(Duration.ofHours(1));
+        assertThat(release.getAttempts()).isEqualTo(13);
+    }
+    
+    @Test
+    void onlyReleasesThatAreDueAreRetried() {
+        when(pendingReleases.findTop100ByNextAttemptAtLessThanEqualOrderByCreatedAtAsc(any())).thenReturn(List.of());
+        Clock fixed = Clock.fixed(java.time.Instant.parse("2026-11-09T12:00:00Z"), java.time.ZoneOffset.UTC);
+        
+        new StockReleaseService(pendingReleases, drugClient, fixed).retryPending();
+        
+        verify(pendingReleases).findTop100ByNextAttemptAtLessThanEqualOrderByCreatedAtAsc(LocalDateTime.of(2026, 11, 9, 12, 0));
+        verify(drugClient, never()).releaseDrugStock(anyString(), anyString(), anyString(), anyInt());
     }
 }

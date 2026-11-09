@@ -34,6 +34,9 @@ class DrugServiceIntegrationTest {
     @Autowired
     private DrugLocationRepository drugLocationRepository;
     
+    @Autowired
+    private StockReleaseRecordPruner stockReleaseRecordPruner;
+    
     private int stock(String drugId, String location) {
         return drugLocationRepository.findById(new DrugLocationId(drugId, location)).orElseThrow()
                    .getQuantityAvailable();
@@ -171,5 +174,19 @@ class DrugServiceIntegrationTest {
     void releaseForAnUnknownStockRowIsRefusedAndNotRecorded() {
         assertThat(drugService.releaseStock("release-unknown", "NOPE", "Boston", 1)).isFalse();
         assertThat(drugLocationRepository.countAppliedReleases("release-unknown")).isZero();
+    }
+    
+    @Test
+    void oldReleaseRecordsArePrunedAndRecentOnesKept() {
+        stockedDrug("DREL3", "Boston", 10);
+        assertThat(drugService.releaseStock("release-recent", "DREL3", "Boston", 1)).isTrue();
+        
+        // a recent record survives the default 30-day retention, so a retry is still recognised
+        stockReleaseRecordPruner.prune();
+        assertThat(drugLocationRepository.countAppliedReleases("release-recent")).isOne();
+        
+        // once it is older than the retention period it is removed
+        assertThat(stockReleaseRecordPruner.pruneOlderThan(java.time.Duration.ofSeconds(-5))).isPositive();
+        assertThat(drugLocationRepository.countAppliedReleases("release-recent")).isZero();
     }
 }

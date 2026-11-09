@@ -7,6 +7,7 @@ import com.pharmacy.auth.security.JwtUtils;
 import com.pharmacy.auth.security.LoginAttemptService;
 import com.pharmacy.auth.service.UserAccountException;
 import com.pharmacy.auth.service.UserDetailsImpl;
+import com.pharmacy.auth.service.UserDetailsServiceImpl;
 import com.pharmacy.auth.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -42,13 +43,15 @@ public class AuthController {
     private final JwtUtils jwtUtils;
     private final UserService userService;
     private final LoginAttemptService loginAttempts;
+    private final UserDetailsServiceImpl userDetailsService;
     
     public AuthController(AuthenticationManager authenticationManager, JwtUtils jwtUtils, UserService userService,
-                          LoginAttemptService loginAttempts) {
+                          LoginAttemptService loginAttempts, UserDetailsServiceImpl userDetailsService) {
         this.authenticationManager = authenticationManager;
         this.jwtUtils = jwtUtils;
         this.userService = userService;
         this.loginAttempts = loginAttempts;
+        this.userDetailsService = userDetailsService;
     }
     
     @PostMapping("/signin")
@@ -87,10 +90,14 @@ public class AuthController {
     }
     
     @PostMapping("/validate")
-    @Operation(summary = "Validate JWT token", description = "Validate JWT token and return user info")
+    @Operation(summary = "Validate JWT token",
+        description = "Validate a JWT and return its user info: 401 if it is invalid, expired, or its account no longer exists")
     public ResponseEntity<?> validateToken(@RequestHeader("Authorization") String token) {
         String jwt = token.startsWith("Bearer ") ? token.substring(7) : token;
-        if (!jwtUtils.validateJwtToken(jwt)) {
+        // A correctly signed token is not enough: its account must still exist, and be
+        // the same account (not a newer one that re-used the username).
+        if (!jwtUtils.validateJwtToken(jwt) || userDetailsService.loadTokenAccount(
+            jwtUtils.getUserNameFromJwtToken(jwt), jwtUtils.getUserIdFromJwtToken(jwt)).isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("Invalid token"));
         }
         return ResponseEntity.ok(new JwtResponse(jwt,

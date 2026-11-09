@@ -2,14 +2,16 @@ package com.pharmacy.subscription.client;
 
 import com.pharmacy.subscription.exception.ApiException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.List;
-import java.util.Map;
+import java.net.URI;
 
 @Component
 public class DrugServiceClient {
@@ -24,25 +26,25 @@ public class DrugServiceClient {
     }
     
     /**
-     * Whether the drug is in stock and unexpired at the location.
+     * Whether at least one unit of the drug is in stock and unexpired at the location.
+     * A GET, so it can safely be retried while a sleeping drugs service wakes up.
      *
      * @throws ApiException (503) if the drugs service cannot be reached, so callers
      *                      do not mistake an outage for "drug not available"
      */
     public boolean verifyDrugAvailability(String drugId, String location, String token) {
+        URI url = UriComponentsBuilder.fromUriString(drugsServiceUrl)
+                      .path("/api/drugs/availability")
+                      .queryParam("drugCode", drugId)
+                      .queryParam("location", location)
+                      .queryParam("quantity", 1)
+                      .encode().build().toUri();
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token);
-        Map<String, Object> request = Map.of("drugIds", List.of(drugId), "location", location);
-        
         try {
-            ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(
-                drugsServiceUrl + "/api/drugs/getDispatchableDrugStock",
-                HttpMethod.POST,
-                new HttpEntity<>(request, headers),
-                new ParameterizedTypeReference<>() {
-                });
-            List<Map<String, Object>> stock = response.getBody();
-            return stock != null && stock.stream().anyMatch(s -> Boolean.TRUE.equals(s.get("isAvailable")));
+            Boolean available = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), Boolean.class)
+                                    .getBody();
+            return Boolean.TRUE.equals(available);
         } catch (RestClientException e) {
             throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE,
                 "Drug availability could not be checked right now; please try again", e);

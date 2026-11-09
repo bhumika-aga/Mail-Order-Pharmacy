@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -18,7 +20,10 @@ import java.util.List;
  *   <li>{@link #send} then tries them straight away; each one the drugs service
  *       confirms is removed.</li>
  *   <li>Any that fail (drugs service down) stay stored and are retried by
- *       {@link #retryPending} every minute until they succeed.</li>
+ *       {@link #retryPending} until they succeed: 1 minute later, then with the
+ *       gap doubling up to once an hour. After {@value #ESCALATE_AFTER_ATTEMPTS}
+ *       failures (about an hour) each failure is logged as an ERROR naming the
+ *       likely causes, since by then it is rarely just an outage.</li>
  * </ol>
  * Each release carries its own ID and the drugs service ignores one it has already
  * applied, so a retry can never return the same stock twice, even when the drugs
@@ -27,14 +32,17 @@ import java.util.List;
 @Service
 public class StockReleaseService {
     
+    static final int ESCALATE_AFTER_ATTEMPTS = 6;
     private static final Logger log = LoggerFactory.getLogger(StockReleaseService.class);
-    
     private final PendingStockReleaseRepository repository;
     private final DrugServiceClient drugServiceClient;
+    private final Clock clock;
     
-    public StockReleaseService(PendingStockReleaseRepository repository, DrugServiceClient drugServiceClient) {
+    public StockReleaseService(PendingStockReleaseRepository repository, DrugServiceClient drugServiceClient,
+                               Clock clock) {
         this.repository = repository;
         this.drugServiceClient = drugServiceClient;
+        this.clock = clock;
     }
     
     /**
@@ -55,10 +63,15 @@ public class StockReleaseService {
         }
     }
     
+    /**
+     * Runs every minute; each release is only retried once it is due (see
+     * {@link PendingStockRelease#recordFailure}).
+     */
     @Scheduled(fixedDelayString = "${stock-release.retry-delay:PT1M}",
         initialDelayString = "${stock-release.retry-delay:PT1M}")
     public void retryPending() {
-        List<PendingStockRelease> pending = repository.findTop100ByOrderByCreatedAtAsc();
+        List<PendingStockRelease> pending =
+            repository.findTop100ByNextAttemptAtLessThanEqualOrderByCreatedAtAsc(LocalDateTime.now(clock));
         if (!pending.isEmpty()) {
             log.info("Retrying {} pending stock release(s)", pending.size());
             send(pending);
@@ -71,10 +84,18 @@ public class StockReleaseService {
             released = drugServiceClient.releaseDrugStock(release.getReleaseId(), release.getDrugCode(),
                 release.getLocation(), release.getQuantity());
         } catch (RuntimeException e) {
-            release.recordFailure(e.getMessage());
-            log.warn("Stock release {} for order {} ({} x{} at {}) failed on attempt {}; will retry: {}",
-                release.getReleaseId(), release.getRefillOrderId(), release.getDrugCode(), release.getQuantity(),
-                release.getLocation(), release.getAttempts(), e.getMessage());
+            release.recordFailure(e.getMessage(), LocalDateTime.now(clock));
+            if (release.getAttempts() >= ESCALATE_AFTER_ATTEMPTS) {
+                log.error("Stock release {} for order {} ({} x{} at {}) has failed {} times since {}; next try in {}. "
+                              + "Check that the drugs service is up and that DRUGS_SERVICE_URL and JWT_SECRET match it. "
+                              + "Last error: {}", release.getReleaseId(), release.getRefillOrderId(), release.getDrugCode(),
+                    release.getQuantity(), release.getLocation(), release.getAttempts(), release.getCreatedAt(),
+                    release.retryDelay(), e.getMessage());
+            } else {
+                log.warn("Stock release {} for order {} ({} x{} at {}) failed on attempt {}; retrying in {}: {}",
+                    release.getReleaseId(), release.getRefillOrderId(), release.getDrugCode(), release.getQuantity(),
+                    release.getLocation(), release.getAttempts(), release.retryDelay(), e.getMessage());
+            }
             try {
                 repository.save(release);
             } catch (RuntimeException dbError) {
